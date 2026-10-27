@@ -176,3 +176,8 @@ button, input, select, textarea { font: inherit; }
 .state.session.warn { background: rgba(198,40,40,.35); color: #ffd7d7; }
 .state.session { font-variant-numeric: tabular-nums; }
 .login-card .error:empty { display: none; }
+
+/* Log out stands apart from the other top-bar buttons */
+.btn.logout-btn { display: inline-flex; align-items: center; gap: 7px; background: #c62828; border-color: #c62828; color: #fff; font-weight: 600; }
+.btn.logout-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.btn.logout-btn:hover { background: #a31515; border-color: #a31515; }
