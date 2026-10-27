@@ -39,7 +39,7 @@ const SECTIONS = [
   { key: "levels", label: "Education System Cards", list: true, title: "title", fields: [["image", "Photo", "image", 3 / 2], ["title", "Title"], ["text", "Text", "textarea"]] },
   { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation / Subject"]] },
   { key: "stars", label: "Star Performers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["className", "Class"], ["score", "Score / Award"]] },
-  { key: "gallery", label: "Photo Gallery", list: true, title: "caption", bulk: "image", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image", 4 / 3], ["caption", "Caption"]] },
+  { key: "gallery", label: "Photo Gallery", list: true, title: "caption", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image", 4 / 3], ["caption", "Caption"]] },
   { key: "partners", label: "Partners", list: true, title: "name", fields: [["icon", "Icon (emoji)"], ["name", "Name"], ["link", "Website link", "url"]] },
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
@@ -229,7 +229,6 @@ function renderEditor() {
     body = `
       <div class="list-tools">
         <button class="btn-sm primary" data-action="add">+ Add new</button>
-        ${sec.bulk ? `<label class="btn-sm">⬆ Upload many photos<input type="file" hidden multiple accept="image/*" data-bulk="1"></label>` : ""}
         <span class="count">${items.length} item${items.length === 1 ? "" : "s"}</span>
       </div>
       ${items.map((item, i) => `
@@ -314,17 +313,6 @@ function openCropper(src, ratio) {
   });
 }
 
-// Bulk uploads skip the crop window: each photo is centre-cropped to the shape automatically.
-async function autoCrop(file, ratio) {
-  const bitmap = await createImageBitmap(file);
-  let w = bitmap.width, h = bitmap.height;
-  if (w / h > ratio) w = Math.round(h * ratio); else h = Math.round(w / ratio);
-  const canvas = document.createElement("canvas");
-  [canvas.width, canvas.height] = OUTPUT_SIZE[ratio] || [Math.min(w, 1600), Math.round(Math.min(w, 1600) / ratio)];
-  canvas.getContext("2d").drawImage(bitmap, (bitmap.width - w) / 2, (bitmap.height - h) / 2, w, h, 0, 0, canvas.width, canvas.height);
-  return jpegUnderLimit(canvas);
-}
-
 const asJpegFile = (blob, name) => new File([blob], name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
 
 // ---------- uploads ----------
@@ -400,21 +388,6 @@ document.addEventListener("change", async e => {
     } catch (err) { toast(err.message, true); label.classList.remove("busy"); }
   }
 
-  if (t.dataset.bulk) {
-    const sec = currentSection();
-    const files = [...t.files];
-    let done = 0;
-    for (const file of files) {
-      toast(`Uploading ${done + 1} of ${files.length}…`);
-      try {
-        const ratio = sec.fields.find(f => f[0] === sec.bulk)?.[3];
-        const url = await upload(ratio ? asJpegFile(await autoCrop(file, ratio), file.name) : file);
-        content[sec.key].unshift({ [sec.bulk]: url, caption: file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ") });
-        done++;
-      } catch (err) { toast(`${file.name}: ${err.message}`, true); }
-    }
-    if (done) { markDirty(); renderEditor(); toast(`${done} photo(s) added. Click “Save changes” to publish.`); }
-  }
 });
 
 document.addEventListener("click", async e => {

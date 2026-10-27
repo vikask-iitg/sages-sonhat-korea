@@ -51,8 +51,8 @@ and a layout that works on phones.
 | Gallery, introduction, About, Classrooms, Library, Activities | 4:3 |
 | Education and laboratory cards | 3:2 |
 
-Use **✂ Adjust crop** to re-frame an existing photo. **Upload many photos** in the Gallery centre-crops each photo
-automatically. Large photos are shrunk before upload (4 MB limit per file).
+Use **Edit photo** to re-frame an existing photo. Photos are saved at a fixed size per shape and compressed below
+500 KB automatically.
 
 **Automatic values:**
 - The *Teachers & Staff* number on the home page counts principal + faculty + administrative staff by itself.
