@@ -145,7 +145,7 @@ function renderFooter() {
           <p>📍 ${SCHOOL.address}</p>
           <p>✉ <a href="mailto:${SCHOOL.email}">${SCHOOL.email}</a></p>
           <p>☎ ${SCHOOL.phone}</p>
-          <p>🕘 Mon – Sat: 8:00 AM – 2:30 PM</p>
+          <p>🕘 Mon – Fri: 10:00 AM – 4:00 PM<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Saturday: 7:00 AM – 12:00 PM</p>
         </div>
       </div>
       <div class="footer-bottom">
