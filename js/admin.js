@@ -65,11 +65,11 @@ const SECTIONS = [
 // Menu: { menu: label, items: [...leaves] } renders as a dropdown.
 const NAV = [
   { group: "General", items: ["site"] },
-  { group: "Home Page", items: [
-    "home", "ticker", "slides", "features", "intro", "notices", "news", "events", "principal",
-    "stats", "levels", "faculty", "stars", "gallery", "partners", "cta",
-  ] },
   { group: "Pages", items: [
+    { menu: "Home Page", items: [
+      "home", "ticker", "slides", "features", "intro", "notices", "news", "events", "principal",
+      "stats", "levels", "faculty", "stars", "gallery", "partners", "cta",
+    ] },
     ["about", "About Us"],
     { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"]] },
     { menu: "Admission", items: [["admissionSteps", "Admission Process"], ["admission", "Eligibility & Documents"]] },
