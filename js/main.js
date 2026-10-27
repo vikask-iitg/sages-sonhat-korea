@@ -75,6 +75,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const paras = text => String(text || "").split(/\n\s*\n/).filter(Boolean).map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 const lines = text => String(text || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => `<li>${esc(l)}</li>`).join("");
 const list = v => Array.isArray(v) ? v : [];
+const telLink = phone => `<a href="tel:${esc(String(phone || "").replace(/[^\d+]/g, ""))}">${esc(phone)}</a>`;
 // Links saved before pages moved into /pages/ (e.g. "admission.html") still point to the right place.
 const pageLink = href => {
   const h = String(href || "#");
@@ -252,7 +253,7 @@ const RENDER = {
   contactInfo: c => `
     <p><strong>📍 Address</strong><br>${esc(c.site.name)},<br>${esc(c.site.address)}</p>
     <p><strong>✉ Email</strong><br><a href="mailto:${esc(c.site.email)}">${esc(c.site.email)}</a></p>
-    <p><strong>☎ Phone</strong><br>${esc(c.site.phone)}</p>
+    <p><strong>☎ Phone</strong><br>${telLink(c.site.phone)}</p>
     <p><strong>🕘 Office Hours</strong><br>${esc(c.site.hoursWeekday)}<br>${esc(c.site.hoursSaturday)}</p>`,
 };
 
@@ -340,7 +341,7 @@ function renderFooter(c) {
           <h4>Contact Us</h4>
           <p>📍 ${esc(s.address)}</p>
           <p>✉ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></p>
-          <p>☎ ${esc(s.phone)}</p>
+          <p>☎ ${telLink(s.phone)}</p>
           <p>🕘 ${esc(s.hoursWeekday)}<br>${esc(s.hoursSaturday)}</p>
         </div>
       </div>
