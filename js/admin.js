@@ -21,34 +21,34 @@ const SECTIONS = [
   ] },
   { key: "ticker", label: "Scrolling Top Notices (top bar)", list: true, title: "text", fields: [["text", "Notice text"]] },
   { key: "slides", label: "Banner Slider", list: true, title: "title", fields: [
-    ["image", "Background photo", "image"], ["title", "Heading"], ["text", "Sub-text", "textarea"], ["buttonText", "Button text"], ["buttonLink", "Button link"],
+    ["image", "Background photo", "image", 16 / 9], ["title", "Heading"], ["text", "Sub-text", "textarea"], ["buttonText", "Button text"], ["buttonLink", "Button link"],
   ] },
   { key: "features", label: "Feature Boxes", list: true, title: "title", fields: [["icon", "Icon (emoji)"], ["title", "Title"], ["text", "Text", "textarea"]] },
-  { key: "intro", label: "Introduction", fields: [["title", "Heading"], ["text", "Text (blank line = new paragraph)", "textarea"], ["image", "Photo", "image"]] },
+  { key: "intro", label: "Introduction", fields: [["title", "Heading"], ["text", "Text (blank line = new paragraph)", "textarea"], ["image", "Photo", "image", 4 / 3]] },
   { key: "notices", label: "Important Notices", list: true, title: "text", hint: "Shown newest first automatically.", fields: [["date", "Date", "date"], ["text", "Notice", "textarea"]] },
   { key: "news", label: "Latest News", list: true, title: "text", hint: "Shown newest first automatically.", fields: [["date", "Date", "date"], ["text", "News", "textarea"]] },
   { key: "events", label: "Upcoming Events", list: true, title: "text", hint: "Shown in date order. Delete events once they are over.", fields: [["date", "Date", "date"], ["text", "Event", "textarea"]] },
   { key: "principal", label: "Principal & Message", fields: [
-    ["photo", "Principal's photo", "image"], ["name", "Name"], ["qualification", "Qualification"], ["experience", "Experience"],
+    ["photo", "Principal's photo", "image", 4 / 5], ["name", "Name"], ["qualification", "Qualification"], ["experience", "Experience"],
     ["quote", "Quote"], ["message", "Message (blank line = new paragraph)", "textarea"],
   ] },
   { key: "stats", label: "Numbers (Students, Staff…)", list: true, title: "label", hint: "Choose “Automatic” to count the principal, faculty and administrative staff for you.", fields: [
     ["auto", "How is the number set?", "select", [["", "I type the number"], ["staff", "Automatic: principal + faculty + administrative staff"]]],
     ["value", "Number (ignored when automatic)", "number"], ["suffix", "After number (e.g. +, ignored when automatic)"], ["label", "Label"],
   ] },
-  { key: "levels", label: "Education System Cards", list: true, title: "title", fields: [["image", "Photo", "image"], ["title", "Title"], ["text", "Text", "textarea"]] },
-  { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["designation", "Designation / Subject"]] },
-  { key: "stars", label: "Star Performers", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["className", "Class"], ["score", "Score / Award"]] },
-  { key: "gallery", label: "Photo Gallery", list: true, title: "caption", bulk: "image", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image"], ["caption", "Caption"]] },
+  { key: "levels", label: "Education System Cards", list: true, title: "title", fields: [["image", "Photo", "image", 3 / 2], ["title", "Title"], ["text", "Text", "textarea"]] },
+  { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation / Subject"]] },
+  { key: "stars", label: "Star Performers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["className", "Class"], ["score", "Score / Award"]] },
+  { key: "gallery", label: "Photo Gallery", list: true, title: "caption", bulk: "image", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image", 4 / 3], ["caption", "Caption"]] },
   { key: "partners", label: "Partners", list: true, title: "name", fields: [["icon", "Icon (emoji)"], ["name", "Name"], ["link", "Website link", "url"]] },
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
   { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
-  { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["designation", "Designation"]] },
+  { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
 
   { key: "about", label: "About Us", fields: [
-    ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image"], ["vision", "Vision", "textarea"],
+    ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image", 4 / 3], ["vision", "Vision", "textarea"],
     ["mission", "Mission (one point per line)", "textarea"], ["atmanand", "About Swami Atmanand", "textarea"],
   ] },
   { key: "admission", label: "Admission Details", fields: [["note", "Important note", "textarea"], ["eligibility", "Eligibility (one point per line)", "textarea"], ["documents", "Documents required (one per line)", "textarea"]] },
@@ -58,11 +58,11 @@ const SECTIONS = [
   { key: "results", label: "Board Results", list: true, title: "year", fields: [["year", "Year"], ["className", "Class"], ["appeared", "Appeared"], ["passed", "Passed"], ["percent", "Pass %"]] },
   { key: "achievements", label: "Student Achievements", list: true, title: "title", fields: [["icon", "Icon (emoji)"], ["title", "Title"], ["text", "Description", "textarea"]] },
   { key: "calendar", label: "School Calendar", list: true, title: "month", fields: [["month", "Month"], ["event", "Events"]] },
-  { key: "classrooms", label: "Smart Classrooms", fields: [["text", "Text", "textarea"], ["image", "Photo", "image"]] },
-  { key: "labs", label: "Laboratories", list: true, title: "title", fields: [["image", "Photo", "image"], ["title", "Lab name"], ["text", "Description", "textarea"]] },
-  { key: "library", label: "Library", fields: [["text", "Text", "textarea"], ["image", "Photo", "image"]] },
+  { key: "classrooms", label: "Smart Classrooms", fields: [["text", "Text", "textarea"], ["image", "Photo", "image", 4 / 3]] },
+  { key: "labs", label: "Laboratories", list: true, title: "title", fields: [["image", "Photo", "image", 3 / 2], ["title", "Lab name"], ["text", "Description", "textarea"]] },
+  { key: "library", label: "Library", fields: [["text", "Text", "textarea"], ["image", "Photo", "image", 4 / 3]] },
   { key: "campus", label: "Campus Facilities", list: true, title: "title", fields: [["icon", "Icon (emoji)"], ["title", "Title"], ["text", "Description", "textarea"]] },
-  { key: "activities", label: "Co-curricular Activities", list: true, title: "title", fields: [["image", "Photo", "image"], ["title", "Title"], ["text", "Description", "textarea"], ["anchor", "Menu link id (sports, cultural, technical, scout)"]] },
+  { key: "activities", label: "Co-curricular Activities", list: true, title: "title", fields: [["image", "Photo", "image", 4 / 3], ["title", "Title"], ["text", "Description", "textarea"], ["anchor", "Menu link id (sports, cultural, technical, scout)"]] },
 ];
 
 // Leaf: "key", or [key, label], or [key, label, anchor] to edit the one list item with that anchor.
@@ -158,7 +158,7 @@ function renderNav() {
   }).join("")).join("");
 }
 
-function fieldHtml([name, label, type = "text", choices], path) {
+function fieldHtml([name, label, type = "text", option], path) {
   const value = get(path) ?? "";
   if (type === "textarea") {
     return `<label class="field"><span>${esc(label)}</span><textarea data-path="${path}" rows="${String(value).length > 200 ? 8 : 3}">${esc(value)}</textarea></label>`;
@@ -176,20 +176,23 @@ function fieldHtml([name, label, type = "text", choices], path) {
       </div></div>`;
   }
   if (type === "image") {
+    // option = the aspect ratio the website shows this photo at; uploads are cropped to it.
+    const ratio = option || 0;
     const preview = value ? `<img src="${esc(value)}" alt="">` : `<div class="noimg">No photo</div>`;
-    return `<div class="field media"><span>${esc(label)}</span>
+    return `<div class="field media"><span>${esc(label)}${ratio ? ` <em class="shape">${ratioName(ratio)}</em>` : ""}</span>
       <div class="media-row">
-        <div class="preview">${preview}</div>
+        <div class="preview" style="${ratio ? `aspect-ratio:${ratio}` : ""}">${preview}</div>
         <div class="media-actions">
           <label class="btn-sm primary">Upload photo
-            <input type="file" hidden accept="image/*" data-upload="${path}"></label>
+            <input type="file" hidden accept="image/*" data-upload="${path}" data-ratio="${ratio}"></label>
+          ${value && ratio ? `<button class="btn-sm" data-action="recrop" data-path="${path}" data-ratio="${ratio}">✂ Adjust crop</button>` : ""}
           ${value ? `<button class="btn-sm danger" data-action="clear" data-path="${path}">Remove</button>` : ""}
           <input type="url" data-path="${path}" value="${esc(value)}" placeholder="…or paste a link">
         </div>
       </div></div>`;
   }
   if (type === "select") {
-    const options = choices.map(([v, l]) => `<option value="${esc(v)}"${String(value) === v ? " selected" : ""}>${esc(l)}</option>`).join("");
+    const options = option.map(([v, l]) => `<option value="${esc(v)}"${String(value) === v ? " selected" : ""}>${esc(l)}</option>`).join("");
     return `<label class="field"><span>${esc(label)}</span><select data-path="${path}">${options}</select></label>`;
   }
   const inputType = { number: "number", date: "date", url: "url" }[type] || "text";
@@ -241,6 +244,51 @@ function renderEditor() {
   $("#editor").innerHTML = `<h2>${esc(label)}</h2>${sec.hint && !anchor ? `<p class="hint">${esc(sec.hint)}</p>` : ""}${body}`;
 }
 
+// ---------- cropping ----------
+const ratioName = r => ({ 1: "square", [16 / 9]: "wide 16:9", [4 / 3]: "4:3", [3 / 2]: "3:2", [4 / 5]: "portrait 4:5" })[r] || "";
+
+// Opens the crop window locked to the website's shape. Resolves to a JPEG blob, or null if cancelled.
+function openCropper(src, ratio) {
+  return new Promise((resolve, reject) => {
+    const modal = $("#crop-modal"), img = $("#crop-img");
+    let cropper;
+    const close = result => {
+      cropper?.destroy();
+      modal.hidden = true;
+      $("#crop-ok").onclick = $("#crop-cancel").onclick = null;
+      resolve(result);
+    };
+    $("#crop-shape").textContent = ratioName(ratio);
+    img.crossOrigin = "anonymous"; // lets existing online photos be re-cropped
+    img.onerror = () => { modal.hidden = true; reject(new Error("Could not load this photo for cropping")); };
+    img.onload = () => {
+      cropper = new Cropper(img, { aspectRatio: ratio, viewMode: 1, autoCropArea: 1, dragMode: "move", background: false });
+    };
+    img.src = src;
+    modal.hidden = false;
+    $("#crop-cancel").onclick = () => close(null);
+    $("#crop-ok").onclick = () => {
+      const canvas = cropper.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1600, fillColor: "#fff", imageSmoothingQuality: "high" });
+      canvas.toBlob(blob => close(blob), "image/jpeg", 0.88);
+    };
+  });
+}
+
+// Bulk uploads skip the crop window: each photo is centre-cropped to the shape automatically.
+async function autoCrop(file, ratio) {
+  const bitmap = await createImageBitmap(file);
+  let w = bitmap.width, h = bitmap.height;
+  if (w / h > ratio) w = Math.round(h * ratio); else h = Math.round(w / ratio);
+  const scale = Math.min(1, 1600 / Math.max(w, h));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(w * scale);
+  canvas.height = Math.round(h * scale);
+  canvas.getContext("2d").drawImage(bitmap, (bitmap.width - w) / 2, (bitmap.height - h) / 2, w, h, 0, 0, canvas.width, canvas.height);
+  return new Promise(res => canvas.toBlob(res, "image/jpeg", 0.88));
+}
+
+const asJpegFile = (blob, name) => new File([blob], name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+
 // ---------- uploads ----------
 // Photos are shrunk in the browser so uploads stay fast and under the 4 MB API limit.
 async function shrinkImage(file) {
@@ -288,11 +336,20 @@ document.addEventListener("change", async e => {
   if (t.dataset.path && t.type === "url") renderEditor();
 
   if (t.dataset.upload) {
-    const file = t.files[0];
+    let file = t.files[0];
+    t.value = ""; // allow choosing the same file again
     if (!file) return;
+    const ratio = Number(t.dataset.ratio);
     const label = t.closest("label");
-    label.classList.add("busy");
     try {
+      if (ratio && file.type.startsWith("image/") && file.type !== "image/gif") {
+        const url = URL.createObjectURL(file);
+        const blob = await openCropper(url, ratio);
+        URL.revokeObjectURL(url);
+        if (!blob) return;
+        file = asJpegFile(blob, file.name);
+      }
+      label.classList.add("busy");
       set(t.dataset.upload, await upload(file));
       markDirty();
       renderEditor();
@@ -307,7 +364,8 @@ document.addEventListener("change", async e => {
     for (const file of files) {
       toast(`Uploading ${done + 1} of ${files.length}…`);
       try {
-        const url = await upload(file);
+        const ratio = sec.fields.find(f => f[0] === sec.bulk)?.[3];
+        const url = await upload(ratio ? asJpegFile(await autoCrop(file, ratio), file.name) : file);
         content[sec.key].unshift({ [sec.bulk]: url, caption: file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ") });
         done++;
       } catch (err) { toast(`${file.name}: ${err.message}`, true); }
@@ -342,6 +400,18 @@ document.addEventListener("click", async e => {
     items.splice(i, 1);
   }
   if (action === "clear") set(btn.dataset.path, "");
+  if (action === "recrop") {
+    try {
+      const blob = await openCropper(get(btn.dataset.path), Number(btn.dataset.ratio));
+      if (!blob) return;
+      btn.classList.add("busy");
+      set(btn.dataset.path, await upload(asJpegFile(blob, "photo.jpg")));
+      markDirty();
+      renderEditor();
+      toast("Crop saved. Click “Save changes” to publish.");
+    } catch (err) { toast(err.message, true); }
+    return;
+  }
   if (["add", "up", "down", "delete", "clear"].includes(action)) { markDirty(); renderEditor(); }
 
   if (action === "save") save();

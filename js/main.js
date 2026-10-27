@@ -151,7 +151,7 @@ const carousel = (cards, count) => {
   if (!count) return "";
   const reps = Math.ceil(8 / count);
   const repeats = reps > 1 ? `<div class="carousel-repeat" aria-hidden="true">${cards.repeat(reps - 1)}</div>` : "";
-  return `<div class="carousel-track" style="--duration:${count * reps * 3.5}s">
+  return `<div class="carousel-track" style="--duration:${count * reps * 6}s">
     <div class="carousel-set">${cards}${repeats}</div>
     <div class="carousel-set" aria-hidden="true">${cards.repeat(reps)}</div>
   </div>`;
@@ -391,7 +391,6 @@ function renderFooter(c) {
       </div>
     </footer>
     <button class="back-to-top" aria-label="Back to top">↑</button>
-    ${whatsappUrl(s.whatsapp) ? `<a class="wa-float" href="${esc(whatsappUrl(s.whatsapp))}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="Chat with us on WhatsApp">${SOCIAL.find(x => x[0] === "whatsapp")[2]}</a>` : ""}
     <div class="lightbox"><img alt=""></div>`;
 }
 
