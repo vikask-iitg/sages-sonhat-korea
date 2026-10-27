@@ -129,15 +129,29 @@ function toast(msg, isError = false) {
 }
 
 // ---------- rendering ----------
+// Icon and accent colour for each top-level sidebar entry; submenu items take their parent's colour.
+const NAV_STYLE = {
+  "School Details": ["🏫", "#0b3d91"], "Home Page": ["🏠", "#e65100"], "About Us": ["ℹ️", "#00897b"],
+  "Administration": ["👥", "#6a1b9a"], "Admission": ["📝", "#c62828"], "Academic": ["🎓", "#1565c0"],
+  "Infrastructure": ["🏛️", "#6d4c41"], "Activities": ["⚽", "#2e7d32"], "News & Events": ["📰", "#ad1457"],
+  "Gallery": ["🖼️", "#ef6c00"], "Contact Us": ["📞", "#00838f"], "Public Disclosure PDFs": ["📄", "#455a64"],
+};
+
 function renderNav() {
-  const link = (l, cls = "") => `<button data-action="section" data-id="${l.id}" class="${cls}${l.id === current ? " active" : ""}">${esc(l.label)}</button>`;
+  const style = label => NAV_STYLE[label] || ["•", "#0b3d91"];
+  const icon = label => `<span class="nav-icon">${style(label)[0]}</span>`;
+  const link = l => `<button data-action="section" data-id="${l.id}" class="nav-item${l.id === current ? " active" : ""}" style="--c:${style(l.label)[1]}">${icon(l.label)}<span class="nav-label">${esc(l.label)}</span></button>`;
+  const sub = l => `<button data-action="section" data-id="${l.id}" class="sub${l.id === current ? " active" : ""}">${esc(l.label)}</button>`;
   // Keep the dropdown holding the current page open.
   if (LEAVES[current].menu) openMenus.add(LEAVES[current].menu);
   $("#sections").innerHTML = NAV.map((g, gi) => `<div class="group">${esc(g.group)}</div>` + g.items.map((it, ii) => {
     if (!it.menu) return link(LEAVES[`${gi}.${ii}`]);
     const open = openMenus.has(it.menu);
-    return `<button class="menu-toggle${open ? " open" : ""}" data-action="toggle" data-menu="${esc(it.menu)}">${esc(it.menu)}<span>▾</span></button>
-      <div class="submenu"${open ? "" : " hidden"}>${it.items.map((_, si) => link(LEAVES[`${gi}.${ii}.${si}`], "sub")).join("")}</div>`;
+    const inside = LEAVES[current].menu === it.menu;
+    return `<div class="nav-menu" style="--c:${style(it.menu)[1]}">
+      <button class="nav-item menu-toggle${open ? " open" : ""}${inside ? " has-active" : ""}" data-action="toggle" data-menu="${esc(it.menu)}">${icon(it.menu)}<span class="nav-label">${esc(it.menu)}</span><span class="caret">▾</span></button>
+      <div class="submenu"${open ? "" : " hidden"}>${it.items.map((_, si) => sub(LEAVES[`${gi}.${ii}.${si}`])).join("")}</div>
+    </div>`;
   }).join("")).join("");
 }
 
