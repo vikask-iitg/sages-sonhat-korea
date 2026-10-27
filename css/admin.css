@@ -169,3 +169,4 @@ button, input, select, textarea { font: inherit; }
 .state.session { background: rgba(255,255,255,.12); color: #dbe5f7; }
 .state.session:empty { display: none; }
 .state.session.warn { background: rgba(198,40,40,.35); color: #ffd7d7; }
+.state.session { font-variant-numeric: tabular-nums; }

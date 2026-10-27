@@ -548,19 +548,20 @@ function startSessionClock(exp) {
   clearInterval(sessionTimer);
   if (!sessionExp) return;
   tickSession();
-  sessionTimer = setInterval(tickSession, 15000);
+  sessionTimer = setInterval(tickSession, 1000);
 }
 
 function tickSession() {
   if (!sessionExp) return;
   const left = sessionExp * 1000 - Date.now();
   if (left <= 0) return autoLogout();
-  const mins = Math.ceil(left / 60000);
-  $("#session-left").textContent = `⏱ Auto logout in ${mins} min`;
-  $("#session-left").classList.toggle("warn", mins <= 5);
-  if (mins <= 5 && !warned) {
+  const secs = Math.ceil(left / 1000);
+  const mm = String(Math.floor(secs / 60)).padStart(2, "0"), ss = String(secs % 60).padStart(2, "0");
+  $("#session-left").textContent = `⏱ Auto logout in ${mm}:${ss}`;
+  $("#session-left").classList.toggle("warn", secs <= 300);
+  if (secs <= 300 && !warned) {
     warned = true;
-    toast(`You will be logged out in ${mins} minute${mins === 1 ? "" : "s"}. Save your changes.`, true);
+    toast(`You will be logged out in ${Math.ceil(secs / 60)} minutes. Save your changes.`, true);
   }
 }
 

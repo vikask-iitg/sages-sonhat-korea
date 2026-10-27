@@ -39,7 +39,9 @@ export function isAuthed(request) {
   const match = cookies.match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
   if (!match || !process.env.ADMIN_SECRET) return false;
   const [exp, sig] = match[1].split(".");
-  if (!exp || !sig || Number(exp) < Date.now() / 1000) return false;
+  const now = Date.now() / 1000;
+  // Also reject sessions issued for longer than an hour (e.g. under an older, longer limit).
+  if (!exp || !sig || Number(exp) < now || Number(exp) > now + SESSION_SECONDS + 60) return false;
   return safeEqual(sig, hmac(exp)) ? Number(exp) : false;
 }
 
