@@ -234,11 +234,6 @@ const RENDER = {
       <div class="container intro content">${textWithImage(a.title, a.text, a.image, i % 2 === 1)}</div>
     </section>`).join(""),
 
-  disclosure: c => table(["S.No.", "Document", "View"], list(c.disclosure).map((d, i) => [
-    i + 1, esc(d.title),
-    d.file ? `<a href="${esc(d.file)}" target="_blank" rel="noopener">View PDF</a>` : `<span class="empty">To be uploaded</span>`,
-  ])),
-
   contactInfo: c => `
     <p><strong>📍 Address</strong><br>${esc(c.site.name)},<br>${esc(c.site.address)}</p>
     <p><strong>✉ Email</strong><br><a href="mailto:${esc(c.site.email)}">${esc(c.site.email)}</a></p>
@@ -316,7 +311,7 @@ function renderFooter(c) {
             <li><a href="admission.html">Admission</a></li>
             <li><a href="administration.html#faculty">Faculty</a></li>
             <li><a href="academic.html#results">Results</a></li>
-            <li><a href="disclosure.html">Public Disclosure</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
           </ul>
         </div>
         <div>

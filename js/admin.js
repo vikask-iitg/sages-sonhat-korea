@@ -58,7 +58,6 @@ const SECTIONS = [
   { key: "library", label: "Library", fields: [["text", "Text", "textarea"], ["image", "Photo", "image"]] },
   { key: "campus", label: "Campus Facilities", list: true, title: "title", fields: [["icon", "Icon (emoji)"], ["title", "Title"], ["text", "Description", "textarea"]] },
   { key: "activities", label: "Co-curricular Activities", list: true, title: "title", fields: [["image", "Photo", "image"], ["title", "Title"], ["text", "Description", "textarea"], ["anchor", "Menu link id (sports, cultural, technical, scout)"]] },
-  { key: "disclosure", label: "Public Disclosure PDFs", list: true, title: "title", fields: [["title", "Document name"], ["file", "PDF file", "file"]] },
 ];
 
 // Leaf: "key", or [key, label], or [key, label, anchor] to edit the one list item with that anchor.
@@ -80,7 +79,6 @@ const NAV = [
     ["gallery", "Gallery"],
     ["site", "Contact Us"],
   ] },
-  { group: "Other", items: ["disclosure"] },
 ];
 
 const $ = s => document.querySelector(s);
@@ -134,7 +132,7 @@ const NAV_STYLE = {
   "School Details": ["🏫", "#0b3d91"], "Home Page": ["🏠", "#e65100"], "About Us": ["ℹ️", "#00897b"],
   "Administration": ["👥", "#6a1b9a"], "Admission": ["📝", "#c62828"], "Academic": ["🎓", "#1565c0"],
   "Infrastructure": ["🏛️", "#6d4c41"], "Activities": ["⚽", "#2e7d32"], "News & Events": ["📰", "#ad1457"],
-  "Gallery": ["🖼️", "#ef6c00"], "Contact Us": ["📞", "#00838f"], "Public Disclosure PDFs": ["📄", "#455a64"],
+  "Gallery": ["🖼️", "#ef6c00"], "Contact Us": ["📞", "#00838f"],
 };
 
 function renderNav() {
@@ -160,17 +158,14 @@ function fieldHtml([name, label, type = "text"], path) {
   if (type === "textarea") {
     return `<label class="field"><span>${esc(label)}</span><textarea data-path="${path}" rows="${String(value).length > 200 ? 8 : 3}">${esc(value)}</textarea></label>`;
   }
-  if (type === "image" || type === "file") {
-    const isImg = type === "image";
-    const preview = isImg
-      ? (value ? `<img src="${esc(value)}" alt="">` : `<div class="noimg">No photo</div>`)
-      : (value ? `<a href="${esc(value)}" target="_blank" rel="noopener">📄 Open PDF</a>` : `<div class="noimg">No file</div>`);
+  if (type === "image") {
+    const preview = value ? `<img src="${esc(value)}" alt="">` : `<div class="noimg">No photo</div>`;
     return `<div class="field media"><span>${esc(label)}</span>
       <div class="media-row">
         <div class="preview">${preview}</div>
         <div class="media-actions">
-          <label class="btn-sm primary">${isImg ? "Upload photo" : "Upload PDF"}
-            <input type="file" hidden accept="${isImg ? "image/*" : "application/pdf"}" data-upload="${path}"></label>
+          <label class="btn-sm primary">Upload photo
+            <input type="file" hidden accept="image/*" data-upload="${path}"></label>
           ${value ? `<button class="btn-sm danger" data-action="clear" data-path="${path}">Remove</button>` : ""}
           <input type="url" data-path="${path}" value="${esc(value)}" placeholder="…or paste a link">
         </div>
@@ -238,11 +233,10 @@ async function shrinkImage(file) {
 }
 
 async function upload(file) {
-  const isPdf = file.type === "application/pdf";
-  const body = isPdf ? file : await shrinkImage(file);
+  const body = await shrinkImage(file);
   if (body.size > 4 * 1024 * 1024) throw new Error("File is larger than 4 MB");
   const base = file.name.replace(/\.[^.]+$/, "");
-  const ext = isPdf ? "pdf" : body.type === "image/png" ? "png" : body.type === "image/gif" ? "gif" : "jpg";
+  const ext = body.type === "image/png" ? "png" : body.type === "image/gif" ? "gif" : "jpg";
   const res = await fetch(`/api/upload?name=${encodeURIComponent(`${base}.${ext}`)}`, {
     method: "POST", headers: { "content-type": body.type }, body,
   });
@@ -376,7 +370,9 @@ async function loadContent() {
   const res = await fetch(`/api/content?t=${Date.now()}`, { cache: "no-store" });
   if (!res.ok) return defaults;
   const saved = await res.json();
-  // Sections added to the site after the last save start from their defaults.
+  // Sections added to the site after the last save start from their defaults;
+  // sections the site no longer has are dropped on the next save.
+  for (const key of Object.keys(saved)) if (!(key in defaults)) delete saved[key];
   for (const [key, value] of Object.entries(defaults)) {
     if (!(key in saved)) saved[key] = value;
     else if (value && typeof value === "object" && !Array.isArray(value)) saved[key] = { ...value, ...saved[key] };
