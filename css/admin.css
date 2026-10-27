@@ -99,3 +99,14 @@ button, input, textarea { font: inherit; }
   .editor { padding: 16px; }
   .media-row { flex-direction: column; }
 }
+
+.sidebar .menu-toggle { display: flex; justify-content: space-between; align-items: center; }
+.sidebar .menu-toggle span { font-size: 14px; color: var(--muted); transition: transform .2s; }
+.sidebar .menu-toggle.open span { transform: rotate(180deg); }
+.sidebar .menu-toggle.open { font-weight: 600; color: var(--primary); }
+.sidebar .submenu { border-left: 2px solid var(--border); margin: 2px 0 6px 22px; }
+.sidebar button.sub { padding: 6px 14px; font-size: 13px; }
+@media (max-width: 800px) {
+  .sidebar .submenu { display: flex; border-left: 0; margin: 0; }
+  .sidebar .submenu[hidden] { display: none; }
+}

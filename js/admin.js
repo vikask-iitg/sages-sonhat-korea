@@ -1,14 +1,13 @@
 // Admin panel: edits the same content document the public pages render from.
 // Forms are generated from SECTIONS, so adding a field here is enough to make it editable.
+// NAV arranges those sections in the sidebar to mirror the website; a section may appear in more than one place.
 
 const SECTIONS = [
-  { group: "General" },
   { key: "site", label: "School Details", fields: [
     ["address", "Full address"], ["email", "Email"], ["phone", "Phone"],
     ["hoursWeekday", "Timings – weekdays"], ["hoursSaturday", "Timings – Saturday"], ["footerAbout", "Footer 'About the School' text", "textarea"],
   ] },
 
-  { group: "Home Page" },
   { key: "home", label: "Home Page Headings", hint: "Small label = the coloured text above each heading. Empty sections hide automatically.", fields: [
     ["noticeKicker", "Notice Board – small label"], ["noticeTitle", "Notice Board – heading"],
     ["noticesHeading", "Notices box title"], ["newsHeading", "News box title"], ["eventsHeading", "Events box title"],
@@ -40,12 +39,10 @@ const SECTIONS = [
   { key: "partners", label: "Partners", list: true, title: "name", fields: [["icon", "Icon (emoji)"], ["name", "Name"], ["link", "Website link", "url"]] },
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
-  { group: "People" },
   { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
   { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
 
-  { group: "Pages" },
   { key: "about", label: "About Us", fields: [
     ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image"], ["vision", "Vision", "textarea"],
     ["mission", "Mission (one point per line)", "textarea"], ["atmanand", "About Swami Atmanand", "textarea"],
@@ -64,13 +61,49 @@ const SECTIONS = [
   { key: "disclosure", label: "Public Disclosure PDFs", list: true, title: "title", fields: [["title", "Document name"], ["file", "PDF file", "file"]] },
 ];
 
+// Leaf: "key", or [key, label], or [key, label, anchor] to edit the one list item with that anchor.
+// Menu: { menu: label, items: [...leaves] } renders as a dropdown.
+const NAV = [
+  { group: "General", items: ["site"] },
+  { group: "Home Page", items: [
+    "home", "ticker", "slides", "features", "intro", "notices", "news", "events", "principal",
+    "stats", "levels", "faculty", "stars", "gallery", "partners", "cta",
+  ] },
+  { group: "Pages", items: [
+    ["about", "About Us"],
+    { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"]] },
+    { menu: "Admission", items: [["admissionSteps", "Admission Process"], ["admission", "Eligibility & Documents"]] },
+    { menu: "Academic", items: [["curriculum", "Classes & Curriculum"], ["results", "Results"], ["achievements", "Student Achievements"], ["calendar", "School Calendar"]] },
+    { menu: "Infrastructure", items: [["classrooms", "Smart Classrooms"], ["labs", "Laboratories"], ["library", "Library"], ["campus", "School Campus"]] },
+    { menu: "Activities", items: [["activities", "Sports Events", "sports"], ["activities", "Cultural Events", "cultural"], ["activities", "Technical Events", "technical"], ["activities", "Scout Guide / NSS", "scout"]] },
+    { menu: "News & Events", items: [["notices", "Notices"], ["news", "News"], ["events", "Upcoming Events"]] },
+    ["gallery", "Gallery"],
+    ["site", "Contact Us"],
+  ] },
+  { group: "Other", items: ["disclosure"] },
+];
+
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const sectionOf = key => SECTIONS.find(s => s.key === key);
 
+// Every sidebar entry gets a unique id so the same section can be listed twice and still highlight correctly.
+const LEAVES = {};
+function leaf(raw, id, menu) {
+  const [key, label, anchor] = typeof raw === "string" ? [raw] : raw;
+  LEAVES[id] = { id, key, label: label || sectionOf(key).label, anchor, menu };
+  return LEAVES[id];
+}
+NAV.forEach((g, gi) => g.items.forEach((it, ii) => {
+  if (it.menu) it.items.forEach((sub, si) => leaf(sub, `${gi}.${ii}.${si}`, it.menu));
+  else leaf(it, `${gi}.${ii}`);
+}));
+
 let content = null;
-let current = "site";
+let current = "0.0";
 let dirty = false;
+const openMenus = new Set();
+const currentSection = () => sectionOf(LEAVES[current].key);
 
 const get = path => path.split(".").reduce((o, k) => o?.[k], content);
 function set(path, value) {
@@ -97,9 +130,15 @@ function toast(msg, isError = false) {
 
 // ---------- rendering ----------
 function renderNav() {
-  $("#sections").innerHTML = SECTIONS.map(s => s.group
-    ? `<div class="group">${esc(s.group)}</div>`
-    : `<button data-action="section" data-key="${s.key}" class="${s.key === current ? "active" : ""}">${esc(s.label)}</button>`).join("");
+  const link = (l, cls = "") => `<button data-action="section" data-id="${l.id}" class="${cls}${l.id === current ? " active" : ""}">${esc(l.label)}</button>`;
+  // Keep the dropdown holding the current page open.
+  if (LEAVES[current].menu) openMenus.add(LEAVES[current].menu);
+  $("#sections").innerHTML = NAV.map((g, gi) => `<div class="group">${esc(g.group)}</div>` + g.items.map((it, ii) => {
+    if (!it.menu) return link(LEAVES[`${gi}.${ii}`]);
+    const open = openMenus.has(it.menu);
+    return `<button class="menu-toggle${open ? " open" : ""}" data-action="toggle" data-menu="${esc(it.menu)}">${esc(it.menu)}<span>▾</span></button>
+      <div class="submenu"${open ? "" : " hidden"}>${it.items.map((_, si) => link(LEAVES[`${gi}.${ii}.${si}`], "sub")).join("")}</div>`;
+  }).join("")).join("");
 }
 
 function fieldHtml([name, label, type = "text"], path) {
@@ -133,9 +172,17 @@ function itemTitle(sec, item, i) {
 }
 
 function renderEditor() {
-  const sec = sectionOf(current);
+  const sec = currentSection();
+  const { label, anchor } = LEAVES[current];
   let body;
-  if (sec.list) {
+  if (anchor) {
+    // Edit just the one list item behind this menu link (e.g. Activities › Sports Events).
+    if (!Array.isArray(content[sec.key])) content[sec.key] = [];
+    let i = content[sec.key].findIndex(it => it.anchor === anchor);
+    if (i < 0) i = content[sec.key].push({ anchor }) - 1;
+    const fields = sec.fields.filter(f => f[0] !== "anchor");
+    body = `<div class="item"><div class="item-body">${fields.map(f => fieldHtml(f, `${sec.key}.${i}.${f[0]}`)).join("")}</div></div>`;
+  } else if (sec.list) {
     if (!Array.isArray(content[sec.key])) content[sec.key] = [];
     const items = content[sec.key];
     body = `
@@ -160,7 +207,7 @@ function renderEditor() {
     if (!content[sec.key]) content[sec.key] = {};
     body = `<div class="item"><div class="item-body">${sec.fields.map(f => fieldHtml(f, `${sec.key}.${f[0]}`)).join("")}</div></div>`;
   }
-  $("#editor").innerHTML = `<h2>${esc(sec.label)}</h2>${sec.hint ? `<p class="hint">${esc(sec.hint)}</p>` : ""}${body}`;
+  $("#editor").innerHTML = `<h2>${esc(label)}</h2>${sec.hint && !anchor ? `<p class="hint">${esc(sec.hint)}</p>` : ""}${body}`;
 }
 
 // ---------- uploads ----------
@@ -195,10 +242,10 @@ async function upload(file) {
 document.addEventListener("input", e => {
   const path = e.target.dataset.path;
   if (!path || !content) return;
-  const sec = sectionOf(current);
+  const sec = currentSection();
   set(path, e.target.value);
   markDirty();
-  if (sec.list && path.endsWith(`.${sec.title}`)) {
+  if (sec.list && !LEAVES[current].anchor && path.endsWith(`.${sec.title}`)) {
     const i = +path.split(".")[1];
     e.target.closest(".item").querySelector(".item-title").textContent = itemTitle(sec, content[sec.key][i], i);
   }
@@ -223,7 +270,7 @@ document.addEventListener("change", async e => {
   }
 
   if (t.dataset.bulk) {
-    const sec = sectionOf(current);
+    const sec = currentSection();
     const files = [...t.files];
     let done = 0;
     for (const file of files) {
@@ -242,11 +289,17 @@ document.addEventListener("click", async e => {
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
   const action = btn.dataset.action;
-  const sec = sectionOf(current);
+  const sec = currentSection();
   const items = sec && content?.[sec.key];
   const i = +btn.dataset.index;
 
-  if (action === "section") { current = btn.dataset.key; renderNav(); renderEditor(); window.scrollTo(0, 0); return; }
+  if (action === "section") { current = btn.dataset.id; renderNav(); renderEditor(); window.scrollTo(0, 0); return; }
+  if (action === "toggle") {
+    const m = btn.dataset.menu;
+    openMenus.has(m) ? openMenus.delete(m) : openMenus.add(m);
+    renderNav();
+    return;
+  }
   if (action === "add") {
     const blank = Object.fromEntries(sec.fields.map(([n, , type]) => [n, type === "date" ? new Date().toISOString().slice(0, 10) : ""]));
     items.unshift(blank);
