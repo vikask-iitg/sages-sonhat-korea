@@ -50,12 +50,6 @@ const SECTIONS = [
   { key: "gallery", label: "Photo Gallery", list: true, title: "caption", bulk: "image", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image"], ["caption", "Caption"]] },
 
   { group: "Pages" },
-  { key: "homeHub", label: "Home", hub: [
-    ["home", "Headings & counts"], ["slides", "Banner slider"], ["features", "Feature boxes"], ["intro", "Introduction"],
-    ["notices", "Important notices"], ["news", "Latest news"], ["events", "Upcoming events"], ["principal", "Principal's message"],
-    ["stats", "Numbers (students, staff…)"], ["levels", "Education system cards"], ["faculty", "Faculty"], ["stars", "Star performers"],
-    ["gallery", "Photo gallery"], ["partners", "Partners"], ["cta", "Admission banner"], ["ticker", "Scrolling top notices"],
-  ] },
   { key: "about", label: "About Us", fields: [
     ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image"], ["vision", "Vision", "textarea"],
     ["mission", "Mission (one point per line)", "textarea"], ["atmanand", "About Swami Atmanand", "textarea"],
@@ -145,12 +139,7 @@ function itemTitle(sec, item, i) {
 function renderEditor() {
   const sec = sectionOf(current);
   let body;
-  if (sec.hub) {
-    // A hub only links to other sections, in the order they appear on the page.
-    body = `<p class="hint">Everything shown on the home page, top to bottom. Click a part to edit it.</p>
-      <div class="hub">${sec.hub.map(([key, label], i) =>
-        `<button data-action="section" data-key="${key}"><span>${i + 1}</span>${esc(label)}</button>`).join("")}</div>`;
-  } else if (sec.list) {
+  if (sec.list) {
     if (!Array.isArray(content[sec.key])) content[sec.key] = [];
     const items = content[sec.key];
     body = `
