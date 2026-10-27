@@ -55,7 +55,6 @@ const MENU = [
   },
   { label: "News & Events", href: "news.html" },
   { label: "Gallery", href: "gallery.html" },
-  { label: "Public Disclosure", href: "disclosure.html" },
   { label: "Contact Us", href: "contact.html" },
 ];
 
