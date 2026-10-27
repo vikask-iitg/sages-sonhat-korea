@@ -46,7 +46,7 @@ button, input, textarea { font: inherit; }
 .layout { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 58px); }
 .sidebar { background: #fff; border-right: 1px solid var(--border); padding: 12px 0; position: sticky; top: 58px;
   height: calc(100vh - 58px); overflow-y: auto; }
-.sidebar .group { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding: 14px 18px 6px; }
+.sidebar .group { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #800000; padding: 16px 18px 6px; }
 .sidebar button { display: block; width: 100%; text-align: left; padding: 8px 18px; border: 0; background: none; cursor: pointer; color: var(--text); }
 .sidebar button:hover { background: var(--bg); }
 .sidebar button.active { background: #e6edf9; color: var(--primary); font-weight: 600; border-left: 3px solid var(--accent); }
