@@ -52,7 +52,7 @@ const SECTIONS = [
     ["mission", "Mission (one point per line)", "textarea"], ["atmanand", "About Swami Atmanand", "textarea"],
   ] },
   { key: "admission", label: "Admission Details", fields: [["note", "Important note", "textarea"], ["eligibility", "Eligibility (one point per line)", "textarea"], ["documents", "Documents required (one per line)", "textarea"]] },
-  { key: "admissionForm", store: "admission", label: "Admission Form (PDF)", hint: "Shown as the “Download Admission Form” button on the Admission page. Remove the file to hide the button.", fields: [["formPdf", "Admission form PDF (max 4 MB)", "pdf"]] },
+  { key: "admissionForm", store: "admission", label: "Admission Form (PDF)", hint: "Shown as the “Download Admission Form” button on the Admission page. Remove the file to hide the button.", fields: [["formPdf", "Admission form", "pdf"]] },
   { key: "admissionSteps", label: "Admission Steps", list: true, title: "title", fields: [["title", "Step title"], ["text", "Description", "textarea"]] },
   { key: "curriculum", label: "Classes & Curriculum", list: true, title: "level", fields: [["level", "Level"], ["classes", "Classes"], ["subjects", "Subjects", "textarea"]] },
   { key: "results", label: "Board Results", list: true, title: "year", fields: [["year", "Year"], ["className", "Class"], ["appeared", "Appeared"], ["passed", "Passed"], ["percent", "Pass %"]] },
@@ -164,16 +164,23 @@ function fieldHtml([name, label, type = "text", option], path) {
     return `<label class="field"><span>${esc(label)}</span><textarea data-path="${path}" rows="${String(value).length > 200 ? 8 : 3}">${esc(value)}</textarea></label>`;
   }
   if (type === "pdf") {
-    const preview = value ? `<a href="${esc(value)}" target="_blank" rel="noopener">📄 Open PDF</a>` : `<div class="noimg">No file</div>`;
-    return `<div class="field media"><span>${esc(label)}</span>
-      <div class="media-row">
-        <div class="preview">${preview}</div>
-        <div class="media-actions">
-          <label class="btn-sm primary">Upload PDF
-            <input type="file" hidden accept="application/pdf" data-upload="${path}"></label>
+    // Show a readable file name: drop the folder and the random suffix storage adds.
+    const name = decodeURIComponent(String(value).split("/").pop().split("?")[0]).replace(/-[A-Za-z0-9]{30}(?=\.pdf$)/i, "");
+    return `<div class="field"><span>${esc(label)}</span>
+      <div class="pdf-card${value ? "" : " empty"}">
+        <div class="pdf-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><b>PDF</b></div>
+        <div class="pdf-info">${value
+          ? `<strong>${esc(name)}</strong><small>Downloaded by visitors from the website</small>`
+          : `<strong>No PDF uploaded</strong><small>The download button is hidden until a PDF is added</small>`}</div>
+        <div class="pdf-actions">
+          ${value ? `<a class="btn-sm pdf-view" href="${esc(value)}" target="_blank" rel="noopener">View</a>` : ""}
+          <label class="btn-sm primary">${value ? "Replace PDF" : "Upload PDF"}
+            <input type="file" hidden accept="application/pdf,.pdf" data-upload="${path}" data-pdf-only="1"></label>
           ${value ? `<button class="btn-sm danger" data-action="clear" data-path="${path}">Remove</button>` : ""}
         </div>
-      </div></div>`;
+      </div>
+      <small class="size-hint">Only PDF files · max 4 MB</small>
+    </div>`;
   }
   if (type === "image") {
     // option = the aspect ratio the website shows this photo at; uploads are cropped to it.
@@ -371,6 +378,10 @@ document.addEventListener("change", async e => {
     let file = t.files[0];
     t.value = ""; // allow choosing the same file again
     if (!file) return;
+    if (t.dataset.pdfOnly && !(file.type === "application/pdf" || /\.pdf$/i.test(file.name))) {
+      toast("Only PDF files can be uploaded here.", true);
+      return;
+    }
     const ratio = Number(t.dataset.ratio);
     const label = t.closest("label");
     try {

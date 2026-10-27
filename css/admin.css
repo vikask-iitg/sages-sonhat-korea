@@ -186,3 +186,20 @@ button, input, select, textarea { font: inherit; }
 .bar .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; padding: 0 16px;
   font-size: 13px; font-weight: 600; line-height: 1; white-space: nowrap; box-sizing: border-box; }
 .bar .btn.primary:disabled { opacity: 1; background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); color: #9fb0cc; }
+
+/* PDF file card */
+.pdf-card { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: #fff; flex-wrap: wrap; }
+.pdf-card.empty { border-style: dashed; background: #fafbfd; }
+.pdf-icon { position: relative; width: 44px; height: 52px; flex-shrink: 0; color: #d32f2f; }
+.pdf-icon svg { width: 100%; height: 100%; fill: #fdecea; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+.pdf-icon b { position: absolute; left: 50%; bottom: 9px; transform: translateX(-50%); background: #d32f2f; color: #fff; font-size: 9px; letter-spacing: .5px; padding: 1px 5px; border-radius: 3px; }
+.pdf-card.empty .pdf-icon { color: #b0bccc; }
+.pdf-card.empty .pdf-icon svg { fill: #f1f4f9; }
+.pdf-card.empty .pdf-icon b { background: #b0bccc; }
+.pdf-info { flex: 1; min-width: 180px; }
+.pdf-info strong { display: block; color: var(--primary-dark); word-break: break-all; }
+.pdf-info small { color: var(--muted); font-size: 12px; }
+.pdf-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pdf-view { text-decoration: none; }
+/* Viewing the file is harmless, so it stays usable while the page is locked. */
+.edit-area:disabled .pdf-view { opacity: 1; pointer-events: auto; cursor: pointer; }
