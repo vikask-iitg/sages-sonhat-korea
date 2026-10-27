@@ -145,8 +145,6 @@ function renderNav() {
   const icon = label => `<span class="nav-icon">${style(label)[0]}</span>`;
   const link = l => `<button data-action="section" data-id="${l.id}" class="nav-item${l.id === current ? " active" : ""}" style="--c:${style(l.label)[1]}">${icon(l.label)}<span class="nav-label">${esc(l.label)}</span></button>`;
   const sub = l => `<button data-action="section" data-id="${l.id}" class="sub${l.id === current ? " active" : ""}">${esc(l.label)}</button>`;
-  // Keep the dropdown holding the current page open.
-  if (LEAVES[current].menu) openMenus.add(LEAVES[current].menu);
   $("#sections").innerHTML = NAV.map((g, gi) => `<div class="group">${esc(g.group)}</div>` + g.items.map((it, ii) => {
     if (!it.menu) return link(LEAVES[`${gi}.${ii}`]);
     const open = openMenus.has(it.menu);
@@ -382,7 +380,12 @@ document.addEventListener("click", async e => {
   const items = sec && content?.[sec.key];
   const i = +btn.dataset.index;
 
-  if (action === "section") { current = btn.dataset.id; renderNav(); renderEditor(); window.scrollTo(0, 0); return; }
+  if (action === "section") {
+    current = btn.dataset.id;
+    // Open the dropdown holding the chosen page; after that the admin can close it freely.
+    if (LEAVES[current].menu) openMenus.add(LEAVES[current].menu);
+    renderNav(); renderEditor(); window.scrollTo(0, 0); return;
+  }
   if (action === "toggle") {
     const m = btn.dataset.menu;
     openMenus.has(m) ? openMenus.delete(m) : openMenus.add(m);
