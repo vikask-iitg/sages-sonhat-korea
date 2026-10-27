@@ -142,6 +142,9 @@ function textWithImage(title, text, image, imageFirst = false) {
 
 const lookup = (c, path) => path.split(".").reduce((o, k) => o?.[k], c);
 // Admin-set count wins over the page's default; blank or 0 means use the default.
+const personCards = people => people.map(t =>
+  `<div class="person reveal">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
+
 const limitOf = (el, c) => Number(el.dataset.limitKey && lookup(c, el.dataset.limitKey)) || Number(el.dataset.limit) || Infinity;
 
 // ---------- renderers ----------
@@ -220,7 +223,7 @@ const RENDER = {
     const people = el.dataset.withPrincipal
       ? [{ name: p.name, designation: "Principal", photo: p.photo }, ...list(c.faculty)]
       : list(c.faculty);
-    return people.slice(0, limitOf(el, c)).map(t => `<div class="person reveal">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
+    return personCards(people.slice(0, limitOf(el, c)));
   },
 
   stars: c => list(c.stars).map(s => `<div class="person star reveal">${avatar(s.name, s.photo)}<h4>${esc(s.name)}</h4><span>${esc(s.className)}</span><br><span class="score">${esc(s.score)}</span></div>`).join(""),
@@ -237,7 +240,7 @@ const RENDER = {
   atmanand: c => paras(c.about?.atmanand),
 
   smc: c => table(["S.No.", "Name", "Designation"], list(c.smc).map((r, i) => [i + 1, esc(r.name), esc(r.designation)])),
-  staff: c => table(["S.No.", "Name", "Designation"], list(c.staff).map((r, i) => [i + 1, esc(r.name), esc(r.designation)])),
+  staff: c => personCards(list(c.staff)),
   pta: c => paras(c.pta?.text),
 
   admissionSteps: c => list(c.admissionSteps).map((s, i) => `<div class="feature"><div class="step-no">${i + 1}</div><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>`).join(""),

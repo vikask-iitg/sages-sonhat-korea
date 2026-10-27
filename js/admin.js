@@ -44,7 +44,7 @@ const SECTIONS = [
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
   { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
-  { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
+  { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["designation", "Designation"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
 
   { key: "about", label: "About Us", fields: [

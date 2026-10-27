@@ -372,19 +372,23 @@
   "staff": [
     {
       "name": "[Name]",
-      "designation": "Assistant Grade 2"
+      "designation": "Assistant Grade 2",
+      "photo": ""
     },
     {
       "name": "[Name]",
-      "designation": "Assistant Grade 3"
+      "designation": "Assistant Grade 3",
+      "photo": ""
     },
     {
       "name": "[Name]",
-      "designation": "Librarian"
+      "designation": "Librarian",
+      "photo": ""
     },
     {
       "name": "[Name]",
-      "designation": "Peon"
+      "designation": "Peon",
+      "photo": ""
     }
   ],
   "pta": {
