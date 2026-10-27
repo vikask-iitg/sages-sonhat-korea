@@ -119,7 +119,9 @@ function textWithImage(title, text, image, imageFirst = false) {
   return imageFirst ? img + body : body + img;
 }
 
-const limitOf = el => Number(el.dataset.limit) || Infinity;
+const lookup = (c, path) => path.split(".").reduce((o, k) => o?.[k], c);
+// Admin-set count wins over the page's default; blank or 0 means use the default.
+const limitOf = (el, c) => Number(el.dataset.limitKey && lookup(c, el.dataset.limitKey)) || Number(el.dataset.limit) || Infinity;
 
 // ---------- renderers ----------
 const RENDER = {
@@ -160,7 +162,7 @@ const RENDER = {
         <div class="name-tag">${esc(p.name)}<small>Principal, SAGES Sonhat</small></div>
       </div>
       <div class="reveal">
-        <div class="section-title" style="text-align:left;margin-bottom:10px"><span>From the Desk of</span><h2>Principal's Message</h2></div>
+        <div class="section-title" style="text-align:left;margin-bottom:10px"><span>${esc(c.home?.principalKicker || "From the Desk of")}</span><h2>${esc(c.home?.principalTitle || "Principal's Message")}</h2></div>
         ${p.quote ? `<blockquote>“${esc(p.quote)}”</blockquote>` : ""}
         ${paras(first)}
         <a href="administration.html#principal" class="btn btn-outline">Read More</a>
@@ -192,12 +194,12 @@ const RENDER = {
     const people = el.dataset.withPrincipal
       ? [{ name: p.name, designation: "Principal", photo: p.photo }, ...list(c.faculty)]
       : list(c.faculty);
-    return people.slice(0, limitOf(el)).map(t => `<div class="person reveal">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
+    return people.slice(0, limitOf(el, c)).map(t => `<div class="person reveal">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
   },
 
   stars: c => list(c.stars).map(s => `<div class="person star reveal">${avatar(s.name, s.photo)}<h4>${esc(s.name)}</h4><span>${esc(s.className)}</span><br><span class="score">${esc(s.score)}</span></div>`).join(""),
 
-  gallery: (c, el) => list(c.gallery).slice(0, limitOf(el)).map(g => `<a href="${esc(g.image)}"><img src="${esc(g.image)}" alt="${esc(g.caption)}" loading="lazy"><span>${esc(g.caption)}</span></a>`).join(""),
+  gallery: (c, el) => list(c.gallery).slice(0, limitOf(el, c)).map(g => `<a href="${esc(g.image)}"><img src="${esc(g.image)}" alt="${esc(g.caption)}" loading="lazy"><span>${esc(g.caption)}</span></a>`).join(""),
 
   partners: c => list(c.partners).map(p => `<a class="partner" href="${esc(p.link)}" target="_blank" rel="noopener"><div class="icon">${esc(p.icon)}</div>${esc(p.name)}</a>`).join(""),
 
@@ -343,9 +345,17 @@ function renderFooter(c) {
 }
 
 function renderSections(c) {
+  document.querySelectorAll("[data-text]").forEach(el => {
+    const value = lookup(c, el.dataset.text);
+    if (value) el.textContent = value;
+  });
   document.querySelectorAll("[data-render]").forEach(el => {
     const fn = RENDER[el.dataset.render];
-    if (fn) el.innerHTML = fn(c, el);
+    if (!fn) return;
+    el.innerHTML = fn(c, el);
+    // Hide a whole block when the admin has removed every item from its list.
+    const wrapper = el.closest("[data-section]");
+    if (wrapper) wrapper.hidden = !el.querySelector(".slide, .feature, .stat, .card, .person, a");
   });
 }
 

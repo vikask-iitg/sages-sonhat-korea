@@ -13,9 +13,12 @@
 <body>
   <div id="site-header"></div>
 
-  <div class="hero" data-render="slides"></div>
+  <!-- data-text="home.x" fills headings from the admin-editable "home" section;
+       the text written here is the fallback. data-section wrappers hide when their list is empty. -->
 
-  <div class="container">
+  <div class="hero" data-section data-render="slides"></div>
+
+  <div class="container" data-section>
     <div class="features" data-render="features"></div>
   </div>
 
@@ -25,18 +28,18 @@
 
   <section class="bg-soft">
     <div class="container">
-      <div class="section-title"><span>Stay Updated</span><h2>Notice Board</h2></div>
+      <div class="section-title"><span data-text="home.noticeKicker">Stay Updated</span><h2 data-text="home.noticeTitle">Notice Board</h2></div>
       <div class="three-col">
         <div class="panel reveal">
-          <div class="panel-head"><h3>📢 Important Notices</h3><a href="news.html#notices">View All</a></div>
+          <div class="panel-head"><h3 data-text="home.noticesHeading">📢 Important Notices</h3><a href="news.html#notices">View All</a></div>
           <div class="panel-body auto-scroll"><ul class="scroll-list" data-render="notices" data-variant="scroll" data-link="news.html"></ul></div>
         </div>
         <div class="panel reveal">
-          <div class="panel-head"><h3>📰 Latest News</h3><a href="news.html#news">View All</a></div>
+          <div class="panel-head"><h3 data-text="home.newsHeading">📰 Latest News</h3><a href="news.html#news">View All</a></div>
           <div class="panel-body"><ul class="scroll-list" data-render="news" data-link="news.html"></ul></div>
         </div>
         <div class="panel reveal">
-          <div class="panel-head"><h3>📅 Upcoming Events</h3><a href="news.html#events">View All</a></div>
+          <div class="panel-head"><h3 data-text="home.eventsHeading">📅 Upcoming Events</h3><a href="news.html#events">View All</a></div>
           <div class="panel-body"><ul class="scroll-list" data-render="events" data-link="news.html"></ul></div>
         </div>
       </div>
@@ -47,43 +50,43 @@
     <div class="container principal" data-render="principalHome"></div>
   </section>
 
-  <div class="stats">
+  <div class="stats" data-section>
     <div class="container" data-render="stats"></div>
   </div>
 
-  <section class="bg-soft">
+  <section class="bg-soft" data-section>
     <div class="container">
-      <div class="section-title"><span>What We Offer</span><h2>Our Education System Works for You</h2></div>
+      <div class="section-title"><span data-text="home.levelsKicker">What We Offer</span><h2 data-text="home.levelsTitle">Our Education System Works for You</h2></div>
       <div class="card-grid" data-render="levels"></div>
     </div>
   </section>
 
-  <section>
+  <section data-section>
     <div class="container">
-      <div class="section-title"><span>Meet Our Team</span><h2>Our Faculty</h2></div>
-      <div class="faculty-grid" data-render="faculty" data-with-principal="1" data-limit="4"></div>
+      <div class="section-title"><span data-text="home.facultyKicker">Meet Our Team</span><h2 data-text="home.facultyTitle">Our Faculty</h2></div>
+      <div class="faculty-grid" data-render="faculty" data-with-principal="1" data-limit="4" data-limit-key="home.facultyCount"></div>
       <p style="text-align:center;margin-top:30px"><a href="administration.html#faculty" class="btn btn-outline">View All Faculty</a></p>
     </div>
   </section>
 
-  <section class="bg-soft">
+  <section class="bg-soft" data-section>
     <div class="container">
-      <div class="section-title"><span>⭐ Pride of SAGES Sonhat</span><h2>Our Star Performers</h2></div>
+      <div class="section-title"><span data-text="home.starsKicker">⭐ Pride of SAGES Sonhat</span><h2 data-text="home.starsTitle">Our Star Performers</h2></div>
       <div class="faculty-grid" data-render="stars"></div>
     </div>
   </section>
 
-  <section>
+  <section data-section>
     <div class="container">
-      <div class="section-title"><span>Moments</span><h2>Photo Gallery</h2></div>
-      <div class="gallery" data-render="gallery" data-limit="4"></div>
+      <div class="section-title"><span data-text="home.galleryKicker">Moments</span><h2 data-text="home.galleryTitle">Photo Gallery</h2></div>
+      <div class="gallery" data-render="gallery" data-limit="4" data-limit-key="home.galleryCount"></div>
       <p style="text-align:center;margin-top:30px"><a href="gallery.html" class="btn btn-outline">View Full Gallery</a></p>
     </div>
   </section>
 
-  <section class="bg-soft">
+  <section class="bg-soft" data-section>
     <div class="container">
-      <div class="section-title"><span>Supported By</span><h2>Our Partners</h2></div>
+      <div class="section-title"><span data-text="home.partnersKicker">Supported By</span><h2 data-text="home.partnersTitle">Our Partners</h2></div>
       <div class="partners" data-render="partners"></div>
     </div>
   </section>

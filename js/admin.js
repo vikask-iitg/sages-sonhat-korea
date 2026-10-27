@@ -11,6 +11,16 @@ const SECTIONS = [
   { key: "cta", label: "Admission Banner", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
   { group: "Home Page" },
+  { key: "home", label: "Home Page Headings", hint: "Small label = the coloured text above each heading. Empty sections hide automatically.", fields: [
+    ["noticeKicker", "Notice Board – small label"], ["noticeTitle", "Notice Board – heading"],
+    ["noticesHeading", "Notices box title"], ["newsHeading", "News box title"], ["eventsHeading", "Events box title"],
+    ["principalKicker", "Principal – small label"], ["principalTitle", "Principal – heading"],
+    ["levelsKicker", "Education cards – small label"], ["levelsTitle", "Education cards – heading"],
+    ["facultyKicker", "Faculty – small label"], ["facultyTitle", "Faculty – heading"], ["facultyCount", "How many people to show on home page (incl. principal)", "number"],
+    ["starsKicker", "Star Performers – small label"], ["starsTitle", "Star Performers – heading"],
+    ["galleryKicker", "Gallery – small label"], ["galleryTitle", "Gallery – heading"], ["galleryCount", "How many photos to show on home page", "number"],
+    ["partnersKicker", "Partners – small label"], ["partnersTitle", "Partners – heading"],
+  ] },
   { key: "slides", label: "Banner Slider", list: true, title: "title", fields: [
     ["image", "Background photo", "image"], ["title", "Heading"], ["text", "Sub-text", "textarea"], ["buttonText", "Button text"], ["buttonLink", "Button link"],
   ] },
@@ -40,6 +50,12 @@ const SECTIONS = [
   { key: "gallery", label: "Photo Gallery", list: true, title: "caption", bulk: "image", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image"], ["caption", "Caption"]] },
 
   { group: "Pages" },
+  { key: "homeHub", label: "Home", hub: [
+    ["home", "Headings & counts"], ["slides", "Banner slider"], ["features", "Feature boxes"], ["intro", "Introduction"],
+    ["notices", "Important notices"], ["news", "Latest news"], ["events", "Upcoming events"], ["principal", "Principal's message"],
+    ["stats", "Numbers (students, staff…)"], ["levels", "Education system cards"], ["faculty", "Faculty"], ["stars", "Star performers"],
+    ["gallery", "Photo gallery"], ["partners", "Partners"], ["cta", "Admission banner"], ["ticker", "Scrolling top notices"],
+  ] },
   { key: "about", label: "About Us", fields: [
     ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image"], ["vision", "Vision", "textarea"],
     ["mission", "Mission (one point per line)", "textarea"], ["atmanand", "About Swami Atmanand", "textarea"],
@@ -129,7 +145,12 @@ function itemTitle(sec, item, i) {
 function renderEditor() {
   const sec = sectionOf(current);
   let body;
-  if (sec.list) {
+  if (sec.hub) {
+    // A hub only links to other sections, in the order they appear on the page.
+    body = `<p class="hint">Everything shown on the home page, top to bottom. Click a part to edit it.</p>
+      <div class="hub">${sec.hub.map(([key, label], i) =>
+        `<button data-action="section" data-key="${key}"><span>${i + 1}</span>${esc(label)}</button>`).join("")}</div>`;
+  } else if (sec.list) {
     if (!Array.isArray(content[sec.key])) content[sec.key] = [];
     const items = content[sec.key];
     body = `
@@ -298,10 +319,17 @@ function showLogin(keepContent = false) {
 }
 
 async function loadContent() {
+  const defaults = await (await fetch("data/content.json", { cache: "no-store" })).json();
   // Unique query skips the short edge cache, so the editor always starts from the latest save.
   const res = await fetch(`/api/content?t=${Date.now()}`, { cache: "no-store" });
-  if (res.ok) return res.json();
-  return (await fetch("data/content.json", { cache: "no-store" })).json();
+  if (!res.ok) return defaults;
+  const saved = await res.json();
+  // Sections added to the site after the last save start from their defaults.
+  for (const [key, value] of Object.entries(defaults)) {
+    if (!(key in saved)) saved[key] = value;
+    else if (value && typeof value === "object" && !Array.isArray(value)) saved[key] = { ...value, ...saved[key] };
+  }
+  return saved;
 }
 
 async function showApp() {

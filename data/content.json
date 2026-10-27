@@ -7,6 +7,27 @@
     "hoursSaturday": "Saturday: 7:00 AM – 12:00 PM",
     "footerAbout": "A Swami Atmanand Utkrisht Vidyalaya of the Government of Chhattisgarh, offering quality English-medium education, free of cost, to the children of Sonhat and surrounding villages."
   },
+  "home": {
+    "noticeKicker": "Stay Updated",
+    "noticeTitle": "Notice Board",
+    "noticesHeading": "📢 Important Notices",
+    "newsHeading": "📰 Latest News",
+    "eventsHeading": "📅 Upcoming Events",
+    "principalKicker": "From the Desk of",
+    "principalTitle": "Principal's Message",
+    "levelsKicker": "What We Offer",
+    "levelsTitle": "Our Education System Works for You",
+    "facultyKicker": "Meet Our Team",
+    "facultyTitle": "Our Faculty",
+    "facultyCount": "4",
+    "starsKicker": "⭐ Pride of SAGES Sonhat",
+    "starsTitle": "Our Star Performers",
+    "galleryKicker": "Moments",
+    "galleryTitle": "Photo Gallery",
+    "galleryCount": "4",
+    "partnersKicker": "Supported By",
+    "partnersTitle": "Our Partners"
+  },
   "ticker": [
     {
       "text": "Admissions open for Session 2026-27 — collect forms from the school office"
