@@ -4,8 +4,7 @@
 const SECTIONS = [
   { group: "General" },
   { key: "site", label: "School Details", fields: [
-    ["name", "School name (English)"], ["hindi", "School name (Hindi)"], ["place", "Location line under the name"],
-    ["logo", "Logo", "image"], ["address", "Full address"], ["email", "Email"], ["phone", "Phone"],
+    ["address", "Full address"], ["email", "Email"], ["phone", "Phone"],
     ["hoursWeekday", "Timings – weekdays"], ["hoursSaturday", "Timings – Saturday"], ["footerAbout", "Footer 'About the School' text", "textarea"],
   ] },
   { key: "ticker", label: "Scrolling Top Notices", list: true, title: "text", fields: [["text", "Notice text"]] },

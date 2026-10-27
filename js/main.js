@@ -51,7 +51,15 @@ const MENU = [
   { label: "Contact Us", href: "contact.html" },
 ];
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// School identity is fixed here on purpose and is not editable from the admin panel.
+const IDENTITY = {
+  name: "Swami Atmanand Government English Medium School",
+  hindi: "स्वामी आत्मानंद शासकीय अंग्रेजी माध्यम विद्यालय",
+  place: "Sonhat, District - Koriya, Chhattisgarh",
+  logo: "images/logo.png",
+};
+
+const MONTHS =["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 async function loadContent() {
   try {
@@ -266,7 +274,7 @@ function renderHeader(c) {
     <header class="site-header">
       <div class="container">
         <a href="index.html" class="logo" aria-label="Home">
-          <img src="${esc(s.logo || "images/logo.png")}" alt="School logo"
+          <img src="${esc(s.logo)}" alt="School logo"
             onerror="this.parentElement.classList.remove('has-img'); this.remove()"
             onload="this.parentElement.classList.add('has-img')">
           SAGES<small>SONHAT</small></a>
@@ -439,6 +447,7 @@ function initForms() {
 
 (async function init() {
   const content = await loadContent();
+  content.site = { ...content.site, ...IDENTITY };
   renderHeader(content);
   renderFooter(content);
   renderSections(content);

@@ -1,9 +1,5 @@
 {
   "site": {
-    "name": "Swami Atmanand Government English Medium School",
-    "hindi": "स्वामी आत्मानंद शासकीय अंग्रेजी माध्यम विद्यालय",
-    "place": "Sonhat, District - Koriya, Chhattisgarh",
-    "logo": "images/logo.png",
     "address": "Sonhat, District - Koriya, Chhattisgarh - 497449",
     "email": "sagessonhat@gmail.com",
     "phone": "+91 00000 00000",
@@ -12,20 +8,60 @@
     "footerAbout": "A Swami Atmanand Utkrisht Vidyalaya of the Government of Chhattisgarh, offering quality English-medium education, free of cost, to the children of Sonhat and surrounding villages."
   },
   "ticker": [
-    { "text": "Admissions open for Session 2026-27 — collect forms from the school office" },
-    { "text": "Half-yearly examination time table published — see Academic › School Calendar" },
-    { "text": "Rajyotsava celebrations on 1st November — all students to report on time" }
+    {
+      "text": "Admissions open for Session 2026-27 — collect forms from the school office"
+    },
+    {
+      "text": "Half-yearly examination time table published — see Academic › School Calendar"
+    },
+    {
+      "text": "Rajyotsava celebrations on 1st November — all students to report on time"
+    }
   ],
   "slides": [
-    { "title": "Welcome to Swami Atmanand Govt. English Medium School, Sonhat", "text": "Quality English-medium education, free for every child — right here in Sonhat, Koriya.", "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&q=70", "buttonText": "Admissions 2026-27", "buttonLink": "admission.html" },
-    { "title": "Learning Beyond Classrooms", "text": "Smart classes, modern science and computer labs, and a well-stocked library.", "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&q=70", "buttonText": "Explore Facilities", "buttonLink": "infrastructure.html" },
-    { "title": "Shaping Confident Young Minds", "text": "Sports, cultural and technical activities that build character and leadership.", "image": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1600&q=70", "buttonText": "Our Activities", "buttonLink": "activities.html" }
+    {
+      "title": "Welcome to Swami Atmanand Govt. English Medium School, Sonhat",
+      "text": "Quality English-medium education, free for every child — right here in Sonhat, Koriya.",
+      "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&q=70",
+      "buttonText": "Admissions 2026-27",
+      "buttonLink": "admission.html"
+    },
+    {
+      "title": "Learning Beyond Classrooms",
+      "text": "Smart classes, modern science and computer labs, and a well-stocked library.",
+      "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&q=70",
+      "buttonText": "Explore Facilities",
+      "buttonLink": "infrastructure.html"
+    },
+    {
+      "title": "Shaping Confident Young Minds",
+      "text": "Sports, cultural and technical activities that build character and leadership.",
+      "image": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1600&q=70",
+      "buttonText": "Our Activities",
+      "buttonLink": "activities.html"
+    }
   ],
   "features": [
-    { "icon": "🎓", "title": "Free Quality Education", "text": "No fees. Free textbooks, uniforms and scholarships as per Government of Chhattisgarh norms." },
-    { "icon": "👩‍🏫", "title": "Skilled Teachers", "text": "Qualified, trained faculty teaching through English with care for every child." },
-    { "icon": "💻", "title": "High-Tech Classes", "text": "Smart boards, ICT lab and digital content that make learning engaging." },
-    { "icon": "🔬", "title": "Modern Laboratories", "text": "Physics, Chemistry, Biology and Computer labs for hands-on learning." }
+    {
+      "icon": "🎓",
+      "title": "Free Quality Education",
+      "text": "No fees. Free textbooks, uniforms and scholarships as per Government of Chhattisgarh norms."
+    },
+    {
+      "icon": "👩‍🏫",
+      "title": "Skilled Teachers",
+      "text": "Qualified, trained faculty teaching through English with care for every child."
+    },
+    {
+      "icon": "💻",
+      "title": "High-Tech Classes",
+      "text": "Smart boards, ICT lab and digital content that make learning engaging."
+    },
+    {
+      "icon": "🔬",
+      "title": "Modern Laboratories",
+      "text": "Physics, Chemistry, Biology and Computer labs for hands-on learning."
+    }
   ],
   "intro": {
     "title": "Swami Atmanand Government English Medium School",
@@ -33,22 +69,58 @@
     "image": "https://images.unsplash.com/photo-1588072432836-e10032774350?w=900&q=70"
   },
   "notices": [
-    { "date": "2026-10-25", "text": "Admission forms for Session 2026-27 available at the school office." },
-    { "date": "2026-10-20", "text": "Half-yearly examination time table for Classes 1–12 published." },
-    { "date": "2026-10-15", "text": "Parent–Teacher Meeting on Saturday, 8th November at 10:00 AM." },
-    { "date": "2026-10-05", "text": "Scholarship forms: submit documents to class teacher by 31st October." }
+    {
+      "date": "2026-10-25",
+      "text": "Admission forms for Session 2026-27 available at the school office."
+    },
+    {
+      "date": "2026-10-20",
+      "text": "Half-yearly examination time table for Classes 1–12 published."
+    },
+    {
+      "date": "2026-10-15",
+      "text": "Parent–Teacher Meeting on Saturday, 8th November at 10:00 AM."
+    },
+    {
+      "date": "2026-10-05",
+      "text": "Scholarship forms: submit documents to class teacher by 31st October."
+    }
   ],
   "news": [
-    { "date": "2026-10-02", "text": "Gandhi Jayanti celebrated with a cleanliness drive across the campus." },
-    { "date": "2026-09-15", "text": "Students win prizes at the district-level science exhibition." },
-    { "date": "2026-08-29", "text": "National Sports Day: inter-house athletics meet held." },
-    { "date": "2026-08-15", "text": "Independence Day celebrated with cultural programmes." }
+    {
+      "date": "2026-10-02",
+      "text": "Gandhi Jayanti celebrated with a cleanliness drive across the campus."
+    },
+    {
+      "date": "2026-09-15",
+      "text": "Students win prizes at the district-level science exhibition."
+    },
+    {
+      "date": "2026-08-29",
+      "text": "National Sports Day: inter-house athletics meet held."
+    },
+    {
+      "date": "2026-08-15",
+      "text": "Independence Day celebrated with cultural programmes."
+    }
   ],
   "events": [
-    { "date": "2026-11-01", "text": "Chhattisgarh Rajyotsava celebration" },
-    { "date": "2026-11-14", "text": "Children's Day — Bal Mela & cultural programme" },
-    { "date": "2026-11-26", "text": "Constitution Day — essay & quiz competition" },
-    { "date": "2027-01-12", "text": "Annual Sports Meet (Swami Vivekananda Jayanti)" }
+    {
+      "date": "2026-11-01",
+      "text": "Chhattisgarh Rajyotsava celebration"
+    },
+    {
+      "date": "2026-11-14",
+      "text": "Children's Day — Bal Mela & cultural programme"
+    },
+    {
+      "date": "2026-11-26",
+      "text": "Constitution Day — essay & quiz competition"
+    },
+    {
+      "date": "2027-01-12",
+      "text": "Annual Sports Meet (Swami Vivekananda Jayanti)"
+    }
   ],
   "principal": {
     "name": "[Principal's Name]",
@@ -59,51 +131,183 @@
     "message": "Dear students and parents, welcome to Swami Atmanand Government English Medium School, Sonhat. Our aim is to provide every child with quality education rooted in strong values, so that they grow into confident, responsible and compassionate citizens.\n\nWe believe each child is unique. Our teachers work to understand the needs of every student and help them discover their potential — in academics, sports, arts and life skills.\n\nI thank our parents, the School Management Committee and the district administration for their continued support, and I invite everyone to join hands in building a bright future for our children."
   },
   "stats": [
-    { "value": "850", "suffix": "+", "label": "Students" },
-    { "value": "40", "suffix": "+", "label": "Teachers & Staff" },
-    { "value": "12", "suffix": "", "label": "Classes (1st – 12th)" },
-    { "value": "6", "suffix": "", "label": "Laboratories" }
+    {
+      "value": "850",
+      "suffix": "+",
+      "label": "Students"
+    },
+    {
+      "value": "40",
+      "suffix": "+",
+      "label": "Teachers & Staff"
+    },
+    {
+      "value": "12",
+      "suffix": "",
+      "label": "Classes (1st – 12th)"
+    },
+    {
+      "value": "6",
+      "suffix": "",
+      "label": "Laboratories"
+    }
   ],
   "levels": [
-    { "title": "Primary (1–5)", "text": "Activity-based, joyful learning with a strong foundation in English, Hindi and numeracy.", "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=70" },
-    { "title": "Middle (6–8)", "text": "Concept-building in science, maths and social studies with projects and lab work.", "image": "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=70" },
-    { "title": "Secondary (9–10)", "text": "Board exam preparation, regular tests, remedial classes and career guidance.", "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=70" },
-    { "title": "Higher Secondary (11–12)", "text": "Science, Commerce and Arts streams with preparation for competitive exams.", "image": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=70" }
+    {
+      "title": "Primary (1–5)",
+      "text": "Activity-based, joyful learning with a strong foundation in English, Hindi and numeracy.",
+      "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=70"
+    },
+    {
+      "title": "Middle (6–8)",
+      "text": "Concept-building in science, maths and social studies with projects and lab work.",
+      "image": "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=70"
+    },
+    {
+      "title": "Secondary (9–10)",
+      "text": "Board exam preparation, regular tests, remedial classes and career guidance.",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=70"
+    },
+    {
+      "title": "Higher Secondary (11–12)",
+      "text": "Science, Commerce and Arts streams with preparation for competitive exams.",
+      "image": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=70"
+    }
   ],
   "faculty": [
-    { "name": "[Teacher Name]", "designation": "Lecturer – Physics", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Lecturer – Chemistry", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Lecturer – Biology", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Lecturer – Mathematics", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Lecturer – English", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Lecturer – Hindi", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Lecturer – Commerce", "photo": "" },
-    { "name": "[Teacher Name]", "designation": "Computer Instructor", "photo": "" }
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – Physics",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – Chemistry",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – Biology",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – Mathematics",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – English",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – Hindi",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Lecturer – Commerce",
+      "photo": ""
+    },
+    {
+      "name": "[Teacher Name]",
+      "designation": "Computer Instructor",
+      "photo": ""
+    }
   ],
   "stars": [
-    { "name": "[Student Name]", "className": "Class 12 – Science", "score": "95.4%", "photo": "" },
-    { "name": "[Student Name]", "className": "Class 12 – Commerce", "score": "93.2%", "photo": "" },
-    { "name": "[Student Name]", "className": "Class 10", "score": "96.8%", "photo": "" },
-    { "name": "[Student Name]", "className": "Class 10", "score": "94.5%", "photo": "" }
+    {
+      "name": "[Student Name]",
+      "className": "Class 12 – Science",
+      "score": "95.4%",
+      "photo": ""
+    },
+    {
+      "name": "[Student Name]",
+      "className": "Class 12 – Commerce",
+      "score": "93.2%",
+      "photo": ""
+    },
+    {
+      "name": "[Student Name]",
+      "className": "Class 10",
+      "score": "96.8%",
+      "photo": ""
+    },
+    {
+      "name": "[Student Name]",
+      "className": "Class 10",
+      "score": "94.5%",
+      "photo": ""
+    }
   ],
   "gallery": [
-    { "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1400&q=70", "caption": "School Building" },
-    { "image": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=1400&q=70", "caption": "Classroom" },
-    { "image": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=1400&q=70", "caption": "Science Lab" },
-    { "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1400&q=70", "caption": "Library" },
-    { "image": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1400&q=70", "caption": "Sports Day" },
-    { "image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1400&q=70", "caption": "Annual Function" },
-    { "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1400&q=70", "caption": "Computer Lab" },
-    { "image": "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=1400&q=70", "caption": "Scouts & Guides" }
+    {
+      "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1400&q=70",
+      "caption": "School Building"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=1400&q=70",
+      "caption": "Classroom"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=1400&q=70",
+      "caption": "Science Lab"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1400&q=70",
+      "caption": "Library"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1400&q=70",
+      "caption": "Sports Day"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1400&q=70",
+      "caption": "Annual Function"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1400&q=70",
+      "caption": "Computer Lab"
+    },
+    {
+      "image": "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=1400&q=70",
+      "caption": "Scouts & Guides"
+    }
   ],
   "partners": [
-    { "icon": "🏛️", "name": "Government of Chhattisgarh", "link": "https://www.cgstate.gov.in/" },
-    { "icon": "📘", "name": "School Education Dept., CG", "link": "https://eduportal.cg.nic.in/" },
-    { "icon": "🧪", "name": "SCERT Chhattisgarh", "link": "https://scert.cg.gov.in/" },
-    { "icon": "🏢", "name": "District Administration Koriya", "link": "https://koriya.gov.in/" },
-    { "icon": "🤝", "name": "Samagra Shiksha", "link": "https://www.education.gov.in/samagra-shiksha" }
+    {
+      "icon": "🏛️",
+      "name": "Government of Chhattisgarh",
+      "link": "https://www.cgstate.gov.in/"
+    },
+    {
+      "icon": "📘",
+      "name": "School Education Dept., CG",
+      "link": "https://eduportal.cg.nic.in/"
+    },
+    {
+      "icon": "🧪",
+      "name": "SCERT Chhattisgarh",
+      "link": "https://scert.cg.gov.in/"
+    },
+    {
+      "icon": "🏢",
+      "name": "District Administration Koriya",
+      "link": "https://koriya.gov.in/"
+    },
+    {
+      "icon": "🤝",
+      "name": "Samagra Shiksha",
+      "link": "https://www.education.gov.in/samagra-shiksha"
+    }
   ],
-  "cta": { "text": "Admissions open for Session 2026-27", "buttonText": "Apply / Enquire Now", "buttonLink": "admission.html" },
+  "cta": {
+    "text": "Admissions open for Session 2026-27",
+    "buttonText": "Apply / Enquire Now",
+    "buttonLink": "admission.html"
+  },
   "about": {
     "text": "Swami Atmanand Government English Medium School, Sonhat is part of the Swami Atmanand Utkrisht Vidyalaya Yojana of the Government of Chhattisgarh. The scheme was launched on 1st November 2020, Chhattisgarh Rajyotsava, so that children from every section of society — especially from rural, tribal and economically weaker families — can receive high-quality English-medium education free of cost.\n\nLocated in Sonhat block of Koriya district, the school serves students from Class 1 to Class 12 and offers modern facilities including smart classrooms, science and computer laboratories, a library and sports grounds.",
     "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=900&q=70",
@@ -112,92 +316,316 @@
     "atmanand": "Swami Atmanand (1929–1989) was a revered monk of the Ramakrishna Mission from Chhattisgarh, known for his work in education and the upliftment of tribal communities, particularly through the Ramakrishna Mission Ashram at Narayanpur. The Government of Chhattisgarh named this scheme of excellent schools in his memory to carry forward his ideals of service through education."
   },
   "smc": [
-    { "name": "[Collector, Koriya]", "designation": "Chairperson" },
-    { "name": "[SDM, Sonhat]", "designation": "Member" },
-    { "name": "[District Education Officer, Koriya]", "designation": "Member" },
-    { "name": "[Block Education Officer, Sonhat]", "designation": "Member" },
-    { "name": "[Principal's Name]", "designation": "Member Secretary" },
-    { "name": "[Parent Representative]", "designation": "Member" }
+    {
+      "name": "[Collector, Koriya]",
+      "designation": "Chairperson"
+    },
+    {
+      "name": "[SDM, Sonhat]",
+      "designation": "Member"
+    },
+    {
+      "name": "[District Education Officer, Koriya]",
+      "designation": "Member"
+    },
+    {
+      "name": "[Block Education Officer, Sonhat]",
+      "designation": "Member"
+    },
+    {
+      "name": "[Principal's Name]",
+      "designation": "Member Secretary"
+    },
+    {
+      "name": "[Parent Representative]",
+      "designation": "Member"
+    }
   ],
   "staff": [
-    { "name": "[Name]", "designation": "Office Superintendent" },
-    { "name": "[Name]", "designation": "Accountant" },
-    { "name": "[Name]", "designation": "Librarian" },
-    { "name": "[Name]", "designation": "Lab Assistant" },
-    { "name": "[Name]", "designation": "Peon" }
+    {
+      "name": "[Name]",
+      "designation": "Office Superintendent"
+    },
+    {
+      "name": "[Name]",
+      "designation": "Accountant"
+    },
+    {
+      "name": "[Name]",
+      "designation": "Librarian"
+    },
+    {
+      "name": "[Name]",
+      "designation": "Lab Assistant"
+    },
+    {
+      "name": "[Name]",
+      "designation": "Peon"
+    }
   ],
-  "pta": { "text": "The Parent Teacher Association (PTA) brings parents and teachers together to support each child's progress. Parent–Teacher Meetings are held regularly after each examination, and parents are always welcome to meet class teachers during school hours with prior information." },
+  "pta": {
+    "text": "The Parent Teacher Association (PTA) brings parents and teachers together to support each child's progress. Parent–Teacher Meetings are held regularly after each examination, and parents are always welcome to meet class teachers during school hours with prior information."
+  },
   "admission": {
     "note": "Admission is as per the guidelines issued by the School Education Department, Government of Chhattisgarh and the District Administration, Koriya. Education is free of cost. Please follow the official notice for exact dates.",
     "eligibility": "Class 1: Child should be of the age prescribed by the State Government as on the cut-off date.\nClasses 2–12: On the basis of vacant seats and previous class pass certificate.\nClass 11: Stream allotment as per Class 10 results and seat availability.",
     "documents": "Birth certificate\nAadhaar card of student and parent\nResidence (domicile) certificate\nCaste certificate (if applicable)\nTransfer Certificate & previous mark sheet (Class 2 onward)\n4 recent passport-size photographs"
   },
   "admissionSteps": [
-    { "title": "Collect Form", "text": "Admission forms are available free of cost at the school office or as notified by the district." },
-    { "title": "Submit Form", "text": "Submit the filled form with required documents within the notified dates." },
-    { "title": "Selection", "text": "Where applications exceed seats, selection is done by lottery as per Government guidelines." },
-    { "title": "Confirmation", "text": "Selected students complete document verification and confirm admission." }
+    {
+      "title": "Collect Form",
+      "text": "Admission forms are available free of cost at the school office or as notified by the district."
+    },
+    {
+      "title": "Submit Form",
+      "text": "Submit the filled form with required documents within the notified dates."
+    },
+    {
+      "title": "Selection",
+      "text": "Where applications exceed seats, selection is done by lottery as per Government guidelines."
+    },
+    {
+      "title": "Confirmation",
+      "text": "Selected students complete document verification and confirm admission."
+    }
   ],
   "curriculum": [
-    { "level": "Primary", "classes": "1 – 5", "subjects": "English, Hindi, Mathematics, Environmental Studies, Art, Physical Education" },
-    { "level": "Middle", "classes": "6 – 8", "subjects": "English, Hindi, Sanskrit, Mathematics, Science, Social Science, Computer" },
-    { "level": "Secondary", "classes": "9 – 10", "subjects": "English, Hindi, Mathematics, Science, Social Science, Sanskrit / IT" },
-    { "level": "Higher Secondary – Science", "classes": "11 – 12", "subjects": "Physics, Chemistry, Mathematics / Biology, English, Hindi" },
-    { "level": "Higher Secondary – Commerce", "classes": "11 – 12", "subjects": "Accountancy, Business Studies, Economics, English, Hindi" },
-    { "level": "Higher Secondary – Arts", "classes": "11 – 12", "subjects": "History, Political Science, Geography, Economics, English, Hindi" }
+    {
+      "level": "Primary",
+      "classes": "1 – 5",
+      "subjects": "English, Hindi, Mathematics, Environmental Studies, Art, Physical Education"
+    },
+    {
+      "level": "Middle",
+      "classes": "6 – 8",
+      "subjects": "English, Hindi, Sanskrit, Mathematics, Science, Social Science, Computer"
+    },
+    {
+      "level": "Secondary",
+      "classes": "9 – 10",
+      "subjects": "English, Hindi, Mathematics, Science, Social Science, Sanskrit / IT"
+    },
+    {
+      "level": "Higher Secondary – Science",
+      "classes": "11 – 12",
+      "subjects": "Physics, Chemistry, Mathematics / Biology, English, Hindi"
+    },
+    {
+      "level": "Higher Secondary – Commerce",
+      "classes": "11 – 12",
+      "subjects": "Accountancy, Business Studies, Economics, English, Hindi"
+    },
+    {
+      "level": "Higher Secondary – Arts",
+      "classes": "11 – 12",
+      "subjects": "History, Political Science, Geography, Economics, English, Hindi"
+    }
   ],
   "results": [
-    { "year": "2025-26", "className": "10th", "appeared": "[–]", "passed": "[–]", "percent": "[–]" },
-    { "year": "2025-26", "className": "12th", "appeared": "[–]", "passed": "[–]", "percent": "[–]" },
-    { "year": "2024-25", "className": "10th", "appeared": "[–]", "passed": "[–]", "percent": "[–]" },
-    { "year": "2024-25", "className": "12th", "appeared": "[–]", "passed": "[–]", "percent": "[–]" }
+    {
+      "year": "2025-26",
+      "className": "10th",
+      "appeared": "[–]",
+      "passed": "[–]",
+      "percent": "[–]"
+    },
+    {
+      "year": "2025-26",
+      "className": "12th",
+      "appeared": "[–]",
+      "passed": "[–]",
+      "percent": "[–]"
+    },
+    {
+      "year": "2024-25",
+      "className": "10th",
+      "appeared": "[–]",
+      "passed": "[–]",
+      "percent": "[–]"
+    },
+    {
+      "year": "2024-25",
+      "className": "12th",
+      "appeared": "[–]",
+      "passed": "[–]",
+      "percent": "[–]"
+    }
   ],
   "achievements": [
-    { "icon": "🏆", "title": "District Science Exhibition", "text": "[Student names] won first prize for their working model on renewable energy." },
-    { "icon": "🥇", "title": "State Level Athletics", "text": "[Student name] selected for state-level athletics meet." },
-    { "icon": "📜", "title": "Merit List", "text": "[Student name] secured a place in the CG Board merit list." }
+    {
+      "icon": "🏆",
+      "title": "District Science Exhibition",
+      "text": "[Student names] won first prize for their working model on renewable energy."
+    },
+    {
+      "icon": "🥇",
+      "title": "State Level Athletics",
+      "text": "[Student name] selected for state-level athletics meet."
+    },
+    {
+      "icon": "📜",
+      "title": "Merit List",
+      "text": "[Student name] secured a place in the CG Board merit list."
+    }
   ],
   "calendar": [
-    { "month": "June", "event": "New session begins · Shala Praveshotsav" },
-    { "month": "August", "event": "Independence Day · First unit test" },
-    { "month": "September", "event": "Quarterly examination" },
-    { "month": "November", "event": "Rajyotsava · Children's Day" },
-    { "month": "December", "event": "Half-yearly examination" },
-    { "month": "January", "event": "Annual Sports Meet · Republic Day" },
-    { "month": "February – March", "event": "Pre-board & Board examinations · Annual examination" },
-    { "month": "April", "event": "Result declaration" }
+    {
+      "month": "June",
+      "event": "New session begins · Shala Praveshotsav"
+    },
+    {
+      "month": "August",
+      "event": "Independence Day · First unit test"
+    },
+    {
+      "month": "September",
+      "event": "Quarterly examination"
+    },
+    {
+      "month": "November",
+      "event": "Rajyotsava · Children's Day"
+    },
+    {
+      "month": "December",
+      "event": "Half-yearly examination"
+    },
+    {
+      "month": "January",
+      "event": "Annual Sports Meet · Republic Day"
+    },
+    {
+      "month": "February – March",
+      "event": "Pre-board & Board examinations · Annual examination"
+    },
+    {
+      "month": "April",
+      "event": "Result declaration"
+    }
   ],
-  "classrooms": { "text": "Spacious, well-lit classrooms equipped with smart boards and projectors. Teachers use digital content, animations and videos to make concepts clear and learning enjoyable.", "image": "https://images.unsplash.com/photo-1588072432836-e10032774350?w=900&q=70" },
+  "classrooms": {
+    "text": "Spacious, well-lit classrooms equipped with smart boards and projectors. Teachers use digital content, animations and videos to make concepts clear and learning enjoyable.",
+    "image": "https://images.unsplash.com/photo-1588072432836-e10032774350?w=900&q=70"
+  },
   "labs": [
-    { "title": "Physics Lab", "text": "Apparatus for experiments in mechanics, optics, electricity and magnetism.", "image": "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=70" },
-    { "title": "Chemistry Lab", "text": "Safe, well-ventilated lab with chemicals and glassware for practicals.", "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=70" },
-    { "title": "Biology Lab", "text": "Microscopes, specimens and models for life-science studies.", "image": "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600&q=70" },
-    { "title": "Computer Lab", "text": "Networked computers with internet for ICT and coding classes.", "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=70" },
-    { "title": "English Language Lab", "text": "Audio-visual tools to improve listening and speaking skills.", "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=70" },
-    { "title": "Robotics / ATL Lab", "text": "Kits for robotics, electronics and innovation projects.", "image": "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=600&q=70" }
+    {
+      "title": "Physics Lab",
+      "text": "Apparatus for experiments in mechanics, optics, electricity and magnetism.",
+      "image": "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=70"
+    },
+    {
+      "title": "Chemistry Lab",
+      "text": "Safe, well-ventilated lab with chemicals and glassware for practicals.",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=70"
+    },
+    {
+      "title": "Biology Lab",
+      "text": "Microscopes, specimens and models for life-science studies.",
+      "image": "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600&q=70"
+    },
+    {
+      "title": "Computer Lab",
+      "text": "Networked computers with internet for ICT and coding classes.",
+      "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=70"
+    },
+    {
+      "title": "English Language Lab",
+      "text": "Audio-visual tools to improve listening and speaking skills.",
+      "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=70"
+    },
+    {
+      "title": "Robotics / ATL Lab",
+      "text": "Kits for robotics, electronics and innovation projects.",
+      "image": "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=600&q=70"
+    }
   ],
-  "library": { "text": "Our library has textbooks, reference books, fiction, magazines and newspapers in English and Hindi. A reading period is part of the timetable to build a habit of reading in every student.", "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=900&q=70" },
+  "library": {
+    "text": "Our library has textbooks, reference books, fiction, magazines and newspapers in English and Hindi. A reading period is part of the timetable to build a habit of reading in every student.",
+    "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=900&q=70"
+  },
   "campus": [
-    { "icon": "⚽", "title": "Playground", "text": "Open ground for football, kho-kho, kabaddi, athletics and morning assembly." },
-    { "icon": "🚰", "title": "Drinking Water", "text": "RO purified drinking water and clean, separate toilets for boys and girls." },
-    { "icon": "🎭", "title": "Assembly Hall", "text": "Space for cultural programmes, functions and meetings." },
-    { "icon": "📹", "title": "Safety", "text": "CCTV surveillance, fire extinguishers and a boundary wall for student safety." }
+    {
+      "icon": "⚽",
+      "title": "Playground",
+      "text": "Open ground for football, kho-kho, kabaddi, athletics and morning assembly."
+    },
+    {
+      "icon": "🚰",
+      "title": "Drinking Water",
+      "text": "RO purified drinking water and clean, separate toilets for boys and girls."
+    },
+    {
+      "icon": "🎭",
+      "title": "Assembly Hall",
+      "text": "Space for cultural programmes, functions and meetings."
+    },
+    {
+      "icon": "📹",
+      "title": "Safety",
+      "text": "CCTV surveillance, fire extinguishers and a boundary wall for student safety."
+    }
   ],
   "activities": [
-    { "anchor": "sports", "title": "🏃 Sports Events", "text": "Students take part in athletics, football, volleyball, kho-kho, kabaddi, chess and yoga. The Annual Sports Meet and inter-house competitions help discover and nurture sporting talent, and students represent the school at block, district and state level.", "image": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&q=70" },
-    { "anchor": "cultural", "title": "🎭 Cultural Events", "text": "Independence Day, Republic Day, Rajyotsava, Annual Function and festivals are celebrated with songs, dance (including Chhattisgarhi folk forms like Karma and Suwa), drama and art competitions.", "image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=900&q=70" },
-    { "anchor": "technical", "title": "💡 Technical Events", "text": "Science exhibitions, quiz competitions, coding activities, robotics workshops and the INSPIRE-MANAK programme encourage innovation and scientific thinking.", "image": "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=900&q=70" },
-    { "anchor": "scout", "title": "⚜️ Scout Guide / NSS", "text": "Through Bharat Scouts & Guides and NSS, students learn discipline, first aid, teamwork and community service — including cleanliness drives, plantation and awareness rallies.", "image": "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=900&q=70" }
+    {
+      "anchor": "sports",
+      "title": "🏃 Sports Events",
+      "text": "Students take part in athletics, football, volleyball, kho-kho, kabaddi, chess and yoga. The Annual Sports Meet and inter-house competitions help discover and nurture sporting talent, and students represent the school at block, district and state level.",
+      "image": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&q=70"
+    },
+    {
+      "anchor": "cultural",
+      "title": "🎭 Cultural Events",
+      "text": "Independence Day, Republic Day, Rajyotsava, Annual Function and festivals are celebrated with songs, dance (including Chhattisgarhi folk forms like Karma and Suwa), drama and art competitions.",
+      "image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=900&q=70"
+    },
+    {
+      "anchor": "technical",
+      "title": "💡 Technical Events",
+      "text": "Science exhibitions, quiz competitions, coding activities, robotics workshops and the INSPIRE-MANAK programme encourage innovation and scientific thinking.",
+      "image": "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=900&q=70"
+    },
+    {
+      "anchor": "scout",
+      "title": "⚜️ Scout Guide / NSS",
+      "text": "Through Bharat Scouts & Guides and NSS, students learn discipline, first aid, teamwork and community service — including cleanliness drives, plantation and awareness rallies.",
+      "image": "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=900&q=70"
+    }
   ],
   "disclosure": [
-    { "title": "Recognition Certificate", "file": "" },
-    { "title": "No Objection Certificate (NOC)", "file": "" },
-    { "title": "Building Safety Certificate", "file": "" },
-    { "title": "Fire Safety Certificate", "file": "" },
-    { "title": "Water, Health & Sanitation Certificate", "file": "" },
-    { "title": "Land Certificate", "file": "" },
-    { "title": "Society / Samiti Registration", "file": "" },
-    { "title": "Mandatory Public Disclosure", "file": "" },
-    { "title": "Self Affidavit", "file": "" }
+    {
+      "title": "Recognition Certificate",
+      "file": ""
+    },
+    {
+      "title": "No Objection Certificate (NOC)",
+      "file": ""
+    },
+    {
+      "title": "Building Safety Certificate",
+      "file": ""
+    },
+    {
+      "title": "Fire Safety Certificate",
+      "file": ""
+    },
+    {
+      "title": "Water, Health & Sanitation Certificate",
+      "file": ""
+    },
+    {
+      "title": "Land Certificate",
+      "file": ""
+    },
+    {
+      "title": "Society / Samiti Registration",
+      "file": ""
+    },
+    {
+      "title": "Mandatory Public Disclosure",
+      "file": ""
+    },
+    {
+      "title": "Self Affidavit",
+      "file": ""
+    }
   ]
 }
