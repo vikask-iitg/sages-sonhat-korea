@@ -6,7 +6,7 @@ const SECTIONS = [
   { key: "site", label: "School Details", fields: [
     ["address", "Full address"], ["email", "Email"], ["phone", "Phone"],
     ["hoursWeekday", "Timings – weekdays"], ["hoursSaturday", "Timings – Saturday"],
-    ["instagram", "Instagram page link (leave empty to hide icon)", "url"], ["facebook", "Facebook page link (leave empty to hide icon)", "url"], ["footerAbout", "Footer 'About the School' text", "textarea"],
+    ["instagram", "Instagram page link (leave empty to hide icon)", "url"], ["facebook", "Facebook page link (leave empty to hide icon)", "url"], ["whatsapp", "WhatsApp number (leave empty to hide icon)"], ["footerAbout", "Footer 'About the School' text", "textarea"],
   ] },
 
   { key: "home", label: "Home Page Headings", hint: "Small label = the coloured text above each heading. Empty sections hide automatically.", fields: [

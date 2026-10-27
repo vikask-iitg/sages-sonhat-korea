@@ -78,10 +78,17 @@ const list = v => Array.isArray(v) ? v : [];
 // Inline brand icons for the school's social pages; each icon only shows when its link is set.
 const SOCIAL = [
   ["instagram", "Instagram", '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>'],
+  ["whatsapp", "WhatsApp", '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2z"/><path fill="currentColor" d="M9.1 7.6c.2 0 .4 0 .5.4l.7 1.6c.1.2 0 .4-.1.6l-.5.6c-.1.1-.2.3 0 .5.4.8 1 1.4 1.6 1.9.6.4 1 .6 1.3.7.2.1.3 0 .5-.1l.6-.8c.2-.2.3-.2.5-.1l1.6.8c.2.1.4.2.4.3.1.3 0 1-.3 1.3-.4.5-1.2.9-1.9.8-.9-.1-2.2-.5-3.7-1.8-1.2-1.1-2-2.4-2.2-3.2-.2-.9.1-1.6.5-2 .2-.3.4-.4.6-.5z"/></svg>'],
   ["facebook", "Facebook", '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H7.9v3h2.6V21h3z"/></svg>'],
 ];
-const socialLinks = (site, cls) => SOCIAL.filter(([key]) => site[key]).map(([key, name, svg]) =>
-  `<a class="${cls} ${key}" href="${esc(site[key])}" target="_blank" rel="noopener" aria-label="${name}" title="${name}">${svg}</a>`).join("");
+// WhatsApp is stored as a phone number; 10-digit numbers are treated as Indian (+91).
+const whatsappUrl = number => {
+  const digits = String(number || "").replace(/\D/g, "");
+  return digits ? `https://wa.me/${digits.length === 10 ? "91" + digits : digits}` : "";
+};
+const socialHref = (site, key) => key === "whatsapp" ? whatsappUrl(site.whatsapp) : site[key];
+const socialLinks = (site, cls) => SOCIAL.filter(([key]) => socialHref(site, key)).map(([key, name, svg]) =>
+  `<a class="${cls} ${key}" href="${esc(socialHref(site, key))}" target="_blank" rel="noopener" aria-label="${name}" title="${name}">${svg}</a>`).join("");
 const telLink = phone => `<a href="tel:${esc(String(phone || "").replace(/[^\d+]/g, ""))}">${esc(phone)}</a>`;
 // Links saved before pages moved into /pages/ (e.g. "admission.html") still point to the right place.
 const pageLink = href => {
@@ -315,6 +322,14 @@ function renderHeader(c) {
     </nav>`;
 }
 
+const FOOTER_ICONS = {
+  pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+};
+const footerIcon = name => `<span class="f-ico"><svg viewBox="0 0 24 24" aria-hidden="true">${FOOTER_ICONS[name]}</svg></span>`;
+
 function renderFooter(c) {
   const s = c.site;
   const year = new Date().getFullYear();
@@ -347,11 +362,13 @@ function renderFooter(c) {
         </div>
         <div>
           <h4>Contact Us</h4>
-          <p>📍 ${esc(s.address)}</p>
-          <p>✉ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></p>
-          <p>☎ ${telLink(s.phone)}</p>
-          <p>🕘 ${esc(s.hoursWeekday)}<br>${esc(s.hoursSaturday)}</p>
-          <div class="socials">${socialLinks(s, "social")}</div>
+          <ul class="f-contact">
+            <li>${footerIcon("pin")}<div><small>Address</small>${esc(s.address)}</div></li>
+            <li>${footerIcon("mail")}<div><small>Email</small><a href="mailto:${esc(s.email)}">${esc(s.email)}</a></div></li>
+            <li>${footerIcon("phone")}<div><small>Phone</small>${telLink(s.phone)}</div></li>
+            <li>${footerIcon("clock")}<div><small>Office Hours</small>${esc(s.hoursWeekday)}<br>${esc(s.hoursSaturday)}</div></li>
+          </ul>
+          ${socialLinks(s, "social") ? `<div class="f-follow"><small>Follow us</small><div class="socials">${socialLinks(s, "social")}</div></div>` : ""}
         </div>
       </div>
       <div class="footer-bottom">
@@ -359,6 +376,7 @@ function renderFooter(c) {
       </div>
     </footer>
     <button class="back-to-top" aria-label="Back to top">↑</button>
+    ${whatsappUrl(s.whatsapp) ? `<a class="wa-float" href="${esc(whatsappUrl(s.whatsapp))}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="Chat with us on WhatsApp">${SOCIAL.find(x => x[0] === "whatsapp")[2]}</a>` : ""}
     <div class="lightbox"><img alt=""></div>`;
 }
 
