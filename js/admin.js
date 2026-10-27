@@ -29,7 +29,7 @@ const SECTIONS = [
   { key: "news", label: "Latest News", list: true, title: "text", hint: "Shown newest first automatically.", fields: [["date", "Date", "date"], ["text", "News", "textarea"]] },
   { key: "events", label: "Upcoming Events", list: true, title: "text", hint: "Shown in date order. Delete events once they are over.", fields: [["date", "Date", "date"], ["text", "Event", "textarea"]] },
   { key: "principal", label: "Principal & Message", fields: [
-    ["photo", "Principal's photo", "image", 4 / 5], ["name", "Name"], ["qualification", "Qualification"], ["experience", "Experience"],
+    ["photo", "Principal's photo", "image", 4 / 5], ["name", "Name"], ["qualification", "Qualification / degree (e.g. M.Sc., B.Ed.)"], ["experience", "Experience (e.g. 15 years)"],
     ["quote", "Quote"], ["message", "Message (blank line = new paragraph)", "textarea"],
   ] },
   { key: "stats", label: "Numbers (Students, Staff…)", list: true, title: "label", hint: "Choose “Automatic” to count the principal, faculty and administrative staff for you.", fields: [

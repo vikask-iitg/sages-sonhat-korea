@@ -142,6 +142,13 @@ function textWithImage(title, text, image, imageFirst = false) {
 
 const lookup = (c, path) => path.split(".").reduce((o, k) => o?.[k], c);
 // Admin-set count wins over the page's default; blank or 0 means use the default.
+// Qualification and experience badges shown with the principal's message; empty ones are left out.
+const principalFacts = p => {
+  const facts = [["🎓", "Qualification", p.qualification], ["⏳", "Experience", p.experience]].filter(f => String(f[2] || "").trim());
+  return facts.length ? `<div class="principal-facts">${facts.map(([icon, label, value]) =>
+    `<span class="fact"><span class="fact-icon">${icon}</span><span><small>${label}</small>${esc(value)}</span></span>`).join("")}</div>` : "";
+};
+
 const personCards = (people, reveal = true) => people.map(t =>
   `<div class="person${reveal ? " reveal" : ""}">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
 
@@ -199,6 +206,7 @@ const RENDER = {
       </div>
       <div class="reveal">
         <div class="section-title" style="text-align:left;margin-bottom:10px"><span>${esc(c.home?.principalKicker || "From the Desk of")}</span><h2>${esc(c.home?.principalTitle || "Principal's Message")}</h2></div>
+        ${principalFacts(p)}
         ${p.quote ? `<blockquote>“${esc(p.quote)}”</blockquote>` : ""}
         ${paras(first)}
         <a href="/pages/administration.html#principal" class="btn btn-outline">Read More</a>
@@ -214,7 +222,7 @@ const RENDER = {
       </div>
       <div class="content">
         <h2>Principal's Profile &amp; Message</h2>
-        <p><strong>Qualification:</strong> ${esc(p.qualification)} &nbsp;|&nbsp; <strong>Experience:</strong> ${esc(p.experience)}</p>
+        ${principalFacts(p)}
         ${p.quote ? `<blockquote>“${esc(p.quote)}”</blockquote>` : ""}
         ${paras(p.message)}
       </div>`;
