@@ -391,13 +391,9 @@ img.ph { width: 100%; object-fit: cover; }
 .topbar-links .top-mail { display: inline-flex; align-items: center; gap: 8px; }
 .topbar-links .top-mail:hover .top-social { background: #fff; color: var(--primary-dark); }
 
-/* Principal qualification / experience badges */
-.principal-facts { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 6px; }
-.fact { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border-radius: 40px;
-  background: #fff8ec; border: 1px solid #f6d9a6; color: var(--primary-dark); font-weight: 600; font-size: 14px; }
-.fact-icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); font-size: 17px; }
-.fact small { display: block; font-size: 10.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-dark); line-height: 1.2; }
-.content .principal-facts { margin-top: 6px; }
+/* Principal qualification / experience line */
+.principal-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 12px 0 4px; color: var(--text); font-size: 15px; }
+.principal-facts strong { color: var(--primary-dark); font-weight: 600; }
 
 /* Dropdowns: custom arrow with breathing room instead of the browser's edge-hugging one */
 select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b3d91' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");

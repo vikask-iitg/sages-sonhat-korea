@@ -142,11 +142,11 @@ function textWithImage(title, text, image, imageFirst = false) {
 
 const lookup = (c, path) => path.split(".").reduce((o, k) => o?.[k], c);
 // Admin-set count wins over the page's default; blank or 0 means use the default.
-// Qualification and experience badges shown with the principal's message; empty ones are left out.
+// Qualification and experience line shown with the principal's message; empty ones are left out.
 const principalFacts = p => {
   const facts = [["🎓", "Qualification", p.qualification], ["⏳", "Experience", p.experience]].filter(f => String(f[2] || "").trim());
-  return facts.length ? `<div class="principal-facts">${facts.map(([icon, label, value]) =>
-    `<span class="fact"><span class="fact-icon">${icon}</span><span><small>${label}</small>${esc(value)}</span></span>`).join("")}</div>` : "";
+  return facts.length ? `<p class="principal-facts">${facts.map(([icon, label, value]) =>
+    `<span>${icon} <strong>${label}:</strong> ${esc(value)}</span>`).join("")}</p>` : "";
 };
 
 const personCards = (people, reveal = true) => people.map(t =>
