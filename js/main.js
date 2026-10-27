@@ -75,6 +75,13 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const paras = text => String(text || "").split(/\n\s*\n/).filter(Boolean).map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 const lines = text => String(text || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => `<li>${esc(l)}</li>`).join("");
 const list = v => Array.isArray(v) ? v : [];
+// Inline brand icons for the school's social pages; each icon only shows when its link is set.
+const SOCIAL = [
+  ["instagram", "Instagram", '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>'],
+  ["facebook", "Facebook", '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H7.9v3h2.6V21h3z"/></svg>'],
+];
+const socialLinks = (site, cls) => SOCIAL.filter(([key]) => site[key]).map(([key, name, svg]) =>
+  `<a class="${cls} ${key}" href="${esc(site[key])}" target="_blank" rel="noopener" aria-label="${name}" title="${name}">${svg}</a>`).join("");
 const telLink = phone => `<a href="tel:${esc(String(phone || "").replace(/[^\d+]/g, ""))}">${esc(phone)}</a>`;
 // Links saved before pages moved into /pages/ (e.g. "admission.html") still point to the right place.
 const pageLink = href => {
@@ -254,7 +261,8 @@ const RENDER = {
     <p><strong>📍 Address</strong><br>${esc(c.site.name)},<br>${esc(c.site.address)}</p>
     <p><strong>✉ Email</strong><br><a href="mailto:${esc(c.site.email)}">${esc(c.site.email)}</a></p>
     <p><strong>☎ Phone</strong><br>${telLink(c.site.phone)}</p>
-    <p><strong>🕘 Office Hours</strong><br>${esc(c.site.hoursWeekday)}<br>${esc(c.site.hoursSaturday)}</p>`,
+    <p><strong>🕘 Office Hours</strong><br>${esc(c.site.hoursWeekday)}<br>${esc(c.site.hoursSaturday)}</p>
+    ${socialLinks(c.site, "social") ? `<p><strong>Follow Us</strong></p><div class="socials">${socialLinks(c.site, "social")}</div>` : ""}`,
 };
 
 // ---------- layout ----------
@@ -281,6 +289,7 @@ function renderHeader(c) {
         <div class="topbar-links">
           <a href="mailto:${esc(s.email)}">✉ ${esc(s.email)}</a>
           <a href="/pages/contact.html">Contact Now</a>
+          ${socialLinks(s, "top-social")}
           <a href="/pages/admin.html" class="admin-link">🔒 Admin</a>
         </div>
       </div>
@@ -343,6 +352,7 @@ function renderFooter(c) {
           <p>✉ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></p>
           <p>☎ ${telLink(s.phone)}</p>
           <p>🕘 ${esc(s.hoursWeekday)}<br>${esc(s.hoursSaturday)}</p>
+          <div class="socials">${socialLinks(s, "social")}</div>
         </div>
       </div>
       <div class="footer-bottom">
