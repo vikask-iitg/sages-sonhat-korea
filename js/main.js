@@ -145,6 +145,18 @@ const lookup = (c, path) => path.split(".").reduce((o, k) => o?.[k], c);
 const personCards = (people, reveal = true) => people.map(t =>
   `<div class="person${reveal ? " reveal" : ""}">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
 
+// Endless scrolling row: the track holds two identical sets and slides by one set, so the loop has no seam.
+// Short lists are repeated (min ~8 cards per set) so a set is always wider than the screen.
+const carousel = (cards, count) => {
+  if (!count) return "";
+  const reps = Math.ceil(8 / count);
+  const repeats = reps > 1 ? `<div class="carousel-repeat" aria-hidden="true">${cards.repeat(reps - 1)}</div>` : "";
+  return `<div class="carousel-track" style="--duration:${count * reps * 3.5}s">
+    <div class="carousel-set">${cards}${repeats}</div>
+    <div class="carousel-set" aria-hidden="true">${cards.repeat(reps)}</div>
+  </div>`;
+};
+
 const limitOf = (el, c) => Number(el.dataset.limitKey && lookup(c, el.dataset.limitKey)) || Number(el.dataset.limit) || Infinity;
 
 // ---------- renderers ----------
@@ -223,13 +235,10 @@ const RENDER = {
   team: c => {
     const p = c.principal || {};
     const people = [...(p.name ? [{ name: p.name, designation: "Principal", photo: p.photo }] : []), ...list(c.faculty), ...list(c.staff)];
-    if (!people.length) return "";
-    const cards = personCards(people, false);
-    // Two copies make the loop seamless; the second is hidden from screen readers.
-    return `<div class="carousel-track" style="--duration:${people.length * 3.5}s">${cards}<div class="carousel-copy" aria-hidden="true">${cards}</div></div>`;
+    return carousel(personCards(people, false), people.length);
   },
 
-  stars: c => list(c.stars).map(s => `<div class="person star reveal">${avatar(s.name, s.photo)}<h4>${esc(s.name)}</h4><span>${esc(s.className)}</span><br><span class="score">${esc(s.score)}</span></div>`).join(""),
+  stars: c => carousel(list(c.stars).map(s => `<div class="person star">${avatar(s.name, s.photo)}<h4>${esc(s.name)}</h4><span>${esc(s.className)}</span><br><span class="score">${esc(s.score)}</span></div>`).join(""), list(c.stars).length),
 
   gallery: (c, el) => list(c.gallery).slice(0, limitOf(el, c)).map(g => `<a href="${esc(g.image)}"><img src="${esc(g.image)}" alt="${esc(g.caption)}" loading="lazy"><span>${esc(g.caption)}</span></a>`).join(""),
 
