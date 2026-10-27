@@ -181,3 +181,8 @@ button, input, select, textarea { font: inherit; }
 .btn.logout-btn { display: inline-flex; align-items: center; gap: 7px; background: #c62828; border-color: #c62828; color: #fff; font-weight: 600; }
 .btn.logout-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .btn.logout-btn:hover { background: #a31515; border-color: #a31515; }
+
+/* Top-bar buttons share one size whatever is inside them (emoji, icon, link or button) */
+.bar .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; padding: 0 16px;
+  font-size: 13px; font-weight: 600; line-height: 1; white-space: nowrap; box-sizing: border-box; }
+.bar .btn.primary:disabled { opacity: 1; background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); color: #9fb0cc; }
