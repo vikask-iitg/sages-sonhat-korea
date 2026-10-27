@@ -155,22 +155,26 @@
     {
       "value": "850",
       "suffix": "+",
-      "label": "Students"
+      "label": "Students",
+      "auto": ""
     },
     {
-      "value": "40",
-      "suffix": "+",
-      "label": "Teachers & Staff"
+      "value": "",
+      "suffix": "",
+      "label": "Teachers & Staff",
+      "auto": "staff"
     },
     {
       "value": "12",
       "suffix": "",
-      "label": "Classes (1st – 12th)"
+      "label": "Classes (1st – 12th)",
+      "auto": ""
     },
     {
       "value": "6",
       "suffix": "",
-      "label": "Laboratories"
+      "label": "Laboratories",
+      "auto": ""
     }
   ],
   "levels": [

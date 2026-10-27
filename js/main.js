@@ -190,7 +190,12 @@ const RENDER = {
       </div>`;
   },
 
-  stats: c => list(c.stats).map(s => `<div class="stat"><strong data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix)}">0</strong><span>${esc(s.label)}</span></div>`).join(""),
+  stats: c => list(c.stats).map(s => {
+    // "staff" counts are worked out from the people lists, so they never go stale.
+    const auto = s.auto === "staff";
+    const value = auto ? (c.principal?.name ? 1 : 0) + list(c.faculty).length + list(c.staff).length : Number(s.value) || 0;
+    return `<div class="stat"><strong data-count="${value}" data-suffix="${auto ? "" : esc(s.suffix)}">0</strong><span>${esc(s.label)}</span></div>`;
+  }).join(""),
 
   levels: c => imageCards(c.levels),
 

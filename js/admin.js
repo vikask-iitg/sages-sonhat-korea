@@ -31,7 +31,10 @@ const SECTIONS = [
     ["photo", "Principal's photo", "image"], ["name", "Name"], ["qualification", "Qualification"], ["experience", "Experience"],
     ["quote", "Quote"], ["message", "Message (blank line = new paragraph)", "textarea"],
   ] },
-  { key: "stats", label: "Numbers (Students, Staff…)", list: true, title: "label", fields: [["value", "Number", "number"], ["suffix", "After number (e.g. +)"], ["label", "Label"]] },
+  { key: "stats", label: "Numbers (Students, Staff…)", list: true, title: "label", hint: "Choose “Automatic” to count the principal, faculty and administrative staff for you.", fields: [
+    ["auto", "How is the number set?", "select", [["", "I type the number"], ["staff", "Automatic: principal + faculty + administrative staff"]]],
+    ["value", "Number (ignored when automatic)", "number"], ["suffix", "After number (e.g. +, ignored when automatic)"], ["label", "Label"],
+  ] },
   { key: "levels", label: "Education System Cards", list: true, title: "title", fields: [["image", "Photo", "image"], ["title", "Title"], ["text", "Text", "textarea"]] },
   { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["designation", "Designation / Subject"]] },
   { key: "stars", label: "Star Performers", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["className", "Class"], ["score", "Score / Award"]] },
@@ -153,7 +156,7 @@ function renderNav() {
   }).join("")).join("");
 }
 
-function fieldHtml([name, label, type = "text"], path) {
+function fieldHtml([name, label, type = "text", choices], path) {
   const value = get(path) ?? "";
   if (type === "textarea") {
     return `<label class="field"><span>${esc(label)}</span><textarea data-path="${path}" rows="${String(value).length > 200 ? 8 : 3}">${esc(value)}</textarea></label>`;
@@ -170,6 +173,10 @@ function fieldHtml([name, label, type = "text"], path) {
           <input type="url" data-path="${path}" value="${esc(value)}" placeholder="…or paste a link">
         </div>
       </div></div>`;
+  }
+  if (type === "select") {
+    const options = choices.map(([v, l]) => `<option value="${esc(v)}"${String(value) === v ? " selected" : ""}>${esc(l)}</option>`).join("");
+    return `<label class="field"><span>${esc(label)}</span><select data-path="${path}">${options}</select></label>`;
   }
   const inputType = { number: "number", date: "date", url: "url" }[type] || "text";
   return `<label class="field"><span>${esc(label)}</span><input type="${inputType}" data-path="${path}" value="${esc(value)}"></label>`;
