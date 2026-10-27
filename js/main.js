@@ -287,9 +287,6 @@ function renderHeader(c) {
           <div class="hindi">${esc(s.hindi)}</div>
           <p>${esc(s.place)}</p>
         </div>
-        <div class="header-contact">
-          Call us<strong>${esc(s.phone)}</strong>
-        </div>
       </div>
     </header>
     <nav class="nav">
