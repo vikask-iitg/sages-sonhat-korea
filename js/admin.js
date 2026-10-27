@@ -105,6 +105,8 @@ NAV.forEach((g, gi) => g.items.forEach((it, ii) => {
 let content = null;
 let current = "0.0";
 let dirty = false;
+// Each page opens locked so nothing changes by accident; saving or switching pages locks it again.
+let locked = true;
 const openMenus = new Set();
 const currentSection = () => sectionOf(LEAVES[current].key);
 
@@ -239,7 +241,14 @@ function renderEditor() {
     if (!content[dataKey]) content[dataKey] = {};
     body = `<div class="item"><div class="item-body">${sec.fields.map(f => fieldHtml(f, `${dataKey}.${f[0]}`)).join("")}</div></div>`;
   }
-  $("#editor").innerHTML = `<h2>${esc(label)}</h2>${sec.hint && !anchor ? `<p class="hint">${esc(sec.hint)}</p>` : ""}${body}`;
+  const lockBtn = locked
+    ? `<button class="lock-btn locked" data-action="lock" title="Unlock this page to make changes">🔒 Locked <span>Unlock to edit</span></button>`
+    : `<button class="lock-btn" data-action="lock" title="Lock this page again">🔓 Editing <span>Lock</span></button>`;
+  // A disabled fieldset disables every input and button inside it in one go.
+  $("#editor").innerHTML = `<div class="editor-head"><h2>${esc(label)}</h2>${lockBtn}</div>
+    ${sec.hint && !anchor ? `<p class="hint">${esc(sec.hint)}</p>` : ""}
+    ${locked ? `<p class="lock-note">This page is locked to prevent accidental changes. Click <strong>Unlock to edit</strong> to make changes; it locks again when you save.</p>` : ""}
+    <fieldset class="edit-area"${locked ? " disabled" : ""}>${body}</fieldset>`;
 }
 
 // ---------- cropping ----------
@@ -380,8 +389,10 @@ document.addEventListener("click", async e => {
   const items = sec && content?.[sec.key];
   const i = +btn.dataset.index;
 
+  if (action === "lock") { locked = !locked; renderEditor(); return; }
   if (action === "section") {
     current = btn.dataset.id;
+    locked = true;
     // Open the dropdown holding the chosen page; after that the admin can close it freely.
     if (LEAVES[current].menu) openMenus.add(LEAVES[current].menu);
     renderNav(); renderEditor(); window.scrollTo(0, 0); return;
@@ -438,7 +449,9 @@ async function save() {
     if (res.status === 401) { toast("Session expired — log in again. Your edits are kept on this page.", true); showLogin(true); return; }
     if (!res.ok) throw new Error(data.error || "Save failed");
     markDirty(false);
-    toast("Saved! The website is updated.");
+    locked = true;
+    renderEditor();
+    toast("Saved! The website is updated. Page locked again.");
   } catch (err) {
     toast(err.message, true);
     btn.disabled = false;
