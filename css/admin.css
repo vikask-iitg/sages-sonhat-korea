@@ -25,7 +25,12 @@ button, input, select, textarea { font: inherit; }
 .login-card input { padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; }
 .login-card button { padding: 12px; border: 0; border-radius: 8px; background: var(--accent); color: var(--primary-dark); font-weight: 600; cursor: pointer; }
 .login-card button:disabled { opacity: .6; }
-.login-card a { color: var(--muted); font-size: 13px; }
+.back-link { justify-self: center; display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 8px 18px;
+  border: 1px solid var(--border); border-radius: 30px; color: var(--primary); font-size: 13px; font-weight: 600; text-decoration: none;
+  transition: background .2s, color .2s, border-color .2s; }
+.back-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
+.back-link:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+.back-link:hover svg { transform: translateX(-3px); }
 .error { color: var(--danger); min-height: 20px; }
 
 /* Top bar */
@@ -170,3 +175,4 @@ button, input, select, textarea { font: inherit; }
 .state.session:empty { display: none; }
 .state.session.warn { background: rgba(198,40,40,.35); color: #ffd7d7; }
 .state.session { font-variant-numeric: tabular-nums; }
+.login-card .error:empty { display: none; }
