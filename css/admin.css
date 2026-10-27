@@ -203,3 +203,7 @@ button, input, select, textarea { font: inherit; }
 .pdf-view { text-decoration: none; }
 /* Viewing the file is harmless, so it stays usable while the page is locked. */
 .edit-area:disabled .pdf-view { opacity: 1; pointer-events: auto; cursor: pointer; }
+/* Keep the heading row (and lock button) clear of the first box, locked or not */
+.editor-head { margin-bottom: 16px; }
+.editor-head + .hint, .editor-head + .lock-note { margin-top: -6px; }
+.edit-area .item:first-child, .edit-area > .list-tools:first-child { margin-top: 0; }
