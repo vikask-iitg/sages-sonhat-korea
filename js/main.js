@@ -474,6 +474,14 @@ function initForms() {
   });
 }
 
+// Any picture that fails to load (e.g. a removed stock photo) falls back to a bundled school photo.
+document.addEventListener("error", e => {
+  const img = e.target;
+  if (img.tagName !== "IMG" || img.closest(".logo") || img.dataset.fallback) return;
+  img.dataset.fallback = "1";
+  img.src = "/images/placeholder.jpg";
+}, true);
+
 (async function init() {
   const content = await loadContent();
   content.site = { ...content.site, ...IDENTITY };
