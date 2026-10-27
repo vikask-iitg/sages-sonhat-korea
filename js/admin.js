@@ -136,7 +136,7 @@ function toast(msg, isError = false) {
 // ---------- rendering ----------
 // Icon and accent colour for each top-level sidebar entry; submenu items take their parent's colour.
 const NAV_STYLE = {
-  "School Details": ["🏫", "#0b3d91"], "Home Page": ["🏠", "#e65100"], "About Us": ["ℹ️", "#00897b"],
+  "School Details": ["🏫", "#0b3d91"], "Home Page": ["🏠", "#e65100"], "About Us": ["ℹ️", "#26a69a"],
   "Administration": ["👥", "#6a1b9a"], "Admission": ["📝", "#c62828"], "Academic": ["🎓", "#1565c0"],
   "Infrastructure": ["🏛️", "#6d4c41"], "Activities": ["⚽", "#2e7d32"], "News & Events": ["📰", "#ad1457"],
   "Gallery": ["🖼️", "#ef6c00"], "Contact Us": ["📞", "#00838f"],
