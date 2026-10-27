@@ -180,6 +180,7 @@ function fieldHtml([name, label, type = "text", option], path) {
     const ratio = option || 0;
     const preview = value ? `<img src="${esc(value)}" alt="">` : `<div class="noimg">No photo</div>`;
     return `<div class="field media"><span>${esc(label)}${ratio ? ` <em class="shape">${ratioName(ratio)}</em>` : ""}</span>
+      <small class="size-hint">📐 ${sizeLabel(ratio)} — larger photos are cropped and compressed automatically</small>
       <div class="media-row">
         <div class="preview" style="${ratio ? `aspect-ratio:${ratio}` : ""}">${preview}</div>
         <div class="media-actions">
@@ -252,7 +253,29 @@ function renderEditor() {
 }
 
 // ---------- cropping ----------
-const ratioName = r => ({ 1: "square", [16 / 9]: "wide 16:9", [4 / 3]: "4:3", [3 / 2]: "3:2", [4 / 5]: "portrait 4:5" })[r] || "";
+const ratioName = r => ({ 1: "Square", [16 / 9]: "Wide 16:9", [4 / 3]: "Landscape 4:3", [3 / 2]: "Landscape 3:2", [4 / 5]: "Portrait 4:5" })[r] || "";
+// Every photo of a given shape is saved at the same pixel size, which keeps files small and consistent.
+const OUTPUT_SIZE = { 1: [600, 600], [16 / 9]: [1600, 900], [4 / 3]: [1200, 900], [3 / 2]: [1200, 800], [4 / 5]: [800, 1000] };
+const MAX_IMAGE_BYTES = 500 * 1024; // the upload API enforces the same limit
+const sizeLabel = r => OUTPUT_SIZE[r] ? `${ratioName(r)} · ${OUTPUT_SIZE[r].join("×")} px · max 500 KB` : "max 500 KB";
+
+// JPEG-encodes a canvas, lowering quality (then size) until the file is under the limit.
+async function jpegUnderLimit(canvas) {
+  const encode = (c, q) => new Promise(res => c.toBlob(res, "image/jpeg", q));
+  let c = canvas;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    for (const q of [0.88, 0.8, 0.72, 0.64, 0.56]) {
+      const blob = await encode(c, q);
+      if (blob.size <= MAX_IMAGE_BYTES) return blob;
+    }
+    const smaller = document.createElement("canvas");
+    smaller.width = Math.round(c.width * 0.85);
+    smaller.height = Math.round(c.height * 0.85);
+    smaller.getContext("2d").drawImage(c, 0, 0, smaller.width, smaller.height);
+    c = smaller;
+  }
+  throw new Error("Could not make this photo smaller than 500 KB");
+}
 
 // Opens the crop window locked to the website's shape. Resolves to a JPEG blob, or null if cancelled.
 function openCropper(src, ratio) {
@@ -275,8 +298,11 @@ function openCropper(src, ratio) {
     modal.hidden = false;
     $("#crop-cancel").onclick = () => close(null);
     $("#crop-ok").onclick = () => {
-      const canvas = cropper.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1600, fillColor: "#fff", imageSmoothingQuality: "high" });
-      canvas.toBlob(blob => close(blob), "image/jpeg", 0.88);
+      const [width, height] = OUTPUT_SIZE[ratio] || [];
+      const canvas = cropper.getCroppedCanvas(width
+        ? { width, height, fillColor: "#fff", imageSmoothingQuality: "high" }
+        : { maxWidth: 1600, maxHeight: 1600, fillColor: "#fff", imageSmoothingQuality: "high" });
+      jpegUnderLimit(canvas).then(close, err => { close(null); toast(err.message, true); });
     };
   });
 }
@@ -286,12 +312,10 @@ async function autoCrop(file, ratio) {
   const bitmap = await createImageBitmap(file);
   let w = bitmap.width, h = bitmap.height;
   if (w / h > ratio) w = Math.round(h * ratio); else h = Math.round(w / ratio);
-  const scale = Math.min(1, 1600 / Math.max(w, h));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(w * scale);
-  canvas.height = Math.round(h * scale);
+  [canvas.width, canvas.height] = OUTPUT_SIZE[ratio] || [Math.min(w, 1600), Math.round(Math.min(w, 1600) / ratio)];
   canvas.getContext("2d").drawImage(bitmap, (bitmap.width - w) / 2, (bitmap.height - h) / 2, w, h, 0, 0, canvas.width, canvas.height);
-  return new Promise(res => canvas.toBlob(res, "image/jpeg", 0.88));
+  return jpegUnderLimit(canvas);
 }
 
 const asJpegFile = (blob, name) => new File([blob], name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
@@ -299,20 +323,21 @@ const asJpegFile = (blob, name) => new File([blob], name.replace(/\.[^.]+$/, "")
 // ---------- uploads ----------
 // Photos are shrunk in the browser so uploads stay fast and under the 4 MB API limit.
 async function shrinkImage(file) {
-  if (file.type === "image/gif" || (file.type === "image/png" && file.size < 1.5e6)) return file;
+  if (file.size <= MAX_IMAGE_BYTES && file.type !== "image/webp") return file;
+  if (file.type === "image/gif") throw new Error("GIF is larger than 500 KB — please use a smaller image");
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise(res => canvas.toBlob(res, "image/jpeg", 0.85));
+  return jpegUnderLimit(canvas);
 }
 
 async function upload(file) {
   const isPdf = file.type === "application/pdf";
   const body = isPdf ? file : await shrinkImage(file);
-  if (body.size > 4 * 1024 * 1024) throw new Error("File is larger than 4 MB");
+  if (body.size > (isPdf ? 4 * 1024 * 1024 : MAX_IMAGE_BYTES)) throw new Error(isPdf ? "PDF is larger than 4 MB" : "Photo is larger than 500 KB");
   const base = file.name.replace(/\.[^.]+$/, "");
   const ext = isPdf ? "pdf" : body.type === "image/png" ? "png" : body.type === "image/gif" ? "gif" : "jpg";
   const res = await fetch(`/api/upload?name=${encodeURIComponent(`${base}.${ext}`)}`, {
