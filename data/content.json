@@ -394,7 +394,8 @@
   "admission": {
     "note": "Admission is as per the guidelines issued by the School Education Department, Government of Chhattisgarh and the District Administration, Koriya. Education is free of cost. Please follow the official notice for exact dates.",
     "eligibility": "Class 1: Child should be of the age prescribed by the State Government as on the cut-off date.\nClasses 2–12: On the basis of vacant seats and previous class pass certificate.\nClass 11: Stream allotment as per Class 10 results and seat availability.",
-    "documents": "Birth certificate\nAadhaar card of student and parent\nResidence (domicile) certificate\nCaste certificate (if applicable)\nTransfer Certificate & previous mark sheet (Class 2 onward)\n4 recent passport-size photographs"
+    "documents": "Birth certificate\nAadhaar card of student and parent\nResidence (domicile) certificate\nCaste certificate (if applicable)\nTransfer Certificate & previous mark sheet (Class 2 onward)\n4 recent passport-size photographs",
+    "formPdf": "/docs/admission-form.pdf"
   },
   "admissionSteps": [
     {

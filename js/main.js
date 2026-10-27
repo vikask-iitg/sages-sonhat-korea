@@ -227,6 +227,10 @@ const RENDER = {
 
   admissionSteps: c => list(c.admissionSteps).map((s, i) => `<div class="feature"><div class="step-no">${i + 1}</div><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>`).join(""),
   admissionNote: c => `<p><strong>Note:</strong> ${esc(c.admission?.note)}</p>`,
+  admissionForm: c => {
+    const pdf = c.admission?.formPdf ?? "/docs/admission-form.pdf";
+    return pdf ? `<a class="btn" href="${esc(pdf)}" download="SAGES-Sonhat-Admission-Form.pdf" target="_blank" rel="noopener">⬇ Download Admission Form</a>` : "";
+  },
   eligibility: c => `<h2>Eligibility</h2><ul>${lines(c.admission?.eligibility)}</ul>`,
   documents: c => `<h2>Documents Required</h2><ul>${lines(c.admission?.documents)}</ul>`,
 

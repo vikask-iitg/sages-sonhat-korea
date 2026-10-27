@@ -51,6 +51,7 @@ const SECTIONS = [
     ["mission", "Mission (one point per line)", "textarea"], ["atmanand", "About Swami Atmanand", "textarea"],
   ] },
   { key: "admission", label: "Admission Details", fields: [["note", "Important note", "textarea"], ["eligibility", "Eligibility (one point per line)", "textarea"], ["documents", "Documents required (one per line)", "textarea"]] },
+  { key: "admissionForm", store: "admission", label: "Admission Form (PDF)", hint: "Shown as the “Download Admission Form” button on the Admission page. Remove the file to hide the button.", fields: [["formPdf", "Admission form PDF (max 4 MB)", "pdf"]] },
   { key: "admissionSteps", label: "Admission Steps", list: true, title: "title", fields: [["title", "Step title"], ["text", "Description", "textarea"]] },
   { key: "curriculum", label: "Classes & Curriculum", list: true, title: "level", fields: [["level", "Level"], ["classes", "Classes"], ["subjects", "Subjects", "textarea"]] },
   { key: "results", label: "Board Results", list: true, title: "year", fields: [["year", "Year"], ["className", "Class"], ["appeared", "Appeared"], ["passed", "Passed"], ["percent", "Pass %"]] },
@@ -74,7 +75,7 @@ const NAV = [
     ] },
     ["about", "About Us"],
     { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"]] },
-    { menu: "Admission", items: [["admissionSteps", "Admission Process"], ["admission", "Eligibility & Documents"]] },
+    { menu: "Admission", items: [["admissionSteps", "Admission Process"], ["admission", "Eligibility & Documents"], ["admissionForm", "Admission Form (PDF)"]] },
     { menu: "Academic", items: [["curriculum", "Classes & Curriculum"], ["results", "Results"], ["achievements", "Student Achievements"], ["calendar", "School Calendar"]] },
     { menu: "Infrastructure", items: [["classrooms", "Smart Classrooms"], ["labs", "Laboratories"], ["library", "Library"], ["campus", "School Campus"]] },
     { menu: "Activities", items: [["activities", "Sports Events", "sports"], ["activities", "Cultural Events", "cultural"], ["activities", "Technical Events", "technical"], ["activities", "Scout Guide / NSS", "scout"]] },
@@ -161,6 +162,18 @@ function fieldHtml([name, label, type = "text", choices], path) {
   if (type === "textarea") {
     return `<label class="field"><span>${esc(label)}</span><textarea data-path="${path}" rows="${String(value).length > 200 ? 8 : 3}">${esc(value)}</textarea></label>`;
   }
+  if (type === "pdf") {
+    const preview = value ? `<a href="${esc(value)}" target="_blank" rel="noopener">📄 Open PDF</a>` : `<div class="noimg">No file</div>`;
+    return `<div class="field media"><span>${esc(label)}</span>
+      <div class="media-row">
+        <div class="preview">${preview}</div>
+        <div class="media-actions">
+          <label class="btn-sm primary">Upload PDF
+            <input type="file" hidden accept="application/pdf" data-upload="${path}"></label>
+          ${value ? `<button class="btn-sm danger" data-action="clear" data-path="${path}">Remove</button>` : ""}
+        </div>
+      </div></div>`;
+  }
   if (type === "image") {
     const preview = value ? `<img src="${esc(value)}" alt="">` : `<div class="noimg">No photo</div>`;
     return `<div class="field media"><span>${esc(label)}</span>
@@ -220,8 +233,9 @@ function renderEditor() {
           <div class="item-body">${sec.fields.map(f => fieldHtml(f, `${sec.key}.${i}.${f[0]}`)).join("")}</div>
         </div>`).join("") || `<p class="empty">Nothing here yet. Click “+ Add new”.</p>`}`;
   } else {
-    if (!content[sec.key]) content[sec.key] = {};
-    body = `<div class="item"><div class="item-body">${sec.fields.map(f => fieldHtml(f, `${sec.key}.${f[0]}`)).join("")}</div></div>`;
+    const dataKey = sec.store || sec.key; // "store" lets a section edit part of another content object
+    if (!content[dataKey]) content[dataKey] = {};
+    body = `<div class="item"><div class="item-body">${sec.fields.map(f => fieldHtml(f, `${dataKey}.${f[0]}`)).join("")}</div></div>`;
   }
   $("#editor").innerHTML = `<h2>${esc(label)}</h2>${sec.hint && !anchor ? `<p class="hint">${esc(sec.hint)}</p>` : ""}${body}`;
 }
@@ -240,10 +254,11 @@ async function shrinkImage(file) {
 }
 
 async function upload(file) {
-  const body = await shrinkImage(file);
+  const isPdf = file.type === "application/pdf";
+  const body = isPdf ? file : await shrinkImage(file);
   if (body.size > 4 * 1024 * 1024) throw new Error("File is larger than 4 MB");
   const base = file.name.replace(/\.[^.]+$/, "");
-  const ext = body.type === "image/png" ? "png" : body.type === "image/gif" ? "gif" : "jpg";
+  const ext = isPdf ? "pdf" : body.type === "image/png" ? "png" : body.type === "image/gif" ? "gif" : "jpg";
   const res = await fetch(`/api/upload?name=${encodeURIComponent(`${base}.${ext}`)}`, {
     method: "POST", headers: { "content-type": body.type }, body,
   });
