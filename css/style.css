@@ -410,3 +410,20 @@ img.ph { width: 100%; object-fit: cover; }
 /* Dropdowns: custom arrow with breathing room instead of the browser's edge-hugging one */
 select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b3d91' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; padding-right: 42px !important; cursor: pointer; }
+
+/* Contact page info card */
+.contact-card { background: #fff; border: 1px solid var(--border); border-top: 4px solid var(--accent); border-radius: 14px;
+  padding: 10px 24px 22px; box-shadow: var(--shadow); margin-bottom: 24px; }
+.contact-list { list-style: none; padding: 0; margin: 0; }
+.contact-list li { display: flex; gap: 16px; align-items: flex-start; padding: 16px 0; border-bottom: 1px dashed var(--border); margin: 0;
+  color: var(--text); font-size: 15px; line-height: 1.6; }
+.contact-list li:last-child { border-bottom: 0; }
+.contact-card .f-ico { width: 44px; height: 44px; border-radius: 12px; background: #fff6e6; border: 1px solid #f6d9a6; color: var(--accent-dark); }
+.contact-card .f-ico svg { width: 20px; height: 20px; }
+.contact-list small, .contact-follow small { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-dark); margin-bottom: 2px; }
+.contact-list strong { display: block; color: var(--primary-dark); font-weight: 600; }
+.contact-list a { color: var(--primary); font-weight: 500; }
+.contact-list a:hover { color: var(--accent-dark); }
+.contact-follow { padding-top: 16px; border-top: 1px solid var(--border); }
+.contact-follow .socials { margin-top: 10px; }
+.contact-card .contact-list { padding-left: 0; }

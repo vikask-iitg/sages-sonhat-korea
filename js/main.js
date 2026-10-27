@@ -291,12 +291,15 @@ const RENDER = {
       <div class="container intro content">${textWithImage(a.title, a.text, a.image, i % 2 === 1)}</div>
     </section>`).join(""),
 
+  // Same icon set as the footer's contact column, in a light card.
   contactInfo: c => `
-    <p><strong>📍 Address</strong><br>${esc(c.site.name)},<br>${esc(c.site.address)}</p>
-    <p><strong>✉ Email</strong><br><a href="mailto:${esc(c.site.email)}">${esc(c.site.email)}</a></p>
-    <p><strong>☎ Phone</strong><br>${telLink(c.site.phone)}</p>
-    <p><strong>🕘 Office Hours</strong><br>${esc(c.site.hoursWeekday)}<br>${esc(c.site.hoursSaturday)}</p>
-    ${socialLinks(c.site, "social") ? `<p><strong>Follow Us</strong></p><div class="socials">${socialLinks(c.site, "social")}</div>` : ""}`,
+    <ul class="contact-list">
+      <li>${footerIcon("pin")}<div><small>Address</small><strong>${esc(c.site.name)}</strong>${esc(c.site.address)}</div></li>
+      <li>${footerIcon("mail")}<div><small>Email</small><a href="mailto:${esc(c.site.email)}">${esc(c.site.email)}</a></div></li>
+      <li>${footerIcon("phone")}<div><small>Phone</small>${telLink(c.site.phone)}</div></li>
+      <li>${footerIcon("clock")}<div><small>Office Hours</small>${esc(c.site.hoursWeekday)}<br>${esc(c.site.hoursSaturday)}</div></li>
+    </ul>
+    ${socialLinks(c.site, "social") ? `<div class="contact-follow"><small>Follow us</small><div class="socials">${socialLinks(c.site, "social")}</div></div>` : ""}`,
 };
 
 // ---------- layout ----------
