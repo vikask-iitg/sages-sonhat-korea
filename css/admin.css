@@ -150,3 +150,6 @@ button, input, textarea { font: inherit; }
 .edit-area:disabled .item { background: #fafbfd; }
 .edit-area:disabled input, .edit-area:disabled textarea, .edit-area:disabled select { background: #f4f6fa; color: #4a5868; cursor: not-allowed; }
 .edit-area:disabled .btn-sm, .edit-area:disabled .icon { opacity: .4; cursor: not-allowed; pointer-events: none; }
+.crop-btn { display: inline-flex; align-items: center; gap: 6px; border-color: #ce93d8; color: #6a1b9a; background: #faf5fc; font-weight: 600; }
+.crop-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.crop-btn:hover { background: #6a1b9a; border-color: #6a1b9a; color: #fff; }

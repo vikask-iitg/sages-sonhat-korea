@@ -185,7 +185,7 @@ function fieldHtml([name, label, type = "text", option], path) {
         <div class="media-actions">
           <label class="btn-sm primary">Upload photo
             <input type="file" hidden accept="image/*" data-upload="${path}" data-ratio="${ratio}"></label>
-          ${value && ratio ? `<button class="btn-sm" data-action="recrop" data-path="${path}" data-ratio="${ratio}">✂ Adjust crop</button>` : ""}
+          ${value && ratio ? `<button class="btn-sm crop-btn" data-action="recrop" data-path="${path}" data-ratio="${ratio}" title="Re-frame this photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>Edit photo</button>` : ""}
           ${value ? `<button class="btn-sm danger" data-action="clear" data-path="${path}">Remove</button>` : ""}
           <input type="url" data-path="${path}" value="${esc(value)}" placeholder="…or paste a link">
         </div>
