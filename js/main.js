@@ -288,7 +288,6 @@ function renderHeader(c) {
         <div class="ticker"><div class="ticker-track">${ticker}</div></div>
         <div class="topbar-links">
           <a href="mailto:${esc(s.email)}">✉ ${esc(s.email)}</a>
-          <a href="/pages/contact.html">Contact Now</a>
           ${socialLinks(s, "top-social")}
           <a href="/pages/admin.html" class="admin-link">🔒 Admin</a>
         </div>

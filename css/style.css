@@ -341,7 +341,8 @@ img.ph { width: 100%; object-fit: cover; }
   width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: var(--primary-dark);
   display: grid; place-items: center; font-weight: 700; font-size: 18px; margin-bottom: 10px;
 }
-.download-row { margin-top: 22px; text-align: center; }
+.download-row { margin: -16px 0 32px; text-align: center; }
+.download-row:empty { display: none; }
 
 /* Social icons */
 .topbar-links .top-social { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
