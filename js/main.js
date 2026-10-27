@@ -250,7 +250,11 @@ const RENDER = {
 
   gallery: (c, el) => list(c.gallery).slice(0, limitOf(el, c)).map(g => `<a href="${esc(g.image)}"><img src="${esc(g.image)}" alt="${esc(g.caption)}" loading="lazy"><span>${esc(g.caption)}</span></a>`).join(""),
 
-  partners: c => list(c.partners).map(p => `<a class="partner" href="${esc(p.link)}" target="_blank" rel="noopener"><div class="icon">${esc(p.icon)}</div>${esc(p.name)}</a>`).join(""),
+  partners: c => list(c.partners).map(p => `<a class="partner" href="${esc(p.link)}" target="_blank" rel="noopener">
+    <span class="partner-icon">${esc(p.icon)}</span>
+    <span class="partner-name">${esc(p.name)}</span>
+    ${p.link ? `<span class="partner-link">Visit website <span aria-hidden="true">↗</span></span>` : ""}
+  </a>`).join(""),
 
   cta: c => `<h2>${esc(c.cta?.text)}</h2>${c.cta?.buttonText ? `<a href="${esc(pageLink(c.cta.buttonLink))}" class="btn">${esc(c.cta.buttonText)}</a>` : ""}`,
 
