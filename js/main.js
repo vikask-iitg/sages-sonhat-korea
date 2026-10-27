@@ -91,7 +91,11 @@ function renderHeader() {
     </div>
     <header class="site-header">
       <div class="container">
-        <a href="index.html" class="logo" aria-label="Home">SAGES<small>SONHAT</small></a>
+        <a href="index.html" class="logo" aria-label="Home">
+          <img src="images/logo.png" alt="Swami Atmanand English Medium School Scheme logo"
+            onerror="this.parentElement.classList.remove('has-img'); this.remove()"
+            onload="this.parentElement.classList.add('has-img')">
+          SAGES<small>SONHAT</small></a>
         <div class="brand">
           <h1>${SCHOOL.name}</h1>
           <div class="hindi">${SCHOOL.hindi}</div>
