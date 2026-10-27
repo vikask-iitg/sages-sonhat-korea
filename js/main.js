@@ -4,51 +4,51 @@
 // are filled by the matching renderer below.
 
 const MENU = [
-  { label: "Home", href: "index.html" },
-  { label: "About Us", href: "about.html" },
+  { label: "Home", href: "/" },
+  { label: "About Us", href: "/pages/about.html" },
   {
-    label: "Administration", href: "administration.html", sub: [
-      ["Principal's Profile", "administration.html#principal"],
-      ["School Management Committee", "administration.html#smc"],
-      ["Faculty", "administration.html#faculty"],
-      ["Administrative Staff", "administration.html#staff"],
-      ["Parent Teacher Association", "administration.html#pta"],
+    label: "Administration", href: "/pages/administration.html", sub: [
+      ["Principal's Profile", "/pages/administration.html#principal"],
+      ["School Management Committee", "/pages/administration.html#smc"],
+      ["Faculty", "/pages/administration.html#faculty"],
+      ["Administrative Staff", "/pages/administration.html#staff"],
+      ["Parent Teacher Association", "/pages/administration.html#pta"],
     ],
   },
   {
-    label: "Admission", href: "admission.html", sub: [
-      ["Admission Process", "admission.html#process"],
-      ["Eligibility & Documents", "admission.html#documents"],
-      ["Registration Enquiry", "admission.html#registration"],
+    label: "Admission", href: "/pages/admission.html", sub: [
+      ["Admission Process", "/pages/admission.html#process"],
+      ["Eligibility & Documents", "/pages/admission.html#documents"],
+      ["Registration Enquiry", "/pages/admission.html#registration"],
     ],
   },
   {
-    label: "Academic", href: "academic.html", sub: [
-      ["Classes & Curriculum", "academic.html#curriculum"],
-      ["Results", "academic.html#results"],
-      ["Student Achievements", "academic.html#achievements"],
-      ["School Calendar", "academic.html#calendar"],
+    label: "Academic", href: "/pages/academic.html", sub: [
+      ["Classes & Curriculum", "/pages/academic.html#curriculum"],
+      ["Results", "/pages/academic.html#results"],
+      ["Student Achievements", "/pages/academic.html#achievements"],
+      ["School Calendar", "/pages/academic.html#calendar"],
     ],
   },
   {
-    label: "Infrastructure", href: "infrastructure.html", sub: [
-      ["Smart Classrooms", "infrastructure.html#classrooms"],
-      ["Laboratories", "infrastructure.html#labs"],
-      ["Library", "infrastructure.html#library"],
-      ["School Campus", "infrastructure.html#campus"],
+    label: "Infrastructure", href: "/pages/infrastructure.html", sub: [
+      ["Smart Classrooms", "/pages/infrastructure.html#classrooms"],
+      ["Laboratories", "/pages/infrastructure.html#labs"],
+      ["Library", "/pages/infrastructure.html#library"],
+      ["School Campus", "/pages/infrastructure.html#campus"],
     ],
   },
   {
-    label: "Activities", href: "activities.html", sub: [
-      ["Sports Events", "activities.html#sports"],
-      ["Cultural Events", "activities.html#cultural"],
-      ["Technical Events", "activities.html#technical"],
-      ["Scout Guide / NSS", "activities.html#scout"],
+    label: "Activities", href: "/pages/activities.html", sub: [
+      ["Sports Events", "/pages/activities.html#sports"],
+      ["Cultural Events", "/pages/activities.html#cultural"],
+      ["Technical Events", "/pages/activities.html#technical"],
+      ["Scout Guide / NSS", "/pages/activities.html#scout"],
     ],
   },
-  { label: "News & Events", href: "news.html" },
-  { label: "Gallery", href: "gallery.html" },
-  { label: "Contact Us", href: "contact.html" },
+  { label: "News & Events", href: "/pages/news.html" },
+  { label: "Gallery", href: "/pages/gallery.html" },
+  { label: "Contact Us", href: "/pages/contact.html" },
 ];
 
 // School identity is fixed here on purpose and is not editable from the admin panel.
@@ -56,7 +56,7 @@ const IDENTITY = {
   name: "Swami Atmanand Government English Medium School",
   hindi: "स्वामी आत्मानंद शासकीय अंग्रेजी माध्यम विद्यालय",
   place: "Sonhat, District - Koriya, Chhattisgarh",
-  logo: "images/logo.png",
+  logo: "/images/logo.png",
 };
 
 const MONTHS =["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -66,7 +66,7 @@ async function loadContent() {
     const res = await fetch("/api/content");
     if (res.ok) return await res.json();
   } catch { /* local preview has no API */ }
-  const res = await fetch("data/content.json");
+  const res = await fetch("/data/content.json");
   return res.json();
 }
 
@@ -75,6 +75,12 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const paras = text => String(text || "").split(/\n\s*\n/).filter(Boolean).map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 const lines = text => String(text || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => `<li>${esc(l)}</li>`).join("");
 const list = v => Array.isArray(v) ? v : [];
+// Links saved before pages moved into /pages/ (e.g. "admission.html") still point to the right place.
+const pageLink = href => {
+  const h = String(href || "#");
+  if (/^(index\.html)?(#.*)?$/.test(h) && h !== "#" && !h.startsWith("#")) return "/" + h.replace("index.html", "");
+  return /^[\w-]+\.html(#.*)?$/.test(h) ? `/pages/${h}` : h;
+};
 
 function dateBox(iso) {
   const [, m, d] = String(iso || "").split("-");
@@ -130,7 +136,7 @@ const RENDER = {
       <div class="container">
         <h2>${esc(s.title)}</h2>
         <p>${esc(s.text)}</p>
-        ${s.buttonText ? `<a href="${esc(s.buttonLink || "#")}" class="btn">${esc(s.buttonText)}</a>` : ""}
+        ${s.buttonText ? `<a href="${esc(pageLink(s.buttonLink))}" class="btn">${esc(s.buttonText)}</a>` : ""}
       </div>
     </div>`).join("") + `<div class="slider-dots"></div>`,
 
@@ -141,7 +147,7 @@ const RENDER = {
       <h2>${esc(c.intro?.title)}</h2>
       <div class="loc">${esc(c.site.place)}</div>
       ${paras(c.intro?.text)}
-      <a href="about.html" class="btn btn-outline">Read More</a>
+      <a href="/pages/about.html" class="btn btn-outline">Read More</a>
     </div>
     ${c.intro?.image ? `<img class="reveal" src="${esc(c.intro.image)}" alt="">` : ""}`,
 
@@ -165,7 +171,7 @@ const RENDER = {
         <div class="section-title" style="text-align:left;margin-bottom:10px"><span>${esc(c.home?.principalKicker || "From the Desk of")}</span><h2>${esc(c.home?.principalTitle || "Principal's Message")}</h2></div>
         ${p.quote ? `<blockquote>“${esc(p.quote)}”</blockquote>` : ""}
         ${paras(first)}
-        <a href="administration.html#principal" class="btn btn-outline">Read More</a>
+        <a href="/pages/administration.html#principal" class="btn btn-outline">Read More</a>
       </div>`;
   },
 
@@ -203,7 +209,7 @@ const RENDER = {
 
   partners: c => list(c.partners).map(p => `<a class="partner" href="${esc(p.link)}" target="_blank" rel="noopener"><div class="icon">${esc(p.icon)}</div>${esc(p.name)}</a>`).join(""),
 
-  cta: c => `<h2>${esc(c.cta?.text)}</h2>${c.cta?.buttonText ? `<a href="${esc(c.cta.buttonLink || "#")}" class="btn">${esc(c.cta.buttonText)}</a>` : ""}`,
+  cta: c => `<h2>${esc(c.cta?.text)}</h2>${c.cta?.buttonText ? `<a href="${esc(pageLink(c.cta.buttonLink))}" class="btn">${esc(c.cta.buttonText)}</a>` : ""}`,
 
   about: c => textWithImage("Our School", c.about?.text, c.about?.image),
   vision: c => `<h2>🎯 Our Vision</h2>${paras(c.about?.vision)}`,
@@ -243,14 +249,14 @@ const RENDER = {
 
 // ---------- layout ----------
 function currentPage() {
-  const file = location.pathname.split("/").pop();
-  return file === "" ? "index.html" : file;
+  const path = location.pathname;
+  return path === "/index.html" ? "/" : path;
 }
 
 function renderHeader(c) {
   const s = c.site;
   const page = currentPage();
-  const ticker = list(c.ticker).map(n => `<a href="news.html"><span class="badge-new">NEW</span>${esc(n.text)}</a>`).join("");
+  const ticker = list(c.ticker).map(n => `<a href="/pages/news.html"><span class="badge-new">NEW</span>${esc(n.text)}</a>`).join("");
   const menu = MENU.map(item => {
     const active = item.href === page ? " active" : "";
     if (!item.sub) return `<li class="${active}"><a href="${item.href}">${item.label}</a></li>`;
@@ -264,14 +270,14 @@ function renderHeader(c) {
         <div class="ticker"><div class="ticker-track">${ticker}</div></div>
         <div class="topbar-links">
           <a href="mailto:${esc(s.email)}">✉ ${esc(s.email)}</a>
-          <a href="contact.html">Contact Now</a>
-          <a href="admin.html" class="admin-link">🔒 Admin</a>
+          <a href="/pages/contact.html">Contact Now</a>
+          <a href="/pages/admin.html" class="admin-link">🔒 Admin</a>
         </div>
       </div>
     </div>
     <header class="site-header">
       <div class="container">
-        <a href="index.html" class="logo" aria-label="Home">
+        <a href="/" class="logo" aria-label="Home">
           <img src="${esc(s.logo)}" alt="School logo"
             onerror="this.parentElement.classList.remove('has-img'); this.remove()"
             onload="this.parentElement.classList.add('has-img')">
@@ -307,11 +313,11 @@ function renderFooter(c) {
         <div>
           <h4>Quick Links</h4>
           <ul>
-            <li><a href="about.html">About Us</a></li>
-            <li><a href="admission.html">Admission</a></li>
-            <li><a href="administration.html#faculty">Faculty</a></li>
-            <li><a href="academic.html#results">Results</a></li>
-            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="/pages/about.html">About Us</a></li>
+            <li><a href="/pages/admission.html">Admission</a></li>
+            <li><a href="/pages/administration.html#faculty">Faculty</a></li>
+            <li><a href="/pages/academic.html#results">Results</a></li>
+            <li><a href="/pages/contact.html">Contact Us</a></li>
           </ul>
         </div>
         <div>
@@ -333,7 +339,7 @@ function renderFooter(c) {
         </div>
       </div>
       <div class="footer-bottom">
-        © ${year} ${esc(s.name)}, Sonhat. All rights reserved. · <a href="admin.html">Admin</a>
+        © ${year} ${esc(s.name)}, Sonhat. All rights reserved. · <a href="/pages/admin.html">Admin</a>
       </div>
     </footer>
     <button class="back-to-top" aria-label="Back to top">↑</button>

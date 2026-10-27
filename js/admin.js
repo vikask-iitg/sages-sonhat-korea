@@ -365,7 +365,7 @@ function showLogin(keepContent = false) {
 }
 
 async function loadContent() {
-  const defaults = await (await fetch("data/content.json", { cache: "no-store" })).json();
+  const defaults = await (await fetch("/data/content.json", { cache: "no-store" })).json();
   // Unique query skips the short edge cache, so the editor always starts from the latest save.
   const res = await fetch(`/api/content?t=${Date.now()}`, { cache: "no-store" });
   if (!res.ok) return defaults;

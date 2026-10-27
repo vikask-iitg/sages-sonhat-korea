@@ -1,0 +1,6 @@
+{
+  "redirects": [
+    { "source": "/:page(about|academic|activities|admin|administration|admission|contact|gallery|infrastructure|news).html", "destination": "/pages/:page.html", "permanent": true },
+    { "source": "/disclosure.html", "destination": "/", "permanent": true }
+  ]
+}

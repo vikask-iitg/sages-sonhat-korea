@@ -45,21 +45,21 @@
       "text": "Quality English-medium education, free for every child — right here in Sonhat, Koriya.",
       "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&q=70",
       "buttonText": "Admissions 2026-27",
-      "buttonLink": "admission.html"
+      "buttonLink": "/pages/admission.html"
     },
     {
       "title": "Learning Beyond Classrooms",
       "text": "Smart classes, modern science and computer labs, and a well-stocked library.",
       "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&q=70",
       "buttonText": "Explore Facilities",
-      "buttonLink": "infrastructure.html"
+      "buttonLink": "/pages/infrastructure.html"
     },
     {
       "title": "Shaping Confident Young Minds",
       "text": "Sports, cultural and technical activities that build character and leadership.",
       "image": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1600&q=70",
       "buttonText": "Our Activities",
-      "buttonLink": "activities.html"
+      "buttonLink": "/pages/activities.html"
     }
   ],
   "features": [
@@ -327,7 +327,7 @@
   "cta": {
     "text": "Admissions open for Session 2026-27",
     "buttonText": "Apply / Enquire Now",
-    "buttonLink": "admission.html"
+    "buttonLink": "/pages/admission.html"
   },
   "about": {
     "text": "Swami Atmanand Government English Medium School, Sonhat is part of the Swami Atmanand Utkrisht Vidyalaya Yojana of the Government of Chhattisgarh. The scheme was launched on 1st November 2020, Chhattisgarh Rajyotsava, so that children from every section of society — especially from rural, tribal and economically weaker families — can receive high-quality English-medium education free of cost.\n\nLocated in Sonhat block of Koriya district, the school serves students from Class 1 to Class 12 and offers modern facilities including smart classrooms, science and computer laboratories, a library and sports grounds.",
