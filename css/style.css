@@ -318,6 +318,8 @@ tr:nth-child(even) td { background: var(--bg-soft); }
   .footer-grid, .form .row { grid-template-columns: 1fr; }
   .logo { width: 60px; height: 60px; font-size: 12px; }
   .logo.has-img { width: 72px; height: 72px; }
+  /* Banner text runs taller on phones, so the feature cards sit below it instead of overlapping. */
+  .features { margin-top: 24px; gap: 16px; }
   .site-header .container { gap: 10px; padding: 10px 0; }
   .brand h1, .brand .hindi { text-wrap: balance; }
   .brand h1 { font-size: 14.5px; line-height: 1.25; }
