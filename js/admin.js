@@ -28,7 +28,6 @@ const SECTIONS = [
   { key: "notices", label: "Important Notices", list: true, title: "text", hint: "Shown newest first automatically.", fields: [["date", "Date", "date"], ["text", "Notice", "textarea"]] },
   { key: "news", label: "Latest News", list: true, title: "text", hint: "Shown newest first automatically.", fields: [["date", "Date", "date"], ["text", "News", "textarea"]] },
   { key: "events", label: "Upcoming Events", list: true, title: "text", hint: "Shown in date order. Delete events once they are over.", fields: [["date", "Date", "date"], ["text", "Event", "textarea"]] },
-,
   { key: "principal", label: "Principal & Message", fields: [
     ["photo", "Principal's photo", "image"], ["name", "Name"], ["qualification", "Qualification"], ["experience", "Experience"],
     ["quote", "Quote"], ["message", "Message (blank line = new paragraph)", "textarea"],
@@ -38,17 +37,13 @@ const SECTIONS = [
   { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["designation", "Designation / Subject"]] },
   { key: "stars", label: "Star Performers", list: true, title: "name", fields: [["photo", "Photo", "image"], ["name", "Name"], ["className", "Class"], ["score", "Score / Award"]] },
   { key: "gallery", label: "Photo Gallery", list: true, title: "caption", bulk: "image", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image"], ["caption", "Caption"]] },
-,
   { key: "partners", label: "Partners", list: true, title: "name", fields: [["icon", "Icon (emoji)"], ["name", "Name"], ["link", "Website link", "url"]] },
-,
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
-,
 
   { group: "People" },
   { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
   { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
-,
 
   { group: "Pages" },
   { key: "about", label: "About Us", fields: [
