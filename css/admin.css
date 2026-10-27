@@ -158,3 +158,14 @@ button, input, select, textarea { font: inherit; }
 /* Dropdowns: custom arrow set in from the edge */
 .field select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b3d91' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; padding-right: 42px; cursor: pointer; }
+
+/* Login: password show/hide */
+.pw-wrap { position: relative; }
+.pw-wrap input { width: 100%; padding-right: 46px; }
+.pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 8px;
+  background: transparent !important; color: var(--muted) !important; padding: 0 !important; display: grid; place-items: center; cursor: pointer; }
+.pw-toggle:hover { color: var(--primary) !important; background: var(--bg) !important; }
+.pw-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.state.session { background: rgba(255,255,255,.12); color: #dbe5f7; }
+.state.session:empty { display: none; }
+.state.session.warn { background: rgba(198,40,40,.35); color: #ffd7d7; }

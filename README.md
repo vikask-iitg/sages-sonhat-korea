@@ -34,10 +34,11 @@ and a layout that works on phones.
 
 ## Updating content (for school staff)
 
-1. Open the **Admin panel** link above, or click **🔒 Admin** in the top bar of any page, and log in.
+1. Open the **Admin panel** link above, or click **🔒 Admin** in the top bar of any page, and log in with the admin
+   email ID and password. You are logged out automatically after 1 hour; unsaved edits stay on the page.
 2. Pick a section in the left sidebar. The **Pages** group follows the website menu (Home Page, About Us,
    Administration, Admission, and so on).
-3. Edit, add (**+ Add new**), delete (🗑) or reorder (↑ ↓) items.
+3. Click **Unlock to edit** (each page opens locked), then edit, add (**+ Add new**), delete (🗑) or reorder (↑ ↓) items.
 4. Click **💾 Save changes** (or press Ctrl/Cmd + S). The website updates within a few seconds.
 
 **Photos:** uploading opens a crop window locked to the shape the website uses, so photos never look stretched:
@@ -72,7 +73,7 @@ Browser ──► static pages (index.html, pages/*.html) + js/main.js
                  │
                  └─ GET /api/content ──► Vercel Blob: content.json   (falls back to data/content.json)
 
-Admin panel ──► /api/login ──► signed HttpOnly session cookie (8 hours)
+Admin panel ──► /api/login ──► signed HttpOnly session cookie (1 hour, then auto logout)
             ──► PUT /api/content  ──► saves content.json (+ backups/)
             ──► POST /api/upload  ──► stores photos / PDFs in Blob under uploads/
 ```
@@ -140,7 +141,8 @@ Pushing to `main` deploys to production automatically through Vercel's GitHub in
 
 | Variable | Purpose |
 |---|---|
-| `ADMIN_PASSWORD` | Admin panel password. Change it here and redeploy to rotate it. |
+| `ADMIN_EMAIL` | Admin login email ID. |
+| `ADMIN_PASSWORD` | Admin login password. Change it here and redeploy to rotate it. |
 | `ADMIN_SECRET` | Random secret that signs login cookies. Changing it logs everyone out. |
 | `BLOB_READ_WRITE_TOKEN` | Set automatically by the connected Vercel Blob store (`sagessonhatkorea-blob`, Mumbai region). |
 

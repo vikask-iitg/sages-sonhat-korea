@@ -457,6 +457,7 @@ document.addEventListener("click", async e => {
   if (action === "logout") {
     if (dirty && !confirm("You have unsaved changes. Log out anyway?")) return;
     await fetch("/api/logout", { method: "POST" });
+    clearInterval(sessionTimer);
     dirty = false;
     showLogin();
   }
@@ -495,7 +496,7 @@ function showLogin(keepContent = false) {
   if (!keepContent) content = null;
   $("#app").hidden = true;
   $("#login").hidden = false;
-  $("#password").focus();
+  $("#email").focus();
 }
 
 async function loadContent() {
@@ -523,22 +524,80 @@ async function showApp() {
   markDirty(dirty);
 }
 
+// Eye button: show or hide the typed password.
+const EYE_OPEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_SHUT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+$("#pw-toggle").addEventListener("click", () => {
+  const input = $("#password"), btn = $("#pw-toggle");
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  btn.innerHTML = show ? EYE_SHUT : EYE_OPEN;
+  btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  btn.title = btn.getAttribute("aria-label");
+  input.focus();
+});
+
+// ---------- auto logout ----------
+// The server ends sessions 1 hour after login; this mirrors it so the admin sees the countdown
+// and is returned to the login screen on time. Unsaved edits stay on the page for after re-login.
+let sessionExp = 0, sessionTimer = null, warned = false;
+
+function startSessionClock(exp) {
+  sessionExp = exp || 0;
+  warned = false;
+  clearInterval(sessionTimer);
+  if (!sessionExp) return;
+  tickSession();
+  sessionTimer = setInterval(tickSession, 15000);
+}
+
+function tickSession() {
+  if (!sessionExp) return;
+  const left = sessionExp * 1000 - Date.now();
+  if (left <= 0) return autoLogout();
+  const mins = Math.ceil(left / 60000);
+  $("#session-left").textContent = `⏱ Auto logout in ${mins} min`;
+  $("#session-left").classList.toggle("warn", mins <= 5);
+  if (mins <= 5 && !warned) {
+    warned = true;
+    toast(`You will be logged out in ${mins} minute${mins === 1 ? "" : "s"}. Save your changes.`, true);
+  }
+}
+
+async function autoLogout() {
+  clearInterval(sessionTimer);
+  sessionExp = 0;
+  await fetch("/api/logout", { method: "POST" }).catch(() => {});
+  locked = true;
+  showLogin(true);
+  $("#login-error").textContent = dirty
+    ? "Logged out after 1 hour. Log in again — your unsaved changes are kept."
+    : "Logged out after 1 hour. Please log in again.";
+}
+
+// Timers pause in background tabs, so check again when the tab is shown.
+document.addEventListener("visibilitychange", () => { if (!document.hidden) tickSession(); });
+
 $("#login-form").addEventListener("submit", async e => {
   e.preventDefault();
-  const btn = e.target.querySelector("button");
+  const btn = e.target.querySelector("button[type=submit]");
   btn.disabled = true;
   $("#login-error").textContent = "";
   const res = await fetch("/api/login", {
-    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password: $("#password").value }),
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: $("#email").value, password: $("#password").value }),
   }).catch(() => null);
   btn.disabled = false;
-  if (!res?.ok) { $("#login-error").textContent = res?.status === 401 ? "Wrong password." : "Could not reach the server."; return; }
+  if (!res?.ok) { $("#login-error").textContent = res?.status === 401 ? "Wrong email or password." : "Could not reach the server."; return; }
   $("#password").value = "";
-  showApp();
+  $("#password").type = "password";
+  $("#pw-toggle").innerHTML = EYE_OPEN;
+  const data = await res.json().catch(() => ({}));
+  await showApp();
+  startSessionClock(data.exp);
 });
 
 (async () => {
   const res = await fetch("/api/session").catch(() => null);
   const data = res?.ok ? await res.json() : {};
-  data.authed ? showApp() : showLogin();
+  if (data.authed) { await showApp(); startSessionClock(data.exp); } else showLogin();
 })();

@@ -16,7 +16,11 @@
       <img src="/images/logo.png" alt="" class="login-logo">
       <h1>Admin Login</h1>
       <p>SAGES Sonhat website</p>
-      <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
+      <input id="email" type="email" placeholder="Email ID" autocomplete="username" required>
+      <div class="pw-wrap">
+        <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
+        <button type="button" id="pw-toggle" class="pw-toggle" aria-label="Show password" title="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
       <button type="submit">Log in</button>
       <div id="login-error" class="error"></div>
       <a href="/">← Back to website</a>
@@ -27,6 +31,7 @@
     <header class="bar">
       <div class="brand"><img src="/images/logo.png" alt=""> SAGES Sonhat · Admin</div>
       <div class="bar-actions">
+        <span id="session-left" class="state session"></span>
         <span id="save-state" class="state ok">All changes saved</span>
         <button id="save" class="btn primary" data-action="save" disabled>💾 Save changes</button>
         <a class="btn" href="/" target="_blank">View website ↗</a>

@@ -2,7 +2,7 @@
 import crypto from "node:crypto";
 
 const COOKIE = "sages_admin";
-const SESSION_SECONDS = 8 * 60 * 60;
+const SESSION_SECONDS = 60 * 60; // admins are logged out automatically after 1 hour
 
 function hmac(value) {
   return crypto.createHmac("sha256", process.env.ADMIN_SECRET).update(value).digest("hex");
@@ -14,27 +14,33 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(ha, hb);
 }
 
-export function checkPassword(password) {
-  return Boolean(process.env.ADMIN_PASSWORD) && safeEqual(password || "", process.env.ADMIN_PASSWORD);
+// Both values live only in Vercel env vars (ADMIN_EMAIL, ADMIN_PASSWORD); email matching ignores case and spaces.
+export function checkCredentials(email, password) {
+  const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return false;
+  const emailOk = safeEqual(String(email || "").trim().toLowerCase(), ADMIN_EMAIL.trim().toLowerCase());
+  const passwordOk = safeEqual(password || "", ADMIN_PASSWORD);
+  return emailOk && passwordOk;
 }
 
-export function sessionCookie() {
+export function newSession() {
   const exp = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
   const token = `${exp}.${hmac(String(exp))}`;
-  return `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_SECONDS}`;
+  return { exp, cookie: `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_SECONDS}` };
 }
 
 export function clearCookie() {
   return `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
 }
 
+// Returns the session expiry (unix seconds) when logged in, otherwise false.
 export function isAuthed(request) {
   const cookies = request.headers.get("cookie") || "";
   const match = cookies.match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
   if (!match || !process.env.ADMIN_SECRET) return false;
   const [exp, sig] = match[1].split(".");
   if (!exp || !sig || Number(exp) < Date.now() / 1000) return false;
-  return safeEqual(sig, hmac(exp));
+  return safeEqual(sig, hmac(exp)) ? Number(exp) : false;
 }
 
 export function json(data, status = 200, headers = {}) {
