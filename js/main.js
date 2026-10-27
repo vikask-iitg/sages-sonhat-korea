@@ -270,6 +270,7 @@ function renderHeader(c) {
         <div class="topbar-links">
           <a href="mailto:${esc(s.email)}">✉ ${esc(s.email)}</a>
           <a href="contact.html">Contact Now</a>
+          <a href="admin.html" class="admin-link">🔒 Admin</a>
         </div>
       </div>
     </div>
