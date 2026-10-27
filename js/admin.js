@@ -14,7 +14,7 @@ const SECTIONS = [
     ["noticesHeading", "Notices box title"], ["newsHeading", "News box title"], ["eventsHeading", "Events box title"],
     ["principalKicker", "Principal – small label"], ["principalTitle", "Principal – heading"],
     ["levelsKicker", "Education cards – small label"], ["levelsTitle", "Education cards – heading"],
-    ["facultyKicker", "Faculty – small label"], ["facultyTitle", "Faculty – heading"], ["facultyCount", "How many people to show on home page (incl. principal)", "number"],
+    ["facultyKicker", "Faculty – small label"], ["facultyTitle", "Faculty – heading"],
     ["starsKicker", "Star Performers – small label"], ["starsTitle", "Star Performers – heading"],
     ["galleryKicker", "Gallery – small label"], ["galleryTitle", "Gallery – heading"], ["galleryCount", "How many photos to show on home page", "number"],
     ["partnersKicker", "Partners – small label"], ["partnersTitle", "Partners – heading"],

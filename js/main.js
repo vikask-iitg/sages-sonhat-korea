@@ -142,8 +142,8 @@ function textWithImage(title, text, image, imageFirst = false) {
 
 const lookup = (c, path) => path.split(".").reduce((o, k) => o?.[k], c);
 // Admin-set count wins over the page's default; blank or 0 means use the default.
-const personCards = people => people.map(t =>
-  `<div class="person reveal">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
+const personCards = (people, reveal = true) => people.map(t =>
+  `<div class="person${reveal ? " reveal" : ""}">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
 
 const limitOf = (el, c) => Number(el.dataset.limitKey && lookup(c, el.dataset.limitKey)) || Number(el.dataset.limit) || Infinity;
 
@@ -217,13 +217,16 @@ const RENDER = {
 
   levels: c => imageCards(c.levels),
 
-  faculty: (c, el) => {
+  faculty: c => personCards(list(c.faculty)),
+
+  // Home page: principal, faculty and staff scroll past in one endless row.
+  team: c => {
     const p = c.principal || {};
-    // The home page leads with the principal, then the first teachers.
-    const people = el.dataset.withPrincipal
-      ? [{ name: p.name, designation: "Principal", photo: p.photo }, ...list(c.faculty)]
-      : list(c.faculty);
-    return personCards(people.slice(0, limitOf(el, c)));
+    const people = [...(p.name ? [{ name: p.name, designation: "Principal", photo: p.photo }] : []), ...list(c.faculty), ...list(c.staff)];
+    if (!people.length) return "";
+    const cards = personCards(people, false);
+    // Two copies make the loop seamless; the second is hidden from screen readers.
+    return `<div class="carousel-track" style="--duration:${people.length * 3.5}s">${cards}<div class="carousel-copy" aria-hidden="true">${cards}</div></div>`;
   },
 
   stars: c => list(c.stars).map(s => `<div class="person star reveal">${avatar(s.name, s.photo)}<h4>${esc(s.name)}</h4><span>${esc(s.className)}</span><br><span class="score">${esc(s.score)}</span></div>`).join(""),
