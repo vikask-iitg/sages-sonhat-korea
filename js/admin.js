@@ -43,7 +43,7 @@ const SECTIONS = [
   { key: "partners", label: "Partners", list: true, title: "name", fields: [["icon", "Icon (emoji)"], ["name", "Name"], ["link", "Website link", "url"]] },
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
-  { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
+  { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["person", "Name (person holding the post)"], ["name", "Post (e.g. Collector, Koriya)"], ["designation", "Designation in committee"]] },
   { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"], ["subject", "Posting subject (leave empty if not applicable)"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
 

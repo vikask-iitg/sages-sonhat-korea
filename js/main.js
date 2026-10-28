@@ -264,7 +264,8 @@ const RENDER = {
   mission: c => `<h2>🚀 Our Mission</h2><ul>${lines(c.about?.mission)}</ul>`,
   atmanand: c => paras(c.about?.atmanand),
 
-  smc: c => table(["S.No.", "Name", "Designation"], list(c.smc).map((r, i) => [i + 1, esc(r.name), esc(r.designation)])),
+  // In committee rows "name" is the post (e.g. Collector, Koriya) and "person" is who holds it.
+  smc: c => table(["S.No.", "Name", "Post", "Designation"], list(c.smc).map((r, i) => [i + 1, r.person ? esc(r.person) : "—", esc(r.name), esc(r.designation)])),
   staff: c => personCards(list(c.staff)),
   pta: c => paras(c.pta?.text),
 

@@ -443,27 +443,33 @@
   },
   "smc": [
     {
-      "name": "[Collector, Koriya]",
+      "person": "",
+      "name": "Collector, Koriya",
       "designation": "Chairperson"
     },
     {
-      "name": "[SDM, Sonhat]",
+      "person": "",
+      "name": "SDM, Sonhat",
       "designation": "Member"
     },
     {
-      "name": "[District Education Officer, Koriya]",
+      "person": "",
+      "name": "District Education Officer, Koriya",
       "designation": "Member"
     },
     {
-      "name": "[Block Education Officer, Sonhat]",
+      "person": "",
+      "name": "Block Education Officer, Sonhat",
       "designation": "Member"
     },
     {
-      "name": "Dr. Ravi Kant Mishra",
+      "person": "Dr. Ravi Kant Mishra",
+      "name": "Principal, SAGES Sonhat",
       "designation": "Member Secretary"
     },
     {
-      "name": "[Parent Representative]",
+      "person": "",
+      "name": "Parent Representative",
       "designation": "Member"
     }
   ],
