@@ -294,21 +294,9 @@
       "photo": ""
     },
     {
-      "name": "PANKAJ LAKRA",
+      "name": "ASHISH KUMAR PANDEY",
       "designation": "ASSISTANT TEACHER",
-      "subject": "MATHEMATICS",
-      "photo": ""
-    },
-    {
-      "name": "REENU JAISWAL",
-      "designation": "ASSISTANT TEACHER",
-      "subject": "MATHEMATICS",
-      "photo": ""
-    },
-    {
-      "name": "NAVEEN KUMAR BHARTI",
-      "designation": "ASSISTANT TEACHER",
-      "subject": "ARTS",
+      "subject": "SCIENCE",
       "photo": ""
     },
     {
@@ -318,9 +306,21 @@
       "photo": ""
     },
     {
-      "name": "ASHISH KUMAR PANDEY",
+      "name": "NAVEEN KUMAR BHARTI",
       "designation": "ASSISTANT TEACHER",
-      "subject": "SCIENCE",
+      "subject": "ARTS",
+      "photo": ""
+    },
+    {
+      "name": "REENU JAISWAL",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "MATHEMATICS",
+      "photo": ""
+    },
+    {
+      "name": "PANKAJ LAKRA",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "MATHEMATICS",
       "photo": ""
     },
     {
