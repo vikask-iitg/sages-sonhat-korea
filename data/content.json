@@ -204,25 +204,31 @@
   ],
   "faculty": [
     {
-      "name": "PRAVINA SAHU",
+      "name": "SUMAN PANDEY",
       "designation": "LECTURER",
-      "subject": "CHEMISTRY",
+      "subject": "SANSKRIT",
       "photo": ""
     },
     {
-      "name": "SHIVAM KUMAR",
+      "name": "KALPANA SHUKLA",
       "designation": "LECTURER",
-      "subject": "MATHEMATICS",
+      "subject": "HINDI",
       "photo": ""
     },
     {
-      "name": "CHANDRADEEP PANDA",
+      "name": "ALPNA LAKRA",
       "designation": "LECTURER",
-      "subject": "ENGLISH",
+      "subject": "PHYSICS",
       "photo": ""
     },
     {
-      "name": "CHETNA RAJ",
+      "name": "KHUSHBOO MAHARAJ",
+      "designation": "LECTURER",
+      "subject": "SOCIAL SCIENCE",
+      "photo": ""
+    },
+    {
+      "name": "NIKITA DUBEY",
       "designation": "LECTURER",
       "subject": "ACCOUNTANCY (COMMERCE)",
       "photo": ""
@@ -234,33 +240,27 @@
       "photo": ""
     },
     {
-      "name": "NIKITA DUBEY",
+      "name": "CHETNA RAJ",
       "designation": "LECTURER",
       "subject": "ACCOUNTANCY (COMMERCE)",
       "photo": ""
     },
     {
-      "name": "KHUSHBOO MAHARAJ",
+      "name": "CHANDRADEEP PANDA",
       "designation": "LECTURER",
-      "subject": "SOCIAL SCIENCE",
+      "subject": "ENGLISH",
       "photo": ""
     },
     {
-      "name": "ALPNA LAKRA",
+      "name": "SHIVAM KUMAR",
       "designation": "LECTURER",
-      "subject": "PHYSICS",
+      "subject": "MATHEMATICS",
       "photo": ""
     },
     {
-      "name": "KALPANA SHUKLA",
+      "name": "PRAVINA SAHU",
       "designation": "LECTURER",
-      "subject": "HINDI",
-      "photo": ""
-    },
-    {
-      "name": "SUMAN PANDEY",
-      "designation": "LECTURER",
-      "subject": "SANSKRIT",
+      "subject": "CHEMISTRY",
       "photo": ""
     },
     {
