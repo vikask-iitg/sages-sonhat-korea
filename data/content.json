@@ -204,12 +204,6 @@
   ],
   "faculty": [
     {
-      "name": "JITENDRA KUMAR TRIPATHI",
-      "designation": "HEAD MASTER (MIDDLE)",
-      "subject": "ENGLISH",
-      "photo": ""
-    },
-    {
       "name": "PRAVINA SAHU",
       "designation": "LECTURER",
       "subject": "CHEMISTRY",
@@ -267,6 +261,12 @@
       "name": "SUMAN PANDEY",
       "designation": "LECTURER",
       "subject": "SANSKRIT",
+      "photo": ""
+    },
+    {
+      "name": "JITENDRA KUMAR TRIPATHI",
+      "designation": "HEAD MASTER (MIDDLE)",
+      "subject": "ENGLISH",
       "photo": ""
     },
     {
