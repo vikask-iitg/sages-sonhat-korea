@@ -146,7 +146,7 @@
     }
   ],
   "principal": {
-    "name": "Mr. Ravi Kant Mishra",
+    "name": "Dr. Ravi Kant Mishra",
     "photo": "",
     "qualification": "[M.Sc., B.Ed.]",
     "experience": "[XX years]",
@@ -318,6 +318,24 @@
       "photo": ""
     },
     {
+      "name": "VIBHA RANI THAKUR",
+      "designation": "ASSISTANT TEACHER (LAB ASSISTANT)",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "LOBHESH KUMAR PRADHAN",
+      "designation": "ASSISTANT TEACHER (LAB ASSISTANT)",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "SHUBHJEET CHANDRA",
+      "designation": "ASSISTANT TEACHER (LAB ASSISTANT)",
+      "subject": "",
+      "photo": ""
+    },
+    {
       "name": "UTKARSH SINGH",
       "designation": "COMPUTER TEACHER",
       "subject": "COMPUTER",
@@ -441,7 +459,7 @@
       "designation": "Member"
     },
     {
-      "name": "Mr. Ravi Kant Mishra",
+      "name": "Dr. Ravi Kant Mishra",
       "designation": "Member Secretary"
     },
     {
@@ -489,24 +507,6 @@
     {
       "name": "MD ASFAQUE",
       "designation": "LIBRARIAN",
-      "subject": "",
-      "photo": ""
-    },
-    {
-      "name": "VIBHA RANI THAKUR",
-      "designation": "LAB ASSISTANT",
-      "subject": "",
-      "photo": ""
-    },
-    {
-      "name": "LOBHESH KUMAR PRADHAN",
-      "designation": "LAB ASSISTANT",
-      "subject": "",
-      "photo": ""
-    },
-    {
-      "name": "SHUBHJEET CHANDRA",
-      "designation": "LAB ASSISTANT",
       "subject": "",
       "photo": ""
     },
