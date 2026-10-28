@@ -29,7 +29,7 @@ const SECTIONS = [
   { key: "news", label: "Latest News", list: true, title: "text", hint: "Shown newest first automatically.", fields: [["date", "Date", "date"], ["text", "News", "textarea"]] },
   { key: "events", label: "Upcoming Events", list: true, title: "text", hint: "Shown in date order. Delete events once they are over.", fields: [["date", "Date", "date"], ["text", "Event", "textarea"]] },
   { key: "principal", label: "Principal & Message", fields: [
-    ["photo", "Principal's photo", "image", 4 / 5], ["name", "Name"], ["qualification", "Qualification / degree (e.g. M.Sc., B.Ed.)"], ["experience", "Experience (e.g. 15 years)"],
+    ["photo", "Principal's photo", "image", 4 / 5], ["name", "Name"], ["subject", "Posting subject"], ["qualification", "Qualification / degree (e.g. M.Sc., B.Ed.)"], ["experience", "Experience (e.g. 15 years)"],
     ["quote", "Quote"], ["message", "Message (blank line = new paragraph)", "textarea"],
   ] },
   { key: "stats", label: "Numbers (Students, Staff…)", list: true, title: "label", hint: "Choose “Automatic” to count the principal, faculty and administrative staff for you.", fields: [
@@ -37,14 +37,14 @@ const SECTIONS = [
     ["value", "Number (ignored when automatic)", "number"], ["suffix", "After number (e.g. +, ignored when automatic)"], ["label", "Label"],
   ] },
   { key: "levels", label: "Education System Cards", list: true, title: "title", fields: [["image", "Photo", "image", 3 / 2], ["title", "Title"], ["text", "Text", "textarea"]] },
-  { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation / Subject"]] },
+  { key: "faculty", label: "Faculty / Teachers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"], ["subject", "Posting subject (leave empty if not applicable)"]] },
   { key: "stars", label: "Star Performers", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["className", "Class"], ["score", "Score / Award"]] },
   { key: "gallery", label: "Photo Gallery", list: true, title: "caption", hint: "The first 4 photos also appear on the home page.", fields: [["image", "Photo", "image", 4 / 3], ["caption", "Caption"]] },
   { key: "partners", label: "Partners", list: true, title: "name", fields: [["icon", "Icon (emoji)"], ["name", "Name"], ["link", "Website link", "url"]] },
   { key: "cta", label: "Admission Banner (bottom)", fields: [["text", "Banner text"], ["buttonText", "Button text"], ["buttonLink", "Button link"]] },
 
   { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["name", "Name"], ["designation", "Designation"]] },
-  { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"]] },
+  { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"], ["subject", "Posting subject (leave empty if not applicable)"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
 
   { key: "about", label: "About Us", fields: [

@@ -150,7 +150,8 @@ const principalFacts = p => {
 };
 
 const personCards = (people, reveal = true) => people.map(t =>
-  `<div class="person${reveal ? " reveal" : ""}">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span></div>`).join("");
+  `<div class="person${reveal ? " reveal" : ""}">${avatar(t.name, t.photo)}<h4>${esc(t.name)}</h4><span>${esc(t.designation)}</span>${
+    t.subject ? `<small class="subject">${esc(t.subject)}</small>` : ""}</div>`).join("");
 
 // Endless scrolling row: the track holds two identical sets and slides by one set, so the loop has no seam.
 // Short lists are repeated (min ~8 cards per set) so a set is always wider than the screen.
@@ -242,7 +243,7 @@ const RENDER = {
   // Home page: principal, faculty and staff scroll past in one endless row.
   team: c => {
     const p = c.principal || {};
-    const people = [...(p.name ? [{ name: p.name, designation: "Principal", photo: p.photo }] : []), ...list(c.faculty), ...list(c.staff)];
+    const people = [...(p.name ? [{ name: p.name, designation: "Principal", subject: p.subject, photo: p.photo }] : []), ...list(c.faculty), ...list(c.staff)];
     return carousel(personCards(people, false), people.length);
   },
 

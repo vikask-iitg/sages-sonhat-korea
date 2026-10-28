@@ -146,12 +146,13 @@
     }
   ],
   "principal": {
-    "name": "[Principal's Name]",
+    "name": "Mr. Ravi Kant Mishra",
     "photo": "",
     "qualification": "[M.Sc., B.Ed.]",
     "experience": "[XX years]",
     "quote": "A little progress every day adds up to big results.",
-    "message": "Dear students and parents, welcome to Swami Atmanand Government English Medium School, Sonhat. Our aim is to provide every child with quality education rooted in strong values, so that they grow into confident, responsible and compassionate citizens.\n\nWe believe each child is unique. Our teachers work to understand the needs of every student and help them discover their potential — in academics, sports, arts and life skills.\n\nI thank our parents, the School Management Committee and the district administration for their continued support, and I invite everyone to join hands in building a bright future for our children."
+    "message": "Dear students and parents, welcome to Swami Atmanand Government English Medium School, Sonhat. Our aim is to provide every child with quality education rooted in strong values, so that they grow into confident, responsible and compassionate citizens.\n\nWe believe each child is unique. Our teachers work to understand the needs of every student and help them discover their potential — in academics, sports, arts and life skills.\n\nI thank our parents, the School Management Committee and the district administration for their continued support, and I invite everyone to join hands in building a bright future for our children.",
+    "subject": "ENGLISH"
   },
   "stats": [
     {
@@ -203,43 +204,123 @@
   ],
   "faculty": [
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – Physics",
+      "name": "JITENDRA KUMAR TRIPATHI",
+      "designation": "HEAD MASTER (MIDDLE)",
+      "subject": "ENGLISH",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – Chemistry",
+      "name": "PRAVINA SAHU",
+      "designation": "LECTURER",
+      "subject": "CHEMISTRY",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – Biology",
+      "name": "SHIVAM KUMAR",
+      "designation": "LECTURER",
+      "subject": "MATHEMATICS",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – Mathematics",
+      "name": "CHANDRADEEP PANDA",
+      "designation": "LECTURER",
+      "subject": "ENGLISH",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – English",
+      "name": "CHETNA RAJ",
+      "designation": "LECTURER",
+      "subject": "ACCOUNTANCY (COMMERCE)",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – Hindi",
+      "name": "DIVYA GUPTA",
+      "designation": "LECTURER",
+      "subject": "BIOLOGY",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Lecturer – Commerce",
+      "name": "NIKITA DUBEY",
+      "designation": "LECTURER",
+      "subject": "ACCOUNTANCY (COMMERCE)",
       "photo": ""
     },
     {
-      "name": "[Teacher Name]",
-      "designation": "Computer Instructor",
+      "name": "KHUSHBOO MAHARAJ",
+      "designation": "LECTURER",
+      "subject": "SOCIAL SCIENCE",
+      "photo": ""
+    },
+    {
+      "name": "ALPNA LAKRA",
+      "designation": "LECTURER",
+      "subject": "PHYSICS",
+      "photo": ""
+    },
+    {
+      "name": "KALPANA SHUKLA",
+      "designation": "LECTURER",
+      "subject": "HINDI",
+      "photo": ""
+    },
+    {
+      "name": "SMT. SUMAN PANDEY",
+      "designation": "LECTURER",
+      "subject": "SANSKRIT",
+      "photo": ""
+    },
+    {
+      "name": "KAJAL PARVEEN IRAQUE",
+      "designation": "TEACHER",
+      "subject": "ARTS",
+      "photo": ""
+    },
+    {
+      "name": "SHALU TRIPATHI",
+      "designation": "TEACHER",
+      "subject": "MATHEMATICS",
+      "photo": ""
+    },
+    {
+      "name": "KESHAV KUMAR",
+      "designation": "TEACHER",
+      "subject": "SCIENCE",
+      "photo": ""
+    },
+    {
+      "name": "PANKAJ LAKRA",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "MATHEMATICS",
+      "photo": ""
+    },
+    {
+      "name": "REENU JAISWAL",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "MATHEMATICS",
+      "photo": ""
+    },
+    {
+      "name": "NAVEEN KUMAR BHARTI",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "ARTS",
+      "photo": ""
+    },
+    {
+      "name": "SANGEETA BHAGAT",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "SCIENCE",
+      "photo": ""
+    },
+    {
+      "name": "ASHISH KUMAR PANDEY",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "SCIENCE",
+      "photo": ""
+    },
+    {
+      "name": "UTKARSH SINGH",
+      "designation": "COMPUTER TEACHER",
+      "subject": "COMPUTER",
       "photo": ""
     }
   ],
@@ -360,7 +441,7 @@
       "designation": "Member"
     },
     {
-      "name": "[Principal's Name]",
+      "name": "Mr. Ravi Kant Mishra",
       "designation": "Member Secretary"
     },
     {
@@ -370,23 +451,81 @@
   ],
   "staff": [
     {
-      "name": "[Name]",
-      "designation": "Assistant Grade 2",
+      "name": "NAWAZ SHARIF",
+      "designation": "ASSISTANT GRADE-2",
+      "subject": "",
       "photo": ""
     },
     {
-      "name": "[Name]",
-      "designation": "Assistant Grade 3",
+      "name": "NEHA PATEL",
+      "designation": "ASSISTANT GRADE-3",
+      "subject": "",
       "photo": ""
     },
     {
-      "name": "[Name]",
-      "designation": "Librarian",
+      "name": "SURYAKANT PAIKRA",
+      "designation": "PEON",
+      "subject": "",
       "photo": ""
     },
     {
-      "name": "[Name]",
-      "designation": "Peon",
+      "name": "KRISHNA KUMAR",
+      "designation": "PEON",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "BHAGWANIYA",
+      "designation": "PEON",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "AKHILESH KUMAR BHAGAT",
+      "designation": "PEON",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "MD ASFAQUE",
+      "designation": "LIBRARIAN",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "VIBHA RANI THAKUR",
+      "designation": "LAB ASSISTANT",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "LOBHESH KUMAR PRADHAN",
+      "designation": "LAB ASSISTANT",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "SHUBHJEET CHANDRA",
+      "designation": "LAB ASSISTANT",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "KAMLESH KUMAR BHAGAT",
+      "designation": "WATCHMAN",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "SANGEETA CHOUDHARY",
+      "designation": "SWEEPER (CONTRACTUAL)",
+      "subject": "",
+      "photo": ""
+    },
+    {
+      "name": "SANJAY KUMAR",
+      "designation": "SWEEPER (CONTRACTUAL)",
+      "subject": "",
       "photo": ""
     }
   ],
