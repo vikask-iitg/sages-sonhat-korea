@@ -120,7 +120,7 @@ Requires Node.js and the [Vercel CLI](https://vercel.com/docs/cli).
 
 ```bash
 npm install
-vercel link                      # once, choose the sagessonhatkorea project
+vercel link                      # once, choose the sages-sonhat-korea project
 vercel env pull .env.local       # fetch secrets for local use (never commit this file)
 vercel dev                       # full site + API at http://localhost:3000
 ```
