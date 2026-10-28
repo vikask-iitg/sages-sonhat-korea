@@ -288,6 +288,12 @@
       "photo": ""
     },
     {
+      "name": "UTKARSH SINGH",
+      "designation": "COMPUTER TEACHER",
+      "subject": "COMPUTER",
+      "photo": ""
+    },
+    {
       "name": "PANKAJ LAKRA",
       "designation": "ASSISTANT TEACHER",
       "subject": "MATHEMATICS",
@@ -318,27 +324,21 @@
       "photo": ""
     },
     {
+      "name": "SHUBHJEET CHANDRA",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "LAB ASSISTANT",
+      "photo": ""
+    },
+    {
       "name": "VIBHA RANI THAKUR",
-      "designation": "ASSISTANT TEACHER (LAB ASSISTANT)",
-      "subject": "",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "LAB ASSISTANT",
       "photo": ""
     },
     {
       "name": "LOBHESH KUMAR PRADHAN",
-      "designation": "ASSISTANT TEACHER (LAB ASSISTANT)",
-      "subject": "",
-      "photo": ""
-    },
-    {
-      "name": "SHUBHJEET CHANDRA",
-      "designation": "ASSISTANT TEACHER (LAB ASSISTANT)",
-      "subject": "",
-      "photo": ""
-    },
-    {
-      "name": "UTKARSH SINGH",
-      "designation": "COMPUTER TEACHER",
-      "subject": "COMPUTER",
+      "designation": "ASSISTANT TEACHER",
+      "subject": "LAB ASSISTANT",
       "photo": ""
     }
   ],
@@ -481,6 +481,12 @@
       "photo": ""
     },
     {
+      "name": "MD ASFAQUE",
+      "designation": "LIBRARIAN",
+      "subject": "",
+      "photo": ""
+    },
+    {
       "name": "SURYAKANT PAIKRA",
       "designation": "PEON",
       "subject": "",
@@ -501,12 +507,6 @@
     {
       "name": "AKHILESH KUMAR BHAGAT",
       "designation": "PEON",
-      "subject": "",
-      "photo": ""
-    },
-    {
-      "name": "MD ASFAQUE",
-      "designation": "LIBRARIAN",
       "subject": "",
       "photo": ""
     },
