@@ -4,7 +4,7 @@ Official website of **Swami Atmanand Government English Medium School, Sonhat**
 (स्वामी आत्मानंद शासकीय अंग्रेजी माध्यम विद्यालय), Block Sonhat, District Koriya, Chhattisgarh.
 
 **Live site:** https://sagessonhatkorea.vercel.app
-**Admin panel:** https://sagessonhatkorea.vercel.app/pages/admin.html
+**Admin panel:** https://sagessonhatkorea.vercel.app/admin.html
 
 The site is plain HTML, CSS and JavaScript with no build step, hosted on Vercel. School staff update almost everything
 (notices, events, faculty, photos, gallery, admission form and more) from a password-protected admin panel, without
@@ -94,7 +94,8 @@ Admin panel ──► /api/login ──► signed HttpOnly session cookie (1 hou
 
 ```
 index.html              Home page (must stay at the root)
-pages/                  All other pages, incl. admin.html
+admin.html              Admin panel (at the root, so /admin.html opens it)
+pages/                  All other website pages
 css/style.css           Website styles
 css/admin.css           Admin panel styles
 js/main.js              Shared header/footer, content renderers, carousels, slider, lightbox

@@ -328,7 +328,7 @@ function renderHeader(c) {
         <div class="topbar-links">
           <a href="mailto:${esc(s.email)}" class="top-mail"><span class="top-social"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3 7 9 6 9-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>${esc(s.email)}</a>
           ${socialLinks(s, "top-social")}
-          <a href="/pages/admin.html" class="admin-link">🔒 Admin</a>
+          <a href="/admin.html" class="admin-link">🔒 Admin</a>
         </div>
       </div>
     </div>
@@ -404,7 +404,7 @@ function renderFooter(c) {
         </div>
       </div>
       <div class="footer-bottom">
-        © ${year} ${esc(s.name)}, Sonhat. All rights reserved. · <a href="/pages/admin.html">Admin</a>
+        © ${year} ${esc(s.name)}, Sonhat. All rights reserved. · <a href="/admin.html">Admin</a>
       </div>
     </footer>
     <button class="back-to-top" aria-label="Back to top">↑</button>

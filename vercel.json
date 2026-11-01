@@ -1,8 +1,13 @@
 {
   "redirects": [
     {
-      "source": "/:page(about|academic|activities|admin|administration|admission|contact|gallery|infrastructure|news).html",
+      "source": "/:page(about|academic|activities|administration|admission|contact|gallery|infrastructure|news).html",
       "destination": "/pages/:page.html",
+      "permanent": true
+    },
+    {
+      "source": "/pages/admin.html",
+      "destination": "/admin.html",
       "permanent": true
     }
   ]
