@@ -142,7 +142,16 @@ const NAV_STYLE = {
   "Gallery": ["🖼️", "#ef6c00"], "Contact Us": ["📞", "#00838f"],
 };
 
+// Phones only: the sidebar is opened and closed by the "Section" button above the editor.
+function setMobileNav(open) {
+  document.body.classList.toggle("nav-open", open);
+  document.querySelector(".nav-toggle-mobile")?.setAttribute("aria-expanded", String(open));
+}
+
 function renderNav() {
+  const leafNow = LEAVES[current];
+  const label = document.getElementById("nav-current");
+  if (label) label.textContent = leafNow.menu ? `${leafNow.menu} › ${leafNow.label}` : leafNow.label;
   const style = label => NAV_STYLE[label] || ["•", "#0b3d91"];
   const icon = label => `<span class="nav-icon">${style(label)[0]}</span>`;
   const link = l => `<button data-action="section" data-id="${l.id}" class="nav-item${l.id === current ? " active" : ""}" style="--c:${style(l.label)[1]}">${icon(l.label)}<span class="nav-label">${esc(l.label)}</span></button>`;
@@ -399,11 +408,13 @@ document.addEventListener("click", async e => {
   const i = +btn.dataset.index;
 
   if (action === "lock") { locked = !locked; renderEditor(); return; }
+  if (action === "navtoggle") { setMobileNav(!document.body.classList.contains("nav-open")); return; }
   if (action === "section") {
     current = btn.dataset.id;
     locked = true;
     // Open the dropdown holding the chosen page; after that the admin can close it freely.
     if (LEAVES[current].menu) openMenus.add(LEAVES[current].menu);
+    setMobileNav(false);
     renderNav(); renderEditor(); window.scrollTo(0, 0); return;
   }
   if (action === "toggle") {
