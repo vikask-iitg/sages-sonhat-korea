@@ -329,7 +329,10 @@ tr:nth-child(even) td { background: var(--bg-soft); }
   .menu > li.sub-open .submenu { display: block; }
 }
 @media (max-width: 600px) {
-  .topbar-links { display: none; }
+  /* Phones: keep only the Admin button from the top-bar links */
+  .topbar-links { gap: 0; flex-shrink: 0; }
+  .topbar .topbar-links > :not(.admin-link) { display: none !important; } /* beats later .top-mail/.top-social rules */
+  .topbar-links .admin-link { padding: 3px 12px; font-size: 12px; white-space: nowrap; }
   .footer-grid, .form .row { grid-template-columns: 1fr; }
   .logo { width: 60px; height: 60px; font-size: 12px; }
   .logo.has-img { width: 72px; height: 72px; }
