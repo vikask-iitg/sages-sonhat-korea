@@ -213,3 +213,15 @@ button, input, select, textarea { font: inherit; }
 .editor-head { margin-bottom: 16px; }
 .editor-head + .hint, .editor-head + .lock-note { margin-top: -6px; }
 .edit-area .item:first-child, .edit-area > .list-tools:first-child { margin-top: 0; }
+
+/* Phones: tidy top bar — brand + Log out on one row, status pills, then two equal action buttons */
+@media (max-width: 800px) {
+  .bar { position: sticky; padding: 10px 12px 12px; gap: 10px; background: linear-gradient(160deg, #072a66, #0b3d91); box-shadow: 0 4px 14px rgba(7,42,102,.25); }
+  .bar .brand { width: 100%; padding-right: 110px; font-size: 15px; min-height: 38px; }
+  .bar .brand img { width: 34px; height: 34px; }
+  .bar-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bar .state { display: flex; align-items: center; justify-content: center; height: 30px; padding: 0 8px; font-size: 11.5px; white-space: nowrap; }
+  .bar .state.session:empty { display: none; }
+  .bar .btn { width: 100%; height: 42px; font-size: 13.5px; border-radius: 10px; }
+  .bar .btn.logout-btn { position: absolute; top: 10px; right: 12px; width: auto; height: 38px; padding: 0 12px; font-size: 13px; }
+}
