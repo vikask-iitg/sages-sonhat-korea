@@ -453,10 +453,10 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .arr-periods i { font-style: normal; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 6px; background: #fdecea; color: #b71c1c; }
 /* Present teachers: equal-width columns, sorted A–Z */
 .arr-names { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
-.arr-names span { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; background: #f1f8f2;
-  border: 1px solid #d7ecd9; color: #1b5e20; font-size: 13.5px; line-height: 1.3; }
-.arr-names span::before { content: ""; width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--green); }
-.arr-names span.me { background: var(--accent); color: var(--primary-dark); font-weight: 600; }
+.arr-names > span { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; background: #f1f8f2;
+  border: 1px solid #d7ecd9; color: #1b5e20; font-size: 13.5px; line-height: 1.3; min-width: 0; }
+.arr-names > span::before { content: ""; width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--green); }
+.arr-names > span.me { background: var(--accent); color: var(--primary-dark); font-weight: 600; }
 .arr-card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: var(--shadow); }
 .arr-card h3 { font-size: 17px; margin-bottom: 12px; }
 .arr-card td small { display: block; color: var(--muted); font-size: 11px; }
@@ -467,17 +467,28 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 @media (max-width: 700px) { .arr-controls, .arr-summary { grid-template-columns: 1fr; } }
 @media (max-width: 420px) { .arr-names, .arr-absent { grid-template-columns: 1fr 1fr; } }
 
-/* Phones: each arrangement period becomes a small card instead of a wide table */
-@media (max-width: 600px) {
+/* Phones and small tablets: each period is a compact two-line card, so the whole list fits on one screen
+   Line 1: period + time | class      Line 2: absent teacher | → arrangement teacher */
+.arr-legend { display: none; }
+@media (max-width: 700px) {
   .arr-card { padding: 14px; }
+  .arr-legend { display: flex; gap: 14px; margin: -4px 0 10px; font-size: 12px; color: var(--muted); }
+  .arr-legend b { font-weight: 600; } .arr-legend .abs { color: #b71c1c; } .arr-legend .sub { color: var(--primary); }
   .arr-card .table-wrap { box-shadow: none; overflow: visible; }
-  .arr-card table, .arr-card tbody, .arr-card tr, .arr-card td { display: block; width: 100%; box-shadow: none; }
+  .arr-card table, .arr-card tbody { display: block; width: 100%; box-shadow: none; }
   .arr-card tr:first-child { display: none; } /* header row */
-  .arr-card tr { border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 10px; margin-bottom: 10px; padding: 8px 12px; background: #fff; }
-  .arr-card tr.me { border-left-color: var(--accent); }
-  .arr-card td { display: flex; justify-content: flex-end; align-items: baseline; gap: 8px; padding: 5px 0; border: 0; background: none !important; text-align: right; }
-  .arr-card td::before { content: attr(data-label); margin-right: auto; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); text-align: left; flex-shrink: 0; }
+  .arr-card tr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; align-items: baseline; margin-bottom: 8px; padding: 9px 12px;
+    border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 10px; background: #fff; }
+  .arr-card tr.me { border-left-color: var(--accent); background: #fff8e6; }
+  .arr-card td { padding: 0; border: 0; background: none !important; line-height: 1.35; font-size: 13.5px; }
   .arr-card td small { display: inline; margin-left: 6px; }
-  .arr-card tr.me td { background: none !important; }
-  .arr-card tr.me { background: #fff8e6; }
+  .arr-card td[data-label="Class"], .arr-card td.arr-sub { text-align: right; }
+  .arr-card td[data-label="Class"] { font-weight: 600; color: var(--primary-dark); }
+  .arr-card td.arr-sub::before { content: "→ "; color: var(--muted); font-weight: 400; }
 }
+/* Names that don't fit their box scroll right-to-left: pause, scroll to the end, pause, start again */
+.arr-name { display: block; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+.arr-name i { display: inline-block; font-style: normal; }
+.arr-name.scroll i { animation: name-scroll var(--dur, 6s) ease-in-out infinite; }
+@keyframes name-scroll { 0%, 20% { transform: translateX(0); } 75%, 100% { transform: translateX(var(--shift)); } }
+@media (prefers-reduced-motion: reduce) { .arr-name.scroll i { animation: none; } .arr-name { text-overflow: ellipsis; } }

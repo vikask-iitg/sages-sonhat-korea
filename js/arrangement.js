@@ -10,6 +10,18 @@
 
   let published = {}, dates = [], selected = "", mine = "";
 
+  // Long names stay on one line and, if they don't fit their box, scroll right-to-left (see .arr-name in style.css).
+  const nameTag = t => `<span class="arr-name"><i>${esc(t)}</i></span>`;
+  function fitNames() {
+    root.querySelectorAll(".arr-name").forEach(box => {
+      const over = box.firstElementChild.scrollWidth - box.clientWidth;
+      box.classList.toggle("scroll", over > 1);
+      box.style.setProperty("--shift", `${-(over + 6)}px`);
+      box.style.setProperty("--dur", `${Math.max(5, 3 + over / 15).toFixed(1)}s`);
+    });
+  }
+  window.addEventListener("resize", () => { clearTimeout(fitNames.t); fitNames.t = setTimeout(fitNames, 150); });
+
   function render() {
     if (!dates.length) {
       root.innerHTML = `<div class="arr-empty">📭 No arrangement has been published yet. Please check again later.</div>`;
@@ -28,16 +40,17 @@
         <div class="arr-box absent">
           <h3>🔴 Absent <span>${x.absent.length}</span></h3>
           <div class="arr-absent">${[...x.absent].sort((a, b) => a.teacher.localeCompare(b.teacher)).map(a => `
-            <div class="${a.teacher === mine ? "me" : ""}"><b>${esc(a.teacher)}</b>
+            <div class="${a.teacher === mine ? "me" : ""}"><b>${nameTag(a.teacher)}</b>
               ${a.periods?.length ? `<span class="arr-periods">${a.periods.map(p => `<i>P-${p}</i>`).join("")}</span>` : ""}</div>`).join("") || `<p class="empty">None</p>`}</div>
         </div>
         <div class="arr-box present">
           <h3>🟢 Present <span>${x.present.length}</span></h3>
-          <div class="arr-names">${[...x.present].sort((a, b) => a.localeCompare(b)).map(t => `<span class="${t === mine ? "me" : ""}">${esc(t)}</span>`).join("")}</div>
+          <div class="arr-names">${[...x.present].sort((a, b) => a.localeCompare(b)).map(t => `<span class="${t === mine ? "me" : ""}">${nameTag(t)}</span>`).join("")}</div>
         </div>
       </div>
       <div class="arr-card">
         <h3>🔄 Arrangement periods — ${esc(DAY_NAMES[x.day] || "")}${mine ? ` · ${esc(mine)}` : ""}</h3>
+        <div class="arr-legend"><b class="abs">● Absent teacher</b><b class="sub">→ Arrangement by</b></div>
         ${rows.length ? `<div class="table-wrap"><table>
           <tr><th>Period</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Arrangement by</th></tr>
           ${rows.map(i => `<tr class="${mine && i.assignedTeacher === mine ? "me" : ""}">
@@ -45,6 +58,7 @@
             <td class="arr-abs" data-label="Absent">${esc(i.absentTeacher)}</td><td class="arr-sub" data-label="Arrangement by">${i.assignedTeacher ? esc(i.assignedTeacher) : "No free teacher (merge class)"}</td></tr>`).join("")}
         </table></div>` : `<p class="empty">${mine ? `${esc(mine)} has no arrangement periods on this day.` : "No arrangement periods on this day."}</p>`}
       </div>`;
+    fitNames();
   }
 
   root.addEventListener("change", e => {
