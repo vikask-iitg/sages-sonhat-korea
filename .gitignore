@@ -2,3 +2,6 @@
 .vercel
 node_modules
 .env*
+
+# Local reference material (contains an Android signing keystore) — never commit or deploy
+Arragnment-Classes/

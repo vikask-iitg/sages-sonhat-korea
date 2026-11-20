@@ -46,6 +46,8 @@ const SECTIONS = [
   { key: "smc", label: "Management Committee", list: true, title: "name", fields: [["person", "Name (person holding the post)"], ["name", "Post (e.g. Collector, Koriya)"], ["designation", "Designation in committee"]] },
   { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"], ["subject", "Posting subject (leave empty if not applicable)"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
+  // Custom tool (js/substitution-admin.js) with its own data and Save & Publish button.
+  { key: "substitution", label: "Timetable / Arrangements", custom: true, fields: [] },
 
   { key: "about", label: "About Us", fields: [
     ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image", 4 / 3], ["vision", "Vision", "textarea"],
@@ -75,7 +77,7 @@ const NAV = [
       "stats", "levels", "faculty", "stars", "gallery", "partners", "cta",
     ] },
     ["about", "About Us"],
-    { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"]] },
+    { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"], ["substitution", "Timetable / Arrangements"]] },
     { menu: "Admission", items: [["admissionSteps", "Admission Process"], ["admission", "Eligibility & Documents"], ["admissionForm", "Admission Form (PDF)"]] },
     { menu: "Academic", items: [["curriculum", "Classes & Curriculum"], ["results", "Results"], ["achievements", "Student Achievements"], ["calendar", "School Calendar"]] },
     { menu: "Infrastructure", items: [["classrooms", "Smart Classrooms"], ["labs", "Laboratories"], ["library", "Library"], ["campus", "School Campus"]] },
@@ -224,6 +226,12 @@ function itemTitle(sec, item, i) {
 function renderEditor() {
   const sec = currentSection();
   const { label, anchor } = LEAVES[current];
+  if (sec.custom) {
+    // Custom tools manage and save their own data, so there is no page lock or form here.
+    $("#editor").innerHTML = `<div class="editor-head"><h2>${esc(label)}</h2></div><div id="custom-root"></div>`;
+    window.SubstitutionAdmin.mount(document.getElementById("custom-root"));
+    return;
+  }
   let body;
   if (anchor) {
     // Edit just the one list item behind this menu link (e.g. Activities › Sports Events).
