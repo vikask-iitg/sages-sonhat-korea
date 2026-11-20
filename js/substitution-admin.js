@@ -134,8 +134,8 @@ window.SubstitutionAdmin = (() => {
       absentSet.add(a.teacher); availSet.delete(a.teacher);
       absentPeriods[a.teacher] = pub ? new Set(a.periods) : new Set(ANY_PERIOD);
     });
-    if (pub) plan = pub.plan.map(i => ({ ...i, status: "Published", badge: "ok" }));
-    else carriedFrom = prev;
+    if (pub) plan = pub.plan.map(i => ({ period: i.period, classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher || "" }));
+    else { carriedFrom = prev; syncPlan(); }
   }
 
   // ---------- generation (same rules as the original app) ----------
@@ -146,56 +146,78 @@ window.SubstitutionAdmin = (() => {
     return false;
   }
 
-  function generate() {
-    if (!absentSet.size) return toast("First mark the teachers who are absent today.", true);
-    const vacant = [];
-    absentSet.forEach(t => {
-      const needed = absentPeriods[t] || new Set(ANY_PERIOD);
-      periodsFor(day).forEach(p => { if (needed.has(p)) tt(day, t, p).forEach(cls => vacant.push({ period: p, classDesc: cls, absentTeacher: t })); });
-    });
-    vacant.sort((a, b) => a.period - b.period);
-    if (!vacant.length) return toast("The absent teachers have no regular periods on this day.", true);
+  // ---------- the arrangement: one slot per class period of an absent teacher ----------
+  const slotKey = i => `${i.absentTeacher}|${i.period}|${i.classDesc}`;
 
+  // Rebuild the slots from the current absences, keeping substitutes already chosen. New slots are filled
+  // automatically when `fillNew` is set (the admin can change or remove any of them).
+  function syncPlan(fillNew = true) {
+    const old = new Map(plan.map(i => [slotKey(i), i.assignedTeacher]));
+    const slots = [];
+    [...absentSet].forEach(t => {
+      const needed = absentPeriods[t] || new Set(ANY_PERIOD);
+      periodsFor(day).forEach(p => { if (needed.has(p)) tt(day, t, p).forEach(cls => slots.push({ period: p, classDesc: cls, absentTeacher: t })); });
+    });
+    slots.sort((x, y) => x.period - y.period || x.absentTeacher.localeCompare(y.absentTeacher));
+    const fresh = [];
+    plan = slots.map((sl, i) => {
+      const k = slotKey(sl);
+      if (!old.has(k)) fresh.push(i);
+      const keep = old.get(k);
+      return { ...sl, assignedTeacher: keep && !absentSet.has(keep) ? keep : "" };
+    });
+    if (fillNew && fresh.length) autoAssign(fresh);
+  }
+
+  // Periods each teacher is busy with: own classes plus substitutions in the plan (optionally ignoring one slot)
+  function busyMap(skip = -1) {
     const busy = {};
     teachers.forEach(t => { busy[t] = new Set(scheduled(day, t)); });
-    const prevDate = previousWorkingDate(date);
-    const prevPlan = data.savedDays[prevDate] || null;
-    const todayPlan = data.savedDays[date] || {};
+    plan.forEach((i, k) => { if (k !== skip && i.assignedTeacher && busy[i.assignedTeacher]) busy[i.assignedTeacher].add(i.period); });
+    return busy;
+  }
+
+  // Free, present teachers for a slot, best first (same fairness rules as the original app):
+  // avoid a 4th period in a row, avoid whoever substituted on the previous working day, then fewer periods today, then fewer this month.
+  function candidatesFor(k, busy = busyMap(k)) {
+    const p = plan[k].period;
+    const prevDate = previousWorkingDate(date), prevPlan = data.savedDays[prevDate] || null, todayPlan = data.savedDays[date] || {};
     const prevDayPeriods = t => {
       if (prevPlan) return prevPlan[t]?.length ? prevPlan[t] : null;
       const h = data.history[t];
-      return h.lastDate === prevDate && h.lastPeriods.length ? h.lastPeriods : null;
+      return h && h.lastDate === prevDate && h.lastPeriods.length ? h.lastPeriods : null;
     };
-    // Monthly count excluding today's already-saved list, so regenerating today stays fair
-    const countExclToday = t => data.history[t].count - (todayPlan[t] || []).length;
-
-    plan = vacant.map(slot => {
-      const p = slot.period;
-      const candidates = [...availSet].filter(t => !absentSet.has(t) && !busy[t].has(p) && !blockedPeriods[t]?.has(p));
-      if (!candidates.length) return { ...slot, assignedTeacher: "", status: "No free teacher — merge class", badge: "danger" };
-      candidates.sort((a, b) => {
-        const fourA = createsFourConsecutive(busy[a], p) ? 1 : 0, fourB = createsFourConsecutive(busy[b], p) ? 1 : 0;
-        if (fourA !== fourB) return fourA - fourB;
-        // Avoid whoever substituted on the previous working day (more so for the same period)
-        const prevA = prevDayPeriods(a), prevB = prevDayPeriods(b);
-        const repA = prevA ? (prevA.includes(p) ? 2 : 1) : 0, repB = prevB ? (prevB.includes(p) ? 2 : 1) : 0;
-        if (repA !== repB) return repA - repB;
-        if (busy[a].size !== busy[b].size) return busy[a].size - busy[b].size;
-        return countExclToday(a) - countExclToday(b);
-      });
-      const chosen = candidates[0];
-      const four = createsFourConsecutive(busy[chosen], p);
-      busy[chosen].add(p);
-      return { ...slot, assignedTeacher: chosen,
-        status: four ? "Unavoidable (4th period in a row)" : `Total periods today: ${busy[chosen].size}`,
-        badge: four ? "warn" : "ok" };
+    const countExclToday = t => (data.history[t]?.count || 0) - (todayPlan[t] || []).length;
+    return teachers.filter(t => !absentSet.has(t) && !busy[t].has(p)).sort((a, b) => {
+      const fourA = createsFourConsecutive(busy[a], p) ? 1 : 0, fourB = createsFourConsecutive(busy[b], p) ? 1 : 0;
+      if (fourA !== fourB) return fourA - fourB;
+      const prevA = prevDayPeriods(a), prevB = prevDayPeriods(b);
+      const repA = prevA ? (prevA.includes(p) ? 2 : 1) : 0, repB = prevB ? (prevB.includes(p) ? 2 : 1) : 0;
+      if (repA !== repB) return repA - repB;
+      if (busy[a].size !== busy[b].size) return busy[a].size - busy[b].size;
+      return countExclToday(a) - countExclToday(b) || a.localeCompare(b);
     });
-    render();
-    root.querySelector("#sub-result")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Give each listed (or every empty) slot the best free teacher, in period order
+  function autoAssign(only = null) {
+    const idx = (only || plan.map((_, k) => k).filter(k => !plan[k].assignedTeacher)).sort((x, y) => plan[x].period - plan[y].period);
+    idx.forEach(k => { plan[k].assignedTeacher = candidatesFor(k)[0] || ""; });
+    return idx.filter(k => !plan[k].assignedTeacher).length;
+  }
+
+  // Note shown next to a slot
+  function slotStatus(k, busy = busyMap(k)) {
+    const t = plan[k].assignedTeacher;
+    if (!t) return { text: "Not assigned — merge class", badge: "danger" };
+    if (createsFourConsecutive(busy[t] || new Set(), plan[k].period)) return { text: "4th period in a row", badge: "warn" };
+    return null; // fine — nothing to flag
   }
 
   async function saveAndPublish() {
     if (!plan.length) return;
+    const empty = plan.filter(i => !i.assignedTeacher).length;
+    if (empty && !confirm(`${empty} period(s) have no substitute and will show as "merge class". Publish anyway?`)) return;
     const old = data.savedDays[date];
     if (old && !confirm(`An arrangement for ${date} is already published. Replace it with this one?`)) return;
     const perTeacher = {};
@@ -253,41 +275,52 @@ window.SubstitutionAdmin = (() => {
         : `<span class="sub-muted">No regular class today</span>`;
       return `<div class="sub-slot absent"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
     }).join("");
-    // Periods that need a substitute (ticked periods of the absent teachers), and the teachers who are
-    // free — no class of their own — in at least one of them. Busy teachers are not offered.
-    const needed = [...new Set(absent.flatMap(t => scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ANY_PERIOD)).has(p))))].sort((x, y) => x - y);
-    const present = sorted().filter(t => !absentSet.has(t));
-    const freeFor = t => freePeriods(day, t).filter(p => needed.includes(p));
-    const eligible = present.filter(t => freeFor(t).length), busyAll = present.filter(t => !freeFor(t).length);
-    const freeRows = eligible.map(t => {
-      const on = availSet.has(t);
-      const pills = freeFor(t).map(p => { const blocked = blockedPeriods[t]?.has(p);
-        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${ptime(p, day)}${blocked ? " — blocked" : ""}"${on ? "" : " disabled"}>${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("");
-      return `<div class="sub-slot sub-avail${on ? "" : " off"}"><button type="button" class="sub-check" data-sub="avail" data-t="${jsArg(t)}" aria-pressed="${on}">${on ? "☑" : "☐"} <b>${esc(t)}</b></button><div class="sub-pills">${pills}</div></div>`;
+    // Step 2: one line per class period of each absent teacher → its substitute (dropdown of free teachers) and ✕ to remove
+    const assigned = plan.filter(i => i.assignedTeacher).length;
+    const groups = absent.map(t => {
+      const rows = plan.map((i, k) => [i, k]).filter(([i]) => i.absentTeacher === t);
+      if (!rows.length) return `<div class="sub-group"><h4>${esc(t)} <small>absent · no periods to cover</small></h4></div>`;
+      return `<div class="sub-group"><h4>${esc(t)} <small>absent · ${rows.length} period${rows.length > 1 ? "s" : ""} to cover</small></h4>
+        ${rows.map(([i, k]) => {
+          const busy = busyMap(k), st = slotStatus(k, busy), cands = candidatesFor(k, busy);
+          const opts = [...new Set([...(i.assignedTeacher ? [i.assignedTeacher] : []), ...cands])];
+          return `<div class="sub-arr${i.assignedTeacher ? "" : " empty"}">
+            <span class="sub-arr-per"><b>P-${i.period}</b><small>${esc(ptime(i.period, day))}</small></span>
+            <span class="sub-arr-cls">${esc(i.classDesc)}</span>
+            <span class="sub-arr-to">→</span>
+            <select class="sub-arr-pick" data-subchange="assign" data-i="${k}" aria-label="Substitute for P-${i.period} ${esc(i.classDesc)}">
+              <option value="">— Not assigned —</option>
+              ${opts.map(t2 => `<option value="${esc(t2)}"${t2 === i.assignedTeacher ? " selected" : ""}>${esc(t2)} (${(busy[t2]?.size || 0)})</option>`).join("")}
+            </select>
+            ${i.assignedTeacher ? `<button type="button" class="sub-time-del" data-sub="unassign" data-i="${k}" title="Remove ${esc(i.assignedTeacher)} from this period" aria-label="Remove substitute">✕</button>` : `<span class="sub-time-gap"></span>`}
+            ${st ? `<span class="sub-badge ${st.badge}">${esc(st.text)}</span>` : "<span></span>"}
+          </div>`; }).join("")}
+      </div>`;
     }).join("");
-    const result = plan.length ? `
+    const result = `
       <div class="sub-card" id="sub-result">
-        <div class="sub-card-head"><h3>Arrangement for ${esc(date)} (${DAY_NAMES[day]})</h3>${data.published[date] ? `<span class="sub-tag">Published</span>` : `<span class="sub-tag draft">Not published yet</span>`}</div>
-        <div class="sub-table-wrap"><table class="sub-table">
-          <tr><th>Period</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th><th>Note</th></tr>
-          ${plan.map(i => `<tr><td><b>P-${i.period}</b><small>${ptime(i.period, day)}</small></td><td>${esc(i.classDesc)}</td><td class="sub-abs">${esc(i.absentTeacher)}</td>
-            <td class="sub-asg">${i.assignedTeacher ? esc(i.assignedTeacher) : "—"}</td><td><span class="sub-badge ${i.badge}">${esc(i.status)}</span></td></tr>`).join("")}
-        </table></div>
-        <div class="sub-actions">
-          <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish for teachers</button>
-          <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
-          <button type="button" class="btn-sm" data-sub="copy">📋 Copy text</button>
-          <button type="button" class="btn-sm" data-sub="print">🖨 Print</button>
-        </div>
-        <p class="hint">Publishing saves each substitute's count for fairness and shows this list on the website's <a href="/pages/arrangement.html" target="_blank">Daily Arrangement</a> page.</p>
-      </div>` : "";
+        <div class="sub-card-head"><h3>2. Arrangement — ${esc(niceDate(date))}</h3>${plan.length ? (data.published[date] ? `<span class="sub-tag">Published</span>` : `<span class="sub-tag draft">Not published yet</span>`) : ""}</div>
+        ${!absent.length ? `<p class="hint">Mark the absent teachers above. Their periods appear here with a free teacher suggested for each — change it from the list, or ✕ to remove.</p>`
+          : !plan.length ? `<p class="hint">The absent teachers have no periods that need a substitute.</p>`
+          : `<div class="sub-arr-bar"><span><b>${plan.length}</b> periods to cover · <b class="ok">${assigned}</b> assigned${plan.length - assigned ? ` · <b class="bad">${plan.length - assigned}</b> not assigned` : ""}</span>
+              <span><button type="button" class="btn-sm" data-sub="autoAssign">⚡ Fill empty periods</button> <button type="button" class="btn-sm" data-sub="clearAssign">Clear all</button></span></div>
+            <p class="hint">Each list shows only teachers who are free in that period (no class of their own, not covering another class), with <b>(number)</b> = how many other periods that teacher already has today. Change a name, or ✕ to remove it.</p>
+            ${groups}
+            <div class="sub-actions">
+              <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish for teachers</button>
+              <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
+              <button type="button" class="btn-sm" data-sub="copy">📋 Copy text</button>
+              <button type="button" class="btn-sm" data-sub="print">🖨 Print</button>
+            </div>
+            <p class="hint">Publishing saves each substitute's count for fairness and shows this list on the website's <a href="/pages/arrangement.html" target="_blank">Daily Arrangement</a> page.</p>`}
+      </div>`;
     return `
       <div class="sub-card">
         <div class="sub-row">
           <label class="field"><span>Date</span><input type="date" data-subchange="date" value="${esc(date)}"></label>
           <label class="field"><span>Timetable day</span><select data-subchange="day">${DAYS.map(d => `<option value="${d}"${d === day ? " selected" : ""}>${DAY_NAMES[d]}</option>`).join("")}</select></label>
         </div>
-        ${data.published[date] ? `<p class="sub-note">✔ The arrangement for this date is published and shown below. Change it and generate again to replace it.</p>`
+        ${data.published[date] ? `<p class="sub-note">✔ The arrangement for this date is published and shown below. Change it and publish again to replace it.</p>`
           : carriedFrom ? `<p class="sub-note carry">↪ Absent teachers carried over from <b>${esc(niceDate(carriedFrom))}</b>. Change them if needed, or reset to start fresh.</p>` : ""}
         <button type="button" class="btn-sm danger" data-sub="resetDay" style="margin-top:10px">↺ Reset ${date === isoDate(new Date()) ? "today's" : "this day's"} arrangement</button>
       </div>
@@ -296,15 +329,6 @@ window.SubstitutionAdmin = (() => {
         ${absent.length ? `<p class="hint">Their periods that need a substitute are ticked. Untick any period already covered.</p><div class="sub-slots">${absentRows}</div>` : ""}
         <div class="sub-chips">${sorted().map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
       </div>
-      <div class="sub-card">
-        <div class="sub-card-head"><h3>2. Teachers available for substitution</h3><span><button type="button" class="btn-sm" data-sub="allAvail">All</button> <button type="button" class="btn-sm" data-sub="noneAvail">None</button></span></div>
-        ${!absent.length ? `<p class="hint">Mark the absent teachers first. The teachers who are free in their periods will appear here.</p>`
-          : !needed.length ? `<p class="hint">The absent teachers have no periods that need a substitute today.</p>`
-          : `<p class="hint">Periods needing a substitute: <b>${needed.map(p => `P-${p}`).join(", ")}</b>. Only teachers with no class of their own in at least one of these periods are shown, with those free periods. Tap a period to block it (✕), or untick a teacher to leave them out.</p>
-        ${eligible.length ? `<div class="sub-slots">${freeRows}</div>` : `<p class="sub-note carry">No teacher is free in these periods — classes will need to be merged.</p>`}
-        ${busyAll.length ? `<p class="hint sub-busy">Not shown — busy with their own class in all these periods (${busyAll.length}): ${busyAll.map(esc).join(", ")}.</p>` : ""}`}
-      </div>
-      <button type="button" class="sub-generate" data-sub="generate">⚡ Generate arrangement</button>
       ${result}`;
   }
 
@@ -440,9 +464,12 @@ window.SubstitutionAdmin = (() => {
     if (a === "absent") {
       if (absentSet.has(t)) { absentSet.delete(t); availSet.add(t); }
       else { absentSet.add(t); availSet.delete(t); absentPeriods[t] = new Set(ANY_PERIOD); }
-      plan = [];
+      syncPlan();
     }
-    if (a === "absentPeriod") { const s = absentPeriods[t] = absentPeriods[t] || new Set(ANY_PERIOD); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
+    if (a === "absentPeriod") { const s = absentPeriods[t] = absentPeriods[t] || new Set(ANY_PERIOD); s.has(p) ? s.delete(p) : s.add(p); syncPlan(); }
+    if (a === "unassign") plan[Number(b.dataset.i)].assignedTeacher = "";
+    if (a === "autoAssign") { const left = autoAssign(); if (left) toast(`${left} period(s) have no free teacher — merge class.`, true); }
+    if (a === "clearAssign") plan.forEach(i => { i.assignedTeacher = ""; });
     if (a === "avail") { availSet.has(t) ? availSet.delete(t) : availSet.add(t); plan = []; }
     if (a === "blockPeriod") { const s = blockedPeriods[t] = blockedPeriods[t] || new Set(); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
     if (a === "clearAbsent") { resetDaily(); }
@@ -455,7 +482,6 @@ window.SubstitutionAdmin = (() => {
     }
     if (a === "allAvail") { teachers.forEach(x => { if (!absentSet.has(x)) availSet.add(x); }); plan = []; }
     if (a === "noneAvail") { availSet.clear(); plan = []; }
-    if (a === "generate") return generate();
     if (a === "publish") return saveAndPublish();
     if (a === "unpublish") return unpublish(b.dataset.d);
     if (a === "whatsapp") return window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(whatsappText()), "_blank");
@@ -576,7 +602,8 @@ window.SubstitutionAdmin = (() => {
     const k = e.target.dataset.subchange;
     if (!k || !root.contains(e.target)) return;
     if (k === "date") { if (!e.target.value) return; loadDate(e.target.value); }
-    if (k === "day") { day = e.target.value; plan = []; }
+    if (k === "day") { day = e.target.value; plan = []; syncPlan(); }
+    if (k === "assign") plan[Number(e.target.dataset.i)].assignedTeacher = e.target.value;
     if (k === "ttDay") ttDay = e.target.value;
     if (k === "ttTeacher") ttTeacher = e.target.value;
     if (k === "pickStaff") { root.querySelector("#sub-new-teacher").value = e.target.value; return; }
