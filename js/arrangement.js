@@ -1,20 +1,36 @@
 // Daily Arrangement page: a read-only view of the substitution lists the admin publishes.
-// Teachers pick a date and see who is absent, who is present, and who takes each period.
+// Teachers see today's arrangement until 5 PM (India time), then the page resets until the next one is published.
+// Earlier days stay available through "See earlier arrangements".
 
 (function () {
   const root = document.getElementById("arrangement");
   const DAY_NAMES = { MON: "Monday", TUE: "Tuesday", WED: "Wednesday", THU: "Thursday", FRI: "Friday", SAT: "Saturday" };
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
+  // School time (India), whatever the viewer's device clock zone is
+  const RESET_HOUR = 17; // today's arrangement is shown until 5 PM, then the page resets
+  function schoolNow() {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+      .formatToParts(new Date()).map(p => [p.type, p.value]));
+    return { date: `${parts.year}-${parts.month}-${parts.day}`, minutes: Number(parts.hour) * 60 + Number(parts.minute) };
+  }
+  let today = schoolNow().date;
   const nice = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
-  let published = {}, dates = [], selected = "", mine = "";
+  let published = {}, dates = [], selected = "", mine = "", browsing = false, preview = null;
+
+  // Arrangements still current: upcoming days, and today's until 5 PM
+  const current = () => { const now = schoolNow(); today = now.date; return dates.filter(d => d > now.date || (d === now.date && now.minutes < RESET_HOUR * 60)); };
 
   // Long names wrap onto a second line inside their box (see .arr-name in style.css).
   const nameTag = t => `<span class="arr-name">${esc(t)}</span>`;
 
   function render() {
-    if (!dates.length) {
+    if (!preview && !browsing) {
+      const live = current().sort();
+      selected = live.includes(today) ? today : live[0] || "";
+    }
+    if (!selected) {
+      const ended = !!published[today] && !preview;
       root.innerHTML = `
         <div class="arr-empty">
           <div class="arr-empty-art" aria-hidden="true">
@@ -25,12 +41,14 @@
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             </span>
           </div>
-          <h3>No arrangement published yet</h3>
-          <p>Today's teacher arrangement will appear here as soon as the school publishes it — who is absent, who is present, and who takes each period.</p>
+          <h3>${ended ? "Today's arrangement has ended" : "No arrangement published yet"}</h3>
+          <p>${ended ? "Today's arrangement was shown until 5 PM. The next one will appear here as soon as the school publishes it."
+            : "Today's teacher arrangement will appear here as soon as the school publishes it — who is absent, who is present, and who takes each period."}</p>
           <div class="arr-empty-actions">
             <button type="button" class="arr-btn primary" data-arr="reload">↻ Check again</button>
             <a class="arr-btn" href="/pages/timetable.html">📅 View School Timetable</a>
           </div>
+          ${dates.length ? `<button type="button" class="arr-past" data-arr="past">📂 See earlier arrangements</button>` : ""}
         </div>`;
       return;
     }
@@ -39,10 +57,11 @@
     const rows = x.plan.filter(i => !mine || i.assignedTeacher === mine || i.absentTeacher === mine);
     root.innerHTML = `
       <div class="arr-controls">
-        <label><span>Date</span><select data-arr="date">${dates.map(d => `<option value="${d}"${d === selected ? " selected" : ""}>${esc(nice(d))}${d === today ? " (today)" : ""}</option>`).join("")}</select></label>
+        <label><span>Date</span><select data-arr="date">${(browsing || preview ? dates : current().sort().reverse()).map(d => `<option value="${d}"${d === selected ? " selected" : ""}>${esc(nice(d))}${d === today ? " (today)" : ""}</option>`).join("")}</select></label>
         <label><span>Find my periods</span><select data-arr="mine"><option value="">All teachers</option>${teachers.map(t => `<option${t === mine ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
       </div>
-      ${selected !== today ? `<p class="arr-note">Showing ${esc(nice(selected))}. ${published[today] ? "" : "Today's arrangement is not published yet."}</p>` : ""}
+      ${browsing ? `<p class="arr-note">Showing an earlier arrangement: ${esc(nice(selected))}. <button type="button" class="arr-link" data-arr="back">Back to today</button></p>`
+        : selected !== today ? `<p class="arr-note">Showing ${esc(nice(selected))}.</p>` : ""}
       <div class="arr-summary">
         <div class="arr-box absent">
           <h3>🔴 Absent <span>${x.absent.length}</span></h3>
@@ -67,17 +86,22 @@
       </div>`;
   }
 
-  root.addEventListener("click", e => { if (e.target.closest('[data-arr="reload"]')) location.reload(); });
+  root.addEventListener("click", e => {
+    const k = e.target.closest("[data-arr]")?.dataset.arr;
+    if (k === "reload") location.reload();
+    if (k === "past") { browsing = true; selected = dates.find(d => d <= today) || dates[0]; render(); }
+    if (k === "back") { browsing = false; render(); }
+  });
 
   root.addEventListener("change", e => {
     const k = e.target.dataset.arr;
-    if (k === "date") selected = e.target.value;
+    if (k === "date") { selected = e.target.value; if (!current().includes(selected)) browsing = true; }
     if (k === "mine") mine = e.target.value;
     render();
   });
 
   // ?preview=1 — the admin's unpublished draft (from the admin panel, same browser), shown with a banner
-  const preview = (() => {
+  preview = (() => {
     if (!new URLSearchParams(location.search).has("preview")) return null;
     try { return JSON.parse(localStorage.getItem("sages-arrangement-preview")); } catch { return null; }
   })();
@@ -92,7 +116,9 @@
     .then(d => {
       published = d.published || {};
       dates = Object.keys(published).sort().reverse();
-      selected = preview ? preview.date : published[today] ? today : dates[0] || "";
+      if (preview) selected = preview.date;
       render();
+      // If the page is left open, reset it at 5 PM (and check again each minute after midnight changes the day)
+      if (!preview) { let shown = current().join(); setInterval(() => { const now = current().join(); if (now !== shown && !browsing) { shown = now; render(); } }, 60 * 1000); }
     });
 })();
