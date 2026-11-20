@@ -313,3 +313,81 @@ button, input, select, textarea { font: inherit; }
 .sub-break-name { width: 96px; flex: none; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-weight: 600; }
 .sub-break-add { justify-self: start; margin: -2px 0 -2px 46px; padding: 3px 10px; border: 1px dashed #d9b36b; border-radius: 6px; background: #fffaf0; color: #8a5300; font: inherit; font-size: 12.5px; cursor: pointer; }
 .sub-break-add:hover { background: #fff1d6; }
+/* Section 2: teachers free in the needed periods */
+.sub-avail .sub-check { display: inline-flex; align-items: center; gap: 6px; min-width: 210px; padding: 4px 6px; border: 0; background: none; font: inherit; color: #1b5e20; cursor: pointer; text-align: left; }
+.sub-avail .sub-check b { color: inherit; }
+.sub-avail.off { opacity: .55; }
+.sub-avail.off .sub-check { color: #667; }
+.sub-busy { font-size: 12.5px; }
+@media (max-width: 600px) { .sub-avail .sub-check { min-width: 0; width: 100%; } }
+/* Step 2: arrangement lines grouped by absent teacher */
+.sub-arr-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: #f5f7fb; font-size: 14px; }
+.sub-arr-bar .ok { color: #1b5e20; } .sub-arr-bar .bad { color: #b71c1c; }
+.sub-group { margin-top: 14px; border: 1px solid #f1c4c4; border-radius: 10px; overflow: hidden; }
+.sub-group h4 { margin: 0; padding: 9px 12px; background: #fdecea; color: #b71c1c; font-size: 15px; }
+.sub-group h4 small { color: #8a4a4a; font-weight: 500; font-size: 12.5px; margin-left: 6px; }
+.sub-arr { display: grid; grid-template-columns: 92px minmax(150px, 1fr) 18px minmax(220px, 1.4fr) 30px auto; align-items: center; gap: 8px 10px; padding: 8px 12px; border-top: 1px solid var(--border); background: #fff; }
+.sub-arr.empty { background: #fffaf0; }
+.sub-arr-per b { display: block; } .sub-arr-per small { color: #667; font-size: 12px; }
+.sub-arr-cls { font-weight: 500; }
+.sub-arr-to { color: #9aa3b5; text-align: center; }
+.sub-arr-pick { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-weight: 600; color: #1b5e20; background: #fff; }
+.sub-arr.empty .sub-arr-pick { color: #b71c1c; border-color: #f1c4c4; }
+@media (max-width: 760px) {
+  .sub-arr { grid-template-columns: 96px 1fr 30px; }
+  .sub-arr-to { display: none; }
+  .sub-arr-pick { grid-column: 1 / 3; }
+  .sub-arr .sub-badge { grid-column: 1 / -1; justify-self: start; }
+}
+.sub-arr-per small { white-space: nowrap; }
+/* Absent teacher → one card per period with the substitute dropdown */
+.sub-group h4 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sub-group h4 .sub-x { margin-left: auto; width: 28px; height: 28px; border: 1px solid #f1c4c4; border-radius: 6px; background: #fff; color: var(--danger); cursor: pointer; }
+.sub-pcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; padding: 12px; background: #fff; }
+.sub-pcard { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.sub-pcard.is-done { border-color: #b9dfbc; background: #f6fbf6; }
+.sub-pcard.is-empty { border-color: #f3d9a9; background: #fffaf0; }
+.sub-pcard.is-covered { background: #f5f7fb; opacity: .75; }
+.sub-pcard-head { display: flex; align-items: baseline; gap: 8px; }
+.sub-pcard-head b { font-size: 15px; color: var(--primary); } .sub-pcard-head small { color: #667; font-size: 12px; }
+.sub-pcard-cls { font-weight: 500; font-size: 14px; }
+.sub-pcard-pick { display: flex; gap: 6px; align-items: center; }
+.sub-pcard-pick select { flex: 1; min-width: 0; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-weight: 600; background: #fff; color: #1b5e20; }
+.sub-pcard.is-empty select { color: #b71c1c; border-color: #f1c4c4; }
+.sub-pcard.is-covered select { color: #667; font-weight: 500; }
+.sub-pcard .sub-badge { align-self: flex-start; }
+.sub-card > .sub-chips + .sub-group { margin-top: 16px; }
+/* Substitute dropdowns: own arrow, inset from the edge, text stops before it */
+.sub-pcard-pick select {
+  -webkit-appearance: none; appearance: none;
+  padding: 7px 34px 7px 10px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%230b3d91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center / 12px 8px;
+  cursor: pointer;
+}
+.sub-pcards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+/* Absent teacher header: who covers each period */
+.sub-who { display: flex; flex-wrap: wrap; gap: 6px 8px; padding: 0 12px 10px; background: #fdecea; font-size: 13px; }
+.sub-who span { padding: 3px 9px; border-radius: 12px; background: #fff; border: 1px solid #b9dfbc; color: #1b5e20; font-weight: 600; }
+.sub-who span b { color: var(--primary); }
+.sub-who span.none { border-color: #f1c4c4; color: #b71c1c; }
+@media (max-width: 600px) { .sub-who { flex-direction: column; align-items: flex-start; } }
+/* Preview window */
+.sub-preview { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(10, 20, 45, .55); }
+.sub-preview-win { width: min(1100px, 100%); height: min(90vh, 900px); display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
+.sub-preview-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; padding: 10px 14px; background: #fff4e5; color: #8a5300; border-bottom: 1px solid #f3d9a9; }
+.sub-preview-win iframe { flex: 1; width: 100%; border: 0; }
+@media (max-width: 600px) { .sub-preview { padding: 0; } .sub-preview-win { height: 100%; border-radius: 0; } }
+/* Preview button: the site's gold, next to the blue Publish button */
+.btn-sm.btn-preview { background: var(--accent); border-color: var(--accent); color: var(--primary-dark); font-weight: 600; }
+.btn-sm.btn-preview:hover { background: #e9971a; border-color: #e9971a; }
+/* Review & publish buttons: an even grid — Preview | Publish, then WhatsApp | Copy | Print */
+#sub-result .sub-actions { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+#sub-result .sub-actions .btn-sm { grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 0; padding: 8px 10px; text-align: center; white-space: nowrap; }
+#sub-result .sub-actions [data-sub="preview"], #sub-result .sub-actions [data-sub="publish"] { grid-column: span 3; }
+@media (max-width: 480px) { #sub-result .sub-actions .btn-sm { font-size: 13px; padding: 8px 6px; white-space: normal; line-height: 1.25; } }
+/* Copy text and Print: soft colours of their own */
+#sub-result .sub-actions [data-sub="copy"] { background: #e8f0fe; border-color: #bcd0f5; color: #0b3d91; font-weight: 600; }
+#sub-result .sub-actions [data-sub="copy"]:hover { background: #d9e6fd; border-color: #0b3d91; }
+#sub-result .sub-actions [data-sub="print"] { background: #e3f4f1; border-color: #b4ddd5; color: #0f6b5e; font-weight: 600; }
+#sub-result .sub-actions [data-sub="print"]:hover { background: #d2ede8; border-color: #0f6b5e; }
+#sub-result .sub-actions [data-sub="whatsapp"] { font-weight: 600; }
