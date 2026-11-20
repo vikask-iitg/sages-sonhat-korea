@@ -79,3 +79,4 @@
 .tt-grid tr > :last-child { border-right: 0; }
 .tt-grid tbody tr:last-child > * { border-bottom: 0; }
 .tt-grid thead th { border-right-color: rgba(255, 255, 255, .18); border-bottom: 0; }
+.tt-sub { font-size: 15px; color: #0b3d91; margin: 18px 0 8px; } .tt-sub:first-child { margin-top: 0; }

@@ -52,7 +52,8 @@
       TimetableView.mount(document.getElementById("timetable"), {
         timetable: d.timetable || buildDefaultTimetable(),
         teachers: d.teachers || TEACHERS,
-        periodTimes: { ...PERIOD_TIMES, ...(d.periodTimes || {}) },
+        periodTimes: d.periodTimes && Object.keys(d.periodTimes).length ? d.periodTimes : PERIOD_TIMES,
+        periodTimesSat: d.periodTimesSat || null,
       });
     });
   </script>

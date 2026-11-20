@@ -2,7 +2,7 @@ import { put, list, del } from "@vercel/blob";
 import { isAuthed, json, readDoc, STAGE_PREFIX } from "./_lib.js";
 
 // Daily teacher arrangement (substitution) data, kept apart from the site content.
-// Shape: { timetable, teachers, periodTimes, history, savedDays, published: { "YYYY-MM-DD": { day, absent, present, plan, publishedAt } } }
+// Shape: { timetable, teachers, periodTimes (Mon–Fri), periodTimesSat (optional), history, savedDays, published: { "YYYY-MM-DD": { day, absent, present, plan, publishedAt } } }
 //
 // Every save writes a NEW file (substitution/v-<time>.json) instead of overwriting one. Blob's CDN can serve an
 // overwritten file stale for up to a minute, but a new file name is always fresh, and the listing API is not
@@ -34,7 +34,7 @@ export async function GET(request) {
   data.rev = doc.rev;
   // Teachers (not logged in) only see what the admin has published, plus the timetable for the full timetable view.
   const authed = isAuthed(request);
-  const body = authed ? data : { published: data.published || {}, timetable: data.timetable, teachers: data.teachers, periodTimes: data.periodTimes };
+  const body = authed ? data : { published: data.published || {}, timetable: data.timetable, teachers: data.teachers, periodTimes: data.periodTimes, periodTimesSat: data.periodTimesSat };
   return json(body, 200, { "cache-control": authed ? "no-store" : "public, s-maxage=5" });
 }
 

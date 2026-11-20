@@ -6,7 +6,8 @@
 window.SubstitutionAdmin = (() => {
   const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT"];
   const DAY_NAMES = { MON: "Monday", TUE: "Tuesday", WED: "Wednesday", THU: "Thursday", FRI: "Friday", SAT: "Saturday" };
-  const ALL_PERIODS = [1, 2, 3, 4, 5, 6, 7];
+  const ALL_PERIODS = [1, 2, 3, 4, 5, 6, 7]; // the default timetable's periods
+  const ANY_PERIOD = Array.from({ length: 30 }, (_, i) => i + 1); // "every period" (days can have more than 7)
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const jsArg = s => esc(JSON.stringify(s)); // safe inside an HTML attribute
   // The school's teacher list is saved with the arrangement data (admin can add/remove teachers);
@@ -24,6 +25,7 @@ window.SubstitutionAdmin = (() => {
   let plan = [];
   let carriedFrom = "";     // date whose absent list was carried over into this one
   let ttDay = "MON", ttTeacher = "";
+  let timesSet = "WEEK", timesDraft = null; // timesDraft: [[start, end], ...] as "HH:MM" while editing    // which period timings the Timetable tab is editing: "WEEK" (Mon–Fri) or "SAT"
 
   const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
@@ -76,7 +78,9 @@ window.SubstitutionAdmin = (() => {
     });
     d.savedDays = d.savedDays && typeof d.savedDays === "object" ? d.savedDays : {};
     d.published = d.published && typeof d.published === "object" ? d.published : {};
-    d.periodTimes = { ...PERIOD_TIMES, ...(d.periodTimes && typeof d.periodTimes === "object" ? d.periodTimes : {}) };
+    // Period timings decide how many periods a day has (periods can be added or removed), so no merging with defaults.
+    d.periodTimes = d.periodTimes && typeof d.periodTimes === "object" && Object.keys(d.periodTimes).length ? d.periodTimes : { ...PERIOD_TIMES };
+    if (d.periodTimesSat && (typeof d.periodTimesSat !== "object" || !Object.keys(d.periodTimesSat).length)) delete d.periodTimesSat;
     return d;
   }
 
@@ -93,14 +97,18 @@ window.SubstitutionAdmin = (() => {
   }
 
   // Period timings are saved data ("10:15 - 11:05", 12-hour clock without am/pm, as on the school timetable).
-  const ptime = p => data.periodTimes[p] || "";
+  // Saturday has its own timings once saved (data.periodTimesSat); until then it uses the Monday–Friday ones.
+  const timesOf = dy => (dy === "SAT" && data.periodTimesSat) || data.periodTimes;
+  const ptime = (p, dy) => timesOf(dy)[p] || "";
+  // The periods a day has: P-1..P-n from its timings (Mon–Fri and Saturday can differ)
+  const periodsFor = dy => Object.keys(timesOf(dy)).map(Number).sort((a, b) => a - b);
   // "01:25" (afternoon) <-> "13:25" for <input type="time">. School hours run from about 7 am to 6 pm.
   const toInput = hm => { const [h, m] = (hm || "").trim().split(":").map(Number); if (isNaN(h) || isNaN(m)) return "";
     return `${String(h < 7 ? h + 12 : h).padStart(2, "0")}:${String(m).padStart(2, "0")}`; };
   const fromInput = v => { const [h, m] = v.split(":").map(Number); return `${String(h % 12 || 12).padStart(2, "0")}:${String(m).padStart(2, "0")}`; };
   const tt = (dy, t, p) => data.timetable[dy][t][p] || [];
-  const scheduled = (dy, t) => ALL_PERIODS.filter(p => tt(dy, t, p).length);
-  const freePeriods = (dy, t) => ALL_PERIODS.filter(p => !tt(dy, t, p).length);
+  const scheduled = (dy, t) => periodsFor(dy).filter(p => tt(dy, t, p).length);
+  const freePeriods = (dy, t) => periodsFor(dy).filter(p => !tt(dy, t, p).length);
 
   function resetDaily() {
     absentSet = new Set(); availSet = new Set(teachers); absentPeriods = {}; blockedPeriods = {}; plan = []; carriedFrom = "";
@@ -117,7 +125,7 @@ window.SubstitutionAdmin = (() => {
     if (!src) return;
     src.absent.filter(a => teachers.includes(a.teacher)).forEach(a => {
       absentSet.add(a.teacher); availSet.delete(a.teacher);
-      absentPeriods[a.teacher] = pub ? new Set(a.periods) : new Set(ALL_PERIODS);
+      absentPeriods[a.teacher] = pub ? new Set(a.periods) : new Set(ANY_PERIOD);
     });
     if (pub) plan = pub.plan.map(i => ({ ...i, status: "Published", badge: "ok" }));
     else carriedFrom = prev;
@@ -127,7 +135,7 @@ window.SubstitutionAdmin = (() => {
   function createsFourConsecutive(busy, candidate) {
     const s = new Set(busy); s.add(candidate);
     let streak = 0;
-    for (const p of ALL_PERIODS) { streak = s.has(p) ? streak + 1 : 0; if (streak >= 4) return true; }
+    for (const p of periodsFor(day)) { streak = s.has(p) ? streak + 1 : 0; if (streak >= 4) return true; }
     return false;
   }
 
@@ -135,8 +143,8 @@ window.SubstitutionAdmin = (() => {
     if (!absentSet.size) return toast("First mark the teachers who are absent today.", true);
     const vacant = [];
     absentSet.forEach(t => {
-      const needed = absentPeriods[t] || new Set(ALL_PERIODS);
-      ALL_PERIODS.forEach(p => { if (needed.has(p)) tt(day, t, p).forEach(cls => vacant.push({ period: p, classDesc: cls, absentTeacher: t })); });
+      const needed = absentPeriods[t] || new Set(ANY_PERIOD);
+      periodsFor(day).forEach(p => { if (needed.has(p)) tt(day, t, p).forEach(cls => vacant.push({ period: p, classDesc: cls, absentTeacher: t })); });
     });
     vacant.sort((a, b) => a.period - b.period);
     if (!vacant.length) return toast("The absent teachers have no regular periods on this day.", true);
@@ -197,9 +205,9 @@ window.SubstitutionAdmin = (() => {
     });
     data.published[date] = {
       day,
-      absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ALL_PERIODS)).has(p)) })),
+      absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ANY_PERIOD)).has(p)) })),
       present: teachers.filter(t => !absentSet.has(t)),
-      plan: plan.map(i => ({ period: i.period, time: ptime(i.period), classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
+      plan: plan.map(i => ({ period: i.period, time: ptime(i.period, day), classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
       publishedAt: new Date().toISOString(),
     };
     if (await save(old ? "Arrangement updated and re-published." : "Saved and published — teachers can now see it.")) render();
@@ -234,15 +242,15 @@ window.SubstitutionAdmin = (() => {
     const avail = sorted().filter(t => availSet.has(t) && !absentSet.has(t));
     const absentRows = absent.map(t => {
       const sch = scheduled(day, t);
-      const needed = absentPeriods[t] || new Set(ALL_PERIODS);
-      const pills = sch.length ? sch.map(p => `<button type="button" class="sub-pill ${needed.has(p) ? "need" : "off"}" data-sub="absentPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${esc(tt(day, t, p).join(" / "))} (${ptime(p)})">${needed.has(p) ? "☑" : "☐"} P-${p}</button>`).join("")
+      const needed = absentPeriods[t] || new Set(ANY_PERIOD);
+      const pills = sch.length ? sch.map(p => `<button type="button" class="sub-pill ${needed.has(p) ? "need" : "off"}" data-sub="absentPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${esc(tt(day, t, p).join(" / "))} (${ptime(p, day)})">${needed.has(p) ? "☑" : "☐"} P-${p}</button>`).join("")
         : `<span class="sub-muted">No regular class today</span>`;
       return `<div class="sub-slot absent"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
     }).join("");
     const freeRows = avail.map(t => {
       const free = freePeriods(day, t);
       const pills = free.length ? free.map(p => { const blocked = blockedPeriods[t]?.has(p);
-        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${ptime(p)}">${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("")
+        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${ptime(p, day)}">${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("")
         : `<span class="sub-muted">No free period today</span>`;
       return `<div class="sub-slot"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
     }).join("");
@@ -251,7 +259,7 @@ window.SubstitutionAdmin = (() => {
         <div class="sub-card-head"><h3>Arrangement for ${esc(date)} (${DAY_NAMES[day]})</h3>${data.published[date] ? `<span class="sub-tag">Published</span>` : `<span class="sub-tag draft">Not published yet</span>`}</div>
         <div class="sub-table-wrap"><table class="sub-table">
           <tr><th>Period</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th><th>Note</th></tr>
-          ${plan.map(i => `<tr><td><b>P-${i.period}</b><small>${ptime(i.period)}</small></td><td>${esc(i.classDesc)}</td><td class="sub-abs">${esc(i.absentTeacher)}</td>
+          ${plan.map(i => `<tr><td><b>P-${i.period}</b><small>${ptime(i.period, day)}</small></td><td>${esc(i.classDesc)}</td><td class="sub-abs">${esc(i.absentTeacher)}</td>
             <td class="sub-asg">${i.assignedTeacher ? esc(i.assignedTeacher) : "—"}</td><td><span class="sub-badge ${i.badge}">${esc(i.status)}</span></td></tr>`).join("")}
         </table></div>
         <div class="sub-actions">
@@ -309,17 +317,30 @@ window.SubstitutionAdmin = (() => {
       </div>`;
   }
 
+  const timesDay = () => (timesSet === "SAT" ? "SAT" : "MON");
+  const savedDraft = () => periodsFor(timesDay()).map(p => ptime(p, timesDay()).split("-").map(x => toInput(x.trim())));
+  const draft = () => (timesDraft = timesDraft || savedDraft());
+  const draftChanged = () => JSON.stringify(draft()) !== JSON.stringify(savedDraft());
+  // "HH:MM" + minutes
+  const addMin = (hm, m) => { const [h, mi] = hm.split(":").map(Number), t = Math.min(h * 60 + mi + m, 23 * 60 + 59); return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
+
   function timetableHtml() {
     return `
       <div class="sub-card">
         <div class="sub-card-head"><h3>Period timings</h3></div>
-        <p class="hint">Change the start and end time of any period, then click <b>Save timings</b>. New arrangements and the teachers' page use the new times.</p>
+        <div class="sub-tabs sub-tabs-sm">${[["WEEK", "Monday – Friday"], ["SAT", "Saturday"]].map(([k, l]) =>
+          `<button type="button" class="sub-tab${timesSet === k ? " active" : ""}" data-sub="timesSet" data-k="${k}">${l}</button>`).join("")}</div>
+        <p class="hint">${timesSet === "SAT"
+          ? (data.periodTimesSat ? "Saturday has its own timings." : "Saturday is using the Monday – Friday timings. Change them below and click <b>Save timings</b> to give Saturday its own.")
+          : "Timings for Monday to Friday."} New arrangements, printouts and the teachers' pages use these times.</p>
         <div class="sub-times">
-          ${ALL_PERIODS.map(p => { const [a, b] = ptime(p).split("-").map(x => x.trim());
-            return `<div class="sub-time"><b>P-${p}</b><input type="time" data-pt="${p}" data-end="0" value="${toInput(a)}"><span>to</span><input type="time" data-pt="${p}" data-end="1" value="${toInput(b)}"></div>`; }).join("")}
+          ${draft().map(([a, b], k) => { const p = k + 1, last = p === draft().length;
+            return `<div class="sub-time"><b>P-${p}</b><input type="time" data-pt="${p}" data-end="0" value="${a}"><span>to</span><input type="time" data-pt="${p}" data-end="1" value="${b}">${last && p > 1
+              ? `<button type="button" class="sub-time-del" data-sub="delPeriod" title="Remove P-${p}" aria-label="Remove P-${p}">✕</button>` : `<span class="sub-time-gap"></span>`}</div>`; }).join("")}
+          <button type="button" class="btn-sm sub-time-add" data-sub="addPeriod">＋ Add period</button>
         </div>
-        <div class="sub-actions"><button type="button" class="btn-sm primary" data-sub="saveTimes">💾 Save timings</button>
-          <button type="button" class="btn-sm" data-sub="defaultTimes">Use default timings</button></div>
+        <div class="sub-actions"><button type="button" class="btn-sm primary${draftChanged() ? " unsaved" : ""}" data-sub="saveTimes">💾 Save timings</button>
+          <button type="button" class="btn-sm" data-sub="defaultTimes">${timesSet === "SAT" ? "Same as Monday – Friday" : "Use default timings"}</button></div>
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>Master timetable</h3><button type="button" class="btn-sm danger" data-sub="resetTimetable">Reset to default</button></div>
@@ -330,7 +351,7 @@ window.SubstitutionAdmin = (() => {
         <p class="hint">Write the class and subject for each period, e.g. <i>Class 9 (Science)</i>. Separate two classes with a comma. Leave empty for a free period.</p>
         <div class="sub-table-wrap"><table class="sub-table">
           <tr><th>Period</th><th>Class &amp; subject</th><th></th></tr>
-          ${ALL_PERIODS.map(p => `<tr><td><b>P-${p}</b><small>${ptime(p)}</small></td>
+          ${periodsFor(ttDay).map(p => `<tr><td><b>P-${p}</b><small>${ptime(p, ttDay)}</small></td>
             <td><input class="sub-input" data-ttp="${p}" value="${esc(tt(ttDay, ttTeacher, p).join(", "))}" placeholder="Free period"></td>
             <td><button type="button" class="btn-sm primary" data-sub="savePeriod" data-p="${p}">Save</button></td></tr>`).join("")}
         </table></div>
@@ -394,10 +415,10 @@ window.SubstitutionAdmin = (() => {
     if (a === "tab") { tab = b.dataset.k; return render(); }
     if (a === "absent") {
       if (absentSet.has(t)) { absentSet.delete(t); availSet.add(t); }
-      else { absentSet.add(t); availSet.delete(t); absentPeriods[t] = new Set(ALL_PERIODS); }
+      else { absentSet.add(t); availSet.delete(t); absentPeriods[t] = new Set(ANY_PERIOD); }
       plan = [];
     }
-    if (a === "absentPeriod") { const s = absentPeriods[t] = absentPeriods[t] || new Set(ALL_PERIODS); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
+    if (a === "absentPeriod") { const s = absentPeriods[t] = absentPeriods[t] || new Set(ANY_PERIOD); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
     if (a === "avail") { availSet.has(t) ? availSet.delete(t) : availSet.add(t); plan = []; }
     if (a === "blockPeriod") { const s = blockedPeriods[t] = blockedPeriods[t] || new Set(); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
     if (a === "clearAbsent") { resetDaily(); }
@@ -452,25 +473,40 @@ window.SubstitutionAdmin = (() => {
       if (await save(`${t} removed from the arrangement list.`)) render();
       return;
     }
+    if (a === "timesSet") {
+      if (timesDraft && draftChanged() && !confirm("You have unsaved timing changes. Switch anyway and discard them?")) return;
+      timesSet = b.dataset.k; timesDraft = null; return render();
+    }
+    if (a === "addPeriod") { const d = draft(), end = d.length ? d.at(-1)[1] : "10:00"; d.push([end, addMin(end, 40)]); return render(); }
+    if (a === "delPeriod") {
+      const d = draft(), p = d.length, days = timesSet === "SAT" ? ["SAT"] : DAYS.filter(x => x !== "SAT" || !data.periodTimesSat);
+      const busy = teachers.filter(t => days.some(dy => tt(dy, t, p).length));
+      if (busy.length && !confirm(`P-${p} has classes for ${busy.length} teacher(s) (${busy.slice(0, 3).join(", ")}${busy.length > 3 ? "…" : ""}). Remove the period anyway? Their entries are kept but hidden until the period is added back.`)) return;
+      d.pop(); return render();
+    }
     if (a === "saveTimes" || a === "defaultTimes") {
-      let times;
+      const sat = timesSet === "SAT";
+      let times = null;
       if (a === "defaultTimes") {
-        if (!confirm("Go back to the default period timings?")) return;
-        times = { ...PERIOD_TIMES };
+        if (!confirm(sat ? "Make Saturday use the Monday – Friday timings again?" : "Go back to the default Monday – Friday timings?")) return;
+        if (!sat) times = { ...PERIOD_TIMES };
       } else {
         times = {};
-        for (const p of ALL_PERIODS) {
-          const [s0, e0] = [0, 1].map(i => root.querySelector(`[data-pt="${p}"][data-end="${i}"]`).value);
+        for (const [k, [s0, e0]] of draft().entries()) {
+          const p = k + 1;
           if (!s0 || !e0) return toast(`Enter both times for P-${p}.`, true);
           if (s0 >= e0) return toast(`P-${p} must end after it starts.`, true);
           times[p] = `${fromInput(s0)} - ${fromInput(e0)}`;
         }
       }
-      data.periodTimes = times;
+      timesDraft = null;
+      if (sat) { if (times) data.periodTimesSat = times; else delete data.periodTimesSat; }
+      else data.periodTimes = times;
       // Keep today's and later published lists in step with the new times
       const today = isoDate(new Date());
-      Object.keys(data.published).filter(d => d >= today).forEach(d => data.published[d].plan.forEach(i => { i.time = ptime(i.period); }));
-      if (await save(a === "defaultTimes" ? "Default timings restored." : "Period timings saved.")) render();
+      Object.keys(data.published).filter(d => d >= today).forEach(d => { const x = data.published[d]; x.plan.forEach(i => { i.time = ptime(i.period, x.day); }); });
+      const what = sat ? "Saturday" : "Monday – Friday";
+      if (await save(a === "defaultTimes" ? (sat ? "Saturday now uses the Monday – Friday timings." : "Default timings restored.") : `${what} timings saved.`)) render();
       return;
     }
     if (a === "editTeacherTT") { ttTeacher = t; tab = "timetable"; return render(); }
@@ -491,8 +527,8 @@ window.SubstitutionAdmin = (() => {
       root.querySelector(`[data-sub="savePeriod"][data-p="${p}"]`)?.classList.toggle("unsaved", el.value.trim() !== tt(ttDay, ttTeacher, p).join(", "));
     }
     if (el.dataset.pt) {
-      const changed = ALL_PERIODS.some(p => [0, 1].some(i => root.querySelector(`[data-pt="${p}"][data-end="${i}"]`).value !== toInput(ptime(p).split("-")[i])));
-      root.querySelector('[data-sub="saveTimes"]')?.classList.toggle("unsaved", changed);
+      draft()[Number(el.dataset.pt) - 1][Number(el.dataset.end)] = el.value;
+      root.querySelector('[data-sub="saveTimes"]')?.classList.toggle("unsaved", draftChanged());
     }
   }
 
@@ -514,7 +550,7 @@ window.SubstitutionAdmin = (() => {
       table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}th{background:#eee}</style></head><body>
       <h1>Swami Atmanand Govt. English Medium School, Sonhat</h1><h2>Substitution Arrangement — ${esc(date)} (${DAY_NAMES[day]})</h2>
       <table><tr><th>Period</th><th>Time</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th></tr>
-      ${plan.map(i => `<tr><td>P-${i.period}</td><td>${ptime(i.period)}</td><td>${esc(i.classDesc)}</td><td>${esc(i.absentTeacher)}</td><td>${esc(i.assignedTeacher || "No free teacher (merge class)")}</td></tr>`).join("")}
+      ${plan.map(i => `<tr><td>P-${i.period}</td><td>${ptime(i.period, day)}</td><td>${esc(i.classDesc)}</td><td>${esc(i.absentTeacher)}</td><td>${esc(i.assignedTeacher || "No free teacher (merge class)")}</td></tr>`).join("")}
       </table><script>window.onload=()=>window.print()<\/script></body></html>`);
     w.document.close();
   }
