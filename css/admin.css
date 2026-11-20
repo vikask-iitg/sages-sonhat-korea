@@ -313,3 +313,10 @@ button, input, select, textarea { font: inherit; }
 .sub-break-name { width: 96px; flex: none; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-weight: 600; }
 .sub-break-add { justify-self: start; margin: -2px 0 -2px 46px; padding: 3px 10px; border: 1px dashed #d9b36b; border-radius: 6px; background: #fffaf0; color: #8a5300; font: inherit; font-size: 12.5px; cursor: pointer; }
 .sub-break-add:hover { background: #fff1d6; }
+/* Section 2: teachers free in the needed periods */
+.sub-avail .sub-check { display: inline-flex; align-items: center; gap: 6px; min-width: 210px; padding: 4px 6px; border: 0; background: none; font: inherit; color: #1b5e20; cursor: pointer; text-align: left; }
+.sub-avail .sub-check b { color: inherit; }
+.sub-avail.off { opacity: .55; }
+.sub-avail.off .sub-check { color: #667; }
+.sub-busy { font-size: 12.5px; }
+@media (max-width: 600px) { .sub-avail .sub-check { min-width: 0; width: 100%; } }

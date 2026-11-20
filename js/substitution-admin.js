@@ -246,7 +246,6 @@ window.SubstitutionAdmin = (() => {
 
   function dailyHtml() {
     const absent = sorted().filter(t => absentSet.has(t));
-    const avail = sorted().filter(t => availSet.has(t) && !absentSet.has(t));
     const absentRows = absent.map(t => {
       const sch = scheduled(day, t);
       const needed = absentPeriods[t] || new Set(ANY_PERIOD);
@@ -254,12 +253,17 @@ window.SubstitutionAdmin = (() => {
         : `<span class="sub-muted">No regular class today</span>`;
       return `<div class="sub-slot absent"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
     }).join("");
-    const freeRows = avail.map(t => {
-      const free = freePeriods(day, t);
-      const pills = free.length ? free.map(p => { const blocked = blockedPeriods[t]?.has(p);
-        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${ptime(p, day)}">${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("")
-        : `<span class="sub-muted">No free period today</span>`;
-      return `<div class="sub-slot"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
+    // Periods that need a substitute (ticked periods of the absent teachers), and the teachers who are
+    // free — no class of their own — in at least one of them. Busy teachers are not offered.
+    const needed = [...new Set(absent.flatMap(t => scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ANY_PERIOD)).has(p))))].sort((x, y) => x - y);
+    const present = sorted().filter(t => !absentSet.has(t));
+    const freeFor = t => freePeriods(day, t).filter(p => needed.includes(p));
+    const eligible = present.filter(t => freeFor(t).length), busyAll = present.filter(t => !freeFor(t).length);
+    const freeRows = eligible.map(t => {
+      const on = availSet.has(t);
+      const pills = freeFor(t).map(p => { const blocked = blockedPeriods[t]?.has(p);
+        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${ptime(p, day)}${blocked ? " — blocked" : ""}"${on ? "" : " disabled"}>${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("");
+      return `<div class="sub-slot sub-avail${on ? "" : " off"}"><button type="button" class="sub-check" data-sub="avail" data-t="${jsArg(t)}" aria-pressed="${on}">${on ? "☑" : "☐"} <b>${esc(t)}</b></button><div class="sub-pills">${pills}</div></div>`;
     }).join("");
     const result = plan.length ? `
       <div class="sub-card" id="sub-result">
@@ -294,9 +298,11 @@ window.SubstitutionAdmin = (() => {
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>2. Teachers available for substitution</h3><span><button type="button" class="btn-sm" data-sub="allAvail">All</button> <button type="button" class="btn-sm" data-sub="noneAvail">None</button></span></div>
-        <div class="sub-chips">${sorted().map(t => { const ab = absentSet.has(t), av = availSet.has(t) && !ab;
-          return chip(ab ? "disabled" : av ? "avail-on" : "", "avail", av ? "✓" : "☐", t, ab).replace('data-sub="avail"', `data-sub="avail" data-t="${jsArg(t)}"`); }).join("")}</div>
-        ${avail.length ? `<p class="hint">Free periods of the selected teachers. Tap a period to block it (✕) if the teacher is busy with other work.</p><div class="sub-slots">${freeRows}</div>` : ""}
+        ${!absent.length ? `<p class="hint">Mark the absent teachers first. The teachers who are free in their periods will appear here.</p>`
+          : !needed.length ? `<p class="hint">The absent teachers have no periods that need a substitute today.</p>`
+          : `<p class="hint">Periods needing a substitute: <b>${needed.map(p => `P-${p}`).join(", ")}</b>. Only teachers with no class of their own in at least one of these periods are shown, with those free periods. Tap a period to block it (✕), or untick a teacher to leave them out.</p>
+        ${eligible.length ? `<div class="sub-slots">${freeRows}</div>` : `<p class="sub-note carry">No teacher is free in these periods — classes will need to be merged.</p>`}
+        ${busyAll.length ? `<p class="hint sub-busy">Not shown — busy with their own class in all these periods (${busyAll.length}): ${busyAll.map(esc).join(", ")}.</p>` : ""}`}
       </div>
       <button type="button" class="sub-generate" data-sub="generate">⚡ Generate arrangement</button>
       ${result}`;
