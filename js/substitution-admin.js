@@ -304,6 +304,11 @@ window.SubstitutionAdmin = (() => {
         ${!plan.length ? `<p class="hint">No periods need a substitute.</p>` : `
           <div class="sub-arr-bar"><span><b>${plan.length}</b> periods to cover · <b class="ok">${assigned}</b> assigned${plan.length - assigned ? ` · <b class="bad">${plan.length - assigned}</b> not assigned` : ""}</span>
             <span><button type="button" class="btn-sm" data-sub="autoAssign">⚡ Fill empty periods</button> <button type="button" class="btn-sm" data-sub="clearAssign">Clear all</button></span></div>
+          <div class="sub-table-wrap"><table class="sub-table sub-summary">
+            <tr><th>Period</th><th>Class</th><th>Absent teacher</th><th>Substitute</th></tr>
+            ${plan.map(i => `<tr class="${i.assignedTeacher ? "" : "unassigned"}"><td><b>P-${i.period}</b><small>${esc(ptime(i.period, day))}</small></td><td>${esc(i.classDesc)}</td>
+              <td class="sub-abs">${esc(i.absentTeacher)}</td><td class="sub-asg">${i.assignedTeacher ? `→ ${esc(i.assignedTeacher)}` : "Not assigned — merge class"}</td></tr>`).join("")}
+          </table></div>
           <div class="sub-actions">
             <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish for teachers</button>
             <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
@@ -325,7 +330,11 @@ window.SubstitutionAdmin = (() => {
       <div class="sub-card">
         <div class="sub-card-head"><h3>1. Absent teachers</h3><button type="button" class="btn-sm" data-sub="clearAbsent">Clear</button></div>
         <p class="hint">Tap the teachers who are absent. For each of their periods, choose a present teacher from the list — it shows only teachers who are free in that period, with <b>(number)</b> = their periods today. A free teacher is suggested for you.</p>
-        <div class="sub-chips">${sorted().map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
+        <div class="sub-chips">${sorted().map(t => {
+          // Present teachers already given a substitution show their periods straight away
+          const subs = plan.filter(i => i.assignedTeacher === t).map(i => i.period).sort((x, y) => x - y);
+          return `<button type="button" class="sub-chip ${absentSet.has(t) ? "absent-on" : subs.length ? "has-sub" : ""}" data-sub="absent" data-t="${jsArg(t)}" title="${subs.length ? `Substituting: ${subs.map(p => `P-${p}`).join(", ")}` : ""}">${absentSet.has(t) ? "☑" : "☐"}<span>${esc(t)}</span>${subs.length ? `<em class="sub-chip-tag">${subs.map(p => `P-${p}`).join(", ")}</em>` : ""}</button>`;
+        }).join("")}</div>
         ${absentBoxes}
       </div>
       ${result}`;
