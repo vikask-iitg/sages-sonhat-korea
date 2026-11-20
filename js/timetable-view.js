@@ -66,15 +66,32 @@ window.TimetableView = (function () {
   };
 
   // Composite: days (each split into P-1..P-7) down the left, classes across the top
+  // "MON,TUE,WED,FRI" → "Mon–Wed, Fri"
+  function dayLabel(days) {
+    const idx = days.map(d => DAYS.indexOf(d)).sort((x, y) => x - y), runs = [];
+    idx.forEach(i => { const r = runs.at(-1); r && r[1] === i - 1 ? (r[1] = i) : runs.push([i, i]); });
+    const short = i => DAY_NAMES[DAYS[i]].slice(0, 3);
+    return runs.map(([x, y]) => (x === y ? short(x) : y === x + 1 ? `${short(x)}, ${short(y)}` : `${short(x)}–${short(y)}`)).join(", ");
+  }
+
+  // Composite: ONE table for the whole week — periods down the left, classes across the top.
+  // A cell shows its subject and teacher once when every day is the same; days that differ are listed with their day names.
   function composite(group) {
     const cols = group.classes;
-    const rows = DAYS.map(dy => PERIODS.map((p, k) => `<tr class="${k === 0 ? "daystart" : ""}">${k === 0 ? `<th scope="rowgroup" rowspan="${PERIODS.length}" class="tt-dayname"><span>${DAY_NAMES[dy]}</span></th>` : ""}
-      <th scope="row" class="tt-per">P-${p}<small>${esc(time(p))}</small></th>${cols.map(c => {
+    const rows = PERIODS.map(p => `<tr><th scope="row" class="tt-per">P-${p}<small>${esc(time(p))}</small></th>${cols.map(c => {
+      const variants = new Map(); // same content → days
+      DAYS.forEach(dy => {
         const items = (c.grid[dy] || {})[p] || [];
-        return items.length ? `<td>${items.map(i => `<b>${esc(i.top)}</b><span>${esc(i.sub)}</span>`).join("<hr>")}</td>` : `<td class="free">—</td>`;
-      }).join("")}</tr>`).join("")).join("");
-    return { html: `<table class="tt-grid tt-composite"><thead><tr><th class="tt-dayname">Day</th><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`,
-      summary: "Monday to Saturday" };
+        const key = JSON.stringify(items);
+        (variants.get(key) || variants.set(key, { items, days: [] }).get(key)).days.push(dy);
+      });
+      const list = [...variants.values()];
+      const line = items => (items.length ? items.map(i => `<b>${esc(i.top)}</b><span>${esc(i.sub)}</span>`).join("<hr>") : `<i class="free">Free</i>`);
+      if (list.length === 1) return list[0].items.length ? `<td>${line(list[0].items)}</td>` : `<td class="free">—</td>`;
+      return `<td>${list.map(v => `<div class="tt-var"><em>${dayLabel(v.days)}</em>${line(v.items)}</div>`).join("")}</td>`;
+    }).join("")}</tr>`).join("");
+    return { html: `<table class="tt-grid tt-composite"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`,
+      summary: "Monday to Saturday in one table · days are shown only where a period changes" };
   }
 
   // Days down the left, periods 1–7 across the top
@@ -114,20 +131,21 @@ window.TimetableView = (function () {
   }
 
   // Opens a clean printable page, one sheet per class / teacher / class group, school name on top.
-  // A4 or A3; composite sheets (42 period rows) print portrait, the others landscape. Each sheet shrinks to fit one page.
+  // A4 or A3 landscape; each sheet shrinks to fit one page if needed.
   function print() {
     const w = window.open("", "_blank");
     if (!w) return alert("Please allow pop-ups to print the timetable.");
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Timetable — ${esc(SCHOOL)}</title><style>
-      @page { size: ${paper} ${view === "composite" ? "portrait" : "landscape"}; margin: 8mm; }
+      @page { size: ${paper} landscape; margin: 8mm; }
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 15px; margin: 0 0 2px; text-align: center; } h2 { font-size: 13px; margin: 0 0 6px; text-align: center; font-weight: normal; }
       table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
-      ${view === "composite" ? `table { font-size: 10px; line-height: 1.15; } table.tt-composite td, table.tt-composite th { padding: 1px 2px; } table.tt-composite th.tt-dayname { width: 3.6%; text-align: center; font-size: 11px; }
-        .tt-dayname span { writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; }
-        table.tt-composite th.tt-per { width: 9%; white-space: nowrap; } tr.daystart > * { border-top: 2px solid #000; } tbody th small, thead th small { display: block; font-weight: normal; font-size: 8px; }
-        .tt-composite td b, .tt-composite td span { display: inline; } .tt-composite td b::after { content: " – "; font-weight: normal; } h1 { font-size: 13px; } h2 { font-size: 11px; margin-bottom: 3px; }`
+      ${view === "composite" ? `table { line-height: 1.25; } table.tt-composite td, table.tt-composite th { padding: 4px 5px; }
+        table.tt-composite th.tt-per { width: 8%; white-space: nowrap; vertical-align: middle; } tbody th small, thead th small { display: block; font-weight: normal; font-size: 9px; }
+        .tt-composite td b, .tt-composite td span { display: inline; } .tt-composite td b::after { content: " – "; font-weight: normal; }
+        .tt-var + .tt-var { border-top: 1.5px solid #333; margin-top: 3px; padding-top: 3px; } .tt-var em { font-style: normal; font-weight: bold; text-decoration: underline; margin-right: 4px; }
+        tbody td { height: auto; } table.tt-composite { font-size: 11px; } h1 { font-size: 13px; } h2 { font-size: 11px; margin-bottom: 3px; }`
         : `tbody td { height: 22mm; }`}
       th, td { border: 1px solid #555; padding: 3px 4px; vertical-align: top; text-align: left; word-wrap: break-word; }
       thead th { background: #e6e6e6; text-align: center; } thead th small { display: block; font-weight: normal; }
@@ -138,7 +156,7 @@ window.TimetableView = (function () {
       <script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {
-          const mm = 96 / 25.4, [W, H] = ${JSON.stringify((paper === "A3" ? [420, 297] : [297, 210])[view === "composite" ? "reverse" : "slice"]())};
+          const mm = 96 / 25.4, [W, H] = ${paper === "A3" ? "[420, 297]" : "[297, 210]"};
           const pageW = (W - 16) * mm, pageH = ((H - 16) * mm - 6) * 0.92;
           document.querySelectorAll("section").forEach(s => {
             // Largest zoom z where the sheet, laid out (pageW / z) wide, is no taller than pageH / z
