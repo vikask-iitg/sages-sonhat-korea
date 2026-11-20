@@ -381,7 +381,13 @@ button, input, select, textarea { font: inherit; }
 .btn-sm.btn-preview { background: var(--accent); border-color: var(--accent); color: var(--primary-dark); font-weight: 600; }
 .btn-sm.btn-preview:hover { background: #e9971a; border-color: #e9971a; }
 /* Review & publish buttons: an even grid — Preview | Publish, then WhatsApp | Copy | Print */
-#sub-result .sub-actions { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 640px; }
+#sub-result .sub-actions { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
 #sub-result .sub-actions .btn-sm { grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 0; padding: 8px 10px; text-align: center; white-space: nowrap; }
 #sub-result .sub-actions [data-sub="preview"], #sub-result .sub-actions [data-sub="publish"] { grid-column: span 3; }
 @media (max-width: 480px) { #sub-result .sub-actions .btn-sm { font-size: 13px; padding: 8px 6px; white-space: normal; line-height: 1.25; } }
+/* Copy text and Print: soft colours of their own */
+#sub-result .sub-actions [data-sub="copy"] { background: #e8f0fe; border-color: #bcd0f5; color: #0b3d91; font-weight: 600; }
+#sub-result .sub-actions [data-sub="copy"]:hover { background: #d9e6fd; border-color: #0b3d91; }
+#sub-result .sub-actions [data-sub="print"] { background: #e3f4f1; border-color: #b4ddd5; color: #0f6b5e; font-weight: 600; }
+#sub-result .sub-actions [data-sub="print"]:hover { background: #d2ede8; border-color: #0f6b5e; }
+#sub-result .sub-actions [data-sub="whatsapp"] { font-weight: 600; }
