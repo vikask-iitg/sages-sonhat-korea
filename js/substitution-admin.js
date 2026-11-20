@@ -67,6 +67,7 @@ window.SubstitutionAdmin = (() => {
       d.periodBreaksSat = d.periodBreaksSat || { ...PERIOD_BREAKS_SAT };
     }
     if (!d.periodBreaks || typeof d.periodBreaks !== "object") d.periodBreaks = { ...PERIOD_BREAKS };
+    if (typeof d.timetableNote !== "string") d.timetableNote = TIMETABLE_NOTE;
     DAYS.forEach(dy => {
       d.timetable[dy] = d.timetable[dy] || {};
       teachers.forEach(t => {
@@ -412,6 +413,12 @@ window.SubstitutionAdmin = (() => {
   function timetableHtml() {
     return `
       <div class="sub-card">
+        <div class="sub-card-head"><h3>Heading on every timetable</h3></div>
+        <p class="hint">Shown at the top of the School Timetable page and on every printed timetable, e.g. the start date and prayer time.</p>
+        <div class="sub-pcard-pick"><input class="sub-input" id="sub-tt-note" value="${esc(data.timetableNote)}" maxlength="140" placeholder="W.E.F 16/06/2026 · Prayer time 10:00 – 10:15">
+          <button type="button" class="btn-sm primary" data-sub="saveNote">💾 Save</button></div>
+      </div>
+      <div class="sub-card">
         <div class="sub-card-head"><h3>Period timings</h3></div>
         <div class="sub-tabs sub-tabs-sm">${[["WEEK", "Monday – Friday"], ["SAT", "Saturday"]].map(([k, l]) =>
           `<button type="button" class="sub-tab${timesSet === k ? " active" : ""}" data-sub="timesSet" data-k="${k}">${l}</button>`).join("")}</div>
@@ -565,6 +572,11 @@ window.SubstitutionAdmin = (() => {
       absentSet.delete(t); availSet.delete(t); plan = [];
       if (ttTeacher === t) ttTeacher = sorted()[0] || "";
       if (await save(`${t} removed from the arrangement list.`)) render();
+      return;
+    }
+    if (a === "saveNote") {
+      data.timetableNote = root.querySelector("#sub-tt-note").value.trim();
+      if (await save(data.timetableNote ? "Timetable heading saved." : "Timetable heading removed.")) render();
       return;
     }
     if (a === "timesSet") {

@@ -35,7 +35,7 @@ export async function GET(request) {
   // Teachers (not logged in) only see what the admin has published, plus the timetable for the full timetable view.
   const authed = isAuthed(request);
   const body = authed ? data : { published: data.published || {}, timetable: data.timetable, teachers: data.teachers, periodTimes: data.periodTimes, periodTimesSat: data.periodTimesSat,
-    periodBreaks: data.periodBreaks, periodBreaksSat: data.periodBreaksSat };
+    periodBreaks: data.periodBreaks, periodBreaksSat: data.periodBreaksSat, timetableNote: data.timetableNote };
   return json(body, 200, { "cache-control": authed ? "no-store" : "public, s-maxage=5" });
 }
 

@@ -56,6 +56,7 @@
         periodTimesSat: d.periodTimesSat || (d.timetable ? null : PERIOD_TIMES_SAT),
         periodBreaks: d.periodBreaks || PERIOD_BREAKS,
         periodBreaksSat: d.periodBreaksSat || (d.timetable ? null : PERIOD_BREAKS_SAT),
+        timetableNote: typeof d.timetableNote === "string" ? d.timetableNote : TIMETABLE_NOTE,
       });
     });
   </script>
