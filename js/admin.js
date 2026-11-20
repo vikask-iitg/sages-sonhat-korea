@@ -47,7 +47,7 @@ const SECTIONS = [
   { key: "staff", label: "Administrative Staff", list: true, title: "name", fields: [["photo", "Photo", "image", 1], ["name", "Name"], ["designation", "Designation"], ["subject", "Posting subject (leave empty if not applicable)"]] },
   { key: "pta", label: "Parent Teacher Association", fields: [["text", "Text", "textarea"]] },
   // Custom tool (js/substitution-admin.js) with its own data and Save & Publish button.
-  { key: "substitution", label: "Arrangement / Substitution", custom: true, fields: [] },
+  { key: "substitution", label: "Timetable / Arrangements", custom: true, fields: [] },
 
   { key: "about", label: "About Us", fields: [
     ["text", "About the school (blank line = new paragraph)", "textarea"], ["image", "Photo", "image", 4 / 3], ["vision", "Vision", "textarea"],
@@ -77,7 +77,7 @@ const NAV = [
       "stats", "levels", "faculty", "stars", "gallery", "partners", "cta",
     ] },
     ["about", "About Us"],
-    { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"], ["substitution", "Arrangement / Substitution"]] },
+    { menu: "Administration", items: [["principal", "Principal's Profile"], ["smc", "School Management Committee"], ["faculty", "Faculty"], ["staff", "Administrative Staff"], ["pta", "Parent Teacher Association"], ["substitution", "Timetable / Arrangements"]] },
     { menu: "Admission", items: [["admissionSteps", "Admission Process"], ["admission", "Eligibility & Documents"], ["admissionForm", "Admission Form (PDF)"]] },
     { menu: "Academic", items: [["curriculum", "Classes & Curriculum"], ["results", "Results"], ["achievements", "Student Achievements"], ["calendar", "School Calendar"]] },
     { menu: "Infrastructure", items: [["classrooms", "Smart Classrooms"], ["labs", "Laboratories"], ["library", "Library"], ["campus", "School Campus"]] },
