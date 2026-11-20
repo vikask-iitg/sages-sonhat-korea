@@ -1,7 +1,7 @@
 // Full school timetable, built from the arrangement data (timetable[day][teacher][period] = ["Class 9 (Science)"]).
 // Shared by the admin (Timetable / Arrangements → Full timetable tab) and the public page /pages/timetable.html.
-// Three views, each one compact table for the whole week (a cell lists days only where a period changes):
-//   Composite — periods down, Classes 1–5 / 6–8 / 9–12 across;  By class / By teacher — one row each, P-1..P-7 across.
+// Two dropdowns: Class (all, a composite group 1–5 / 6–8 / 9–12, or one class) and Teacher (all, or one teacher's periods only).
+// Every view is one compact table for the whole week (a cell lists days only where a period changes) and prints on one sheet.
 // Full subject and teacher names throughout.
 // Usage: TimetableView.mount(el, { timetable, teachers, periodTimes })
 
@@ -28,7 +28,7 @@ window.TimetableView = (function () {
     return { cls: `Class ${m[2]}`, n: Number(m[2]), subject: FULL[sub] || sub };
   }
 
-  let root, data, view = "composite", pick = "", who = "", paper = "A4";
+  let root, data, cls = "", who = "", paper = "A4"; // cls: "" (all), a group like "Classes 1 – 5", or "Class 9"
 
   const time = p => (data.periodTimes || {})[p] || "";
   const teachers = () => [...(data.teachers || Object.keys(data.timetable.MON || {}))].sort((a, b) => a.localeCompare(b));
@@ -45,27 +45,10 @@ window.TimetableView = (function () {
     }))));
     return Object.keys(g).sort((a, b) => order[a] - order[b] || a.localeCompare(b)).map(c => ({ name: c, grid: g[c] }));
   }
-  // Teacher-wise: same shape, cell shows class and subject
-  function byTeacher() {
-    return teachers().map(t => {
-      const grid = {};
-      DAYS.forEach(dy => { grid[dy] = {}; PERIODS.forEach(p => { grid[dy][p] = slot(dy, t, p).map(e => { const i = parse(e); return { top: i.cls, sub: i.subject }; }); }); });
-      return { name: t, grid };
-    });
-  }
-  // Composite: three sheets — Classes 1–5, 6–8 and 9–12 (anything that isn't "Class N" goes on the last one)
+  // Class groups for the composite sheets (anything that isn't "Class N" goes with the last group)
   const GROUPS = [["Classes 1 – 5", 1, 5], ["Classes 6 – 8", 6, 8], ["Classes 9 – 12", 9, 12]];
-  function byGroup() {
-    const classes = byClass();
-    const num = c => Number((c.name.match(/\d+/) || [99])[0]);
-    return GROUPS.map(([name, lo, hi], k) => ({ name, classes: classes.filter(c => (num(c) >= lo && num(c) <= hi) || (k === GROUPS.length - 1 && !/^Class \d+$/.test(c.name))) }));
-  }
-  const items = () => (view === "composite" ? byGroup() : view === "class" ? byClass(who) : byTeacher());
-  const shown = () => {
-    const all = items();
-    if (view === "composite") return all.filter(x => x.name === (pick || GROUPS[0][0]));
-    return pick ? all.filter(x => x.name === pick) : all;
-  };
+  const inGroup = (name, k) => { const [, lo, hi] = GROUPS[k], n = Number((name.match(/^Class (\d+)$/) || [])[1]);
+    return n ? n >= lo && n <= hi : k === GROUPS.length - 1; };
 
   // "MON,TUE,WED,FRI" → "Mon–Wed, Fri"
   function dayLabel(days) {
@@ -91,50 +74,44 @@ window.TimetableView = (function () {
   const periodHead = p => `P-${p}<small>${esc(time(p))}</small>`;
 
   // Composite: periods down the left, the group's classes across the top
-  function composite(group) {
-    const cols = group.classes;
+  function composite(cols) {
     const rows = PERIODS.map(p => `<tr><th scope="row" class="tt-per">${periodHead(p)}</th>${cols.map(c => weekCell(c.grid, p)).join("")}</tr>`).join("");
     return `<table class="tt-grid tt-composite"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
   }
-  // By class / by teacher: one row per class or teacher, P-1..P-7 across the top
+  // One row per class, P-1..P-7 across the top
   function list(rowsData) {
     const rows = rowsData.map(it => `<tr><th scope="row" class="tt-name">${esc(it.name)}</th>${PERIODS.map(p => weekCell(it.grid, p)).join("")}</tr>`).join("");
-    return `<table class="tt-grid tt-composite tt-list"><thead><tr><th class="tt-name">${view === "class" ? "Class" : "Teacher"}</th>${PERIODS.map(p => `<th>${periodHead(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+    return `<table class="tt-grid tt-composite tt-list"><thead><tr><th class="tt-name">Class</th>${PERIODS.map(p => `<th>${periodHead(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
   }
 
-  // The sheet(s) for the current choice: [{ title, html }]
-  function sheets() {
+  // The sheet for the current Class + Teacher choice: { title, note, html }
+  function sheet() {
+    const rows = byClass(who), g = GROUPS.findIndex(([name]) => name === cls);
+    const title = `${cls || "All classes"}${who ? ` — ${who}'s periods` : ""} — Weekly timetable`;
     const note = "Monday to Saturday in one table · days are shown only where a period changes";
-    if (view === "composite") return shown().map(g => ({ title: `${g.name} — Composite weekly timetable`, note, html: composite(g) }));
-    const rows = shown();
-    const title = view === "class"
-      ? `${pick || "All classes"}${who ? ` — ${who}'s periods only` : ""} — Weekly timetable`
-      : `${pick || "All teachers"} — Weekly timetable`;
-    return rows.length ? [{ title, note, html: list(rows) }] : [{ title, note: "", html: `<p class="tt-none">${esc(who)} has no periods in the timetable.</p>` }];
+    const shown = g >= 0 ? rows.filter(r => inGroup(r.name, g)) : cls ? rows.filter(r => r.name === cls) : rows;
+    if (!shown.length) return { title, note: "", html: `<p class="tt-none">${who ? `${esc(who)} has no periods in ${esc(cls || "any class")}.` : "Nothing in the timetable yet."}</p>` };
+    return { title, note, html: g >= 0 ? composite(shown) : list(shown) };
   }
 
   function render() {
-    const all = items();
-    if (pick && !all.some(x => x.name === pick)) pick = "";
-    const pickSelect = view === "composite" ? `<div class="tt-seg" role="group" aria-label="Classes">${GROUPS.map(([g]) =>
-        `<button type="button" data-tt="group" data-v="${g}" class="${(pick || GROUPS[0][0]) === g ? "on" : ""}">${g}</button>`).join("")}</div>`
-      : `<select class="tt-pick" data-tt-pick aria-label="${view === "class" ? "Class" : "Teacher"}">
-          <option value="">${view === "class" ? `All classes (${all.length})` : `All teachers (${all.length})`}</option>
-          ${all.map(x => `<option${x.name === pick ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select>`;
-    const whoSelect = view === "class" ? `<select class="tt-pick" data-tt-who aria-label="Teacher">
-          <option value="">All teachers</option>${teachers().map(t => `<option${t === who ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>` : "";
+    const classes = byClass().map(c => c.name);
+    if (cls && !GROUPS.some(([n]) => n === cls) && !classes.includes(cls)) cls = "";
+    const sh = sheet();
     root.innerHTML = `
       <div class="tt-controls">
-        <div class="tt-seg" role="group" aria-label="View">
-          <button type="button" data-tt="view" data-v="composite" class="${view === "composite" ? "on" : ""}">🗂 Composite</button>
-          <button type="button" data-tt="view" data-v="class" class="${view === "class" ? "on" : ""}">🏫 By class</button>
-          <button type="button" data-tt="view" data-v="teacher" class="${view === "teacher" ? "on" : ""}">👩‍🏫 By teacher</button>
-        </div>
-        ${pickSelect}${whoSelect}
-        <select class="tt-paper" data-tt-paper aria-label="Paper size">${["A4", "A3"].map(x => `<option value="${x}"${x === paper ? " selected" : ""}>${x} paper</option>`).join("")}</select>
+        <label class="tt-field"><span>Class</span><select class="tt-pick" data-tt-cls>
+          <option value="">All classes</option>
+          <optgroup label="Composite (one sheet each)">${GROUPS.map(([n]) => `<option${n === cls ? " selected" : ""}>${n}</option>`).join("")}</optgroup>
+          <optgroup label="Single class">${classes.map(c => `<option${c === cls ? " selected" : ""}>${esc(c)}</option>`).join("")}</optgroup>
+        </select></label>
+        <label class="tt-field"><span>Teacher</span><select class="tt-pick" data-tt-who>
+          <option value="">All teachers</option>${teachers().map(t => `<option${t === who ? " selected" : ""}>${esc(t)}</option>`).join("")}
+        </select></label>
+        <label class="tt-field"><span>Paper</span><select class="tt-paper" data-tt-paper>${["A4", "A3"].map(x => `<option value="${x}"${x === paper ? " selected" : ""}>${x}</option>`).join("")}</select></label>
         <button type="button" class="tt-print" data-tt="print">🖨 Print</button>
       </div>
-      ${sheets().map(sh => `<section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3><div class="tt-scroll">${sh.html}</div></section>`).join("")}`;
+      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3><div class="tt-scroll">${sh.html}</div></section>`;
   }
 
   // Opens a clean printable page — one sheet, school name on top, A4 or A3 landscape, shrunk to fit one page if needed.
@@ -154,7 +131,7 @@ window.TimetableView = (function () {
       td.free { color: #999; text-align: center; vertical-align: middle; } i.free { color: #999; } hr { border: 0; border-top: 1px dashed #999; margin: 2px 0; }
       .tt-var + .tt-var { border-top: 1.5px solid #333; margin-top: 3px; padding-top: 3px; } .tt-var em { font-style: normal; font-weight: bold; text-decoration: underline; margin-right: 4px; }
     </style></head><body>
-      ${sheets().map(sh => `<section><h1>${esc(SCHOOL)}</h1><h2>${esc(sh.title)}</h2>${sh.html}</section>`).join("")}
+      ${(sh => `<section><h1>${esc(SCHOOL)}</h1><h2>${esc(sh.title)}</h2>${sh.html}</section>`)(sheet())}
       <script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {
@@ -175,12 +152,7 @@ window.TimetableView = (function () {
   }
 
   function onClick(e) {
-    const b = e.target.closest("[data-tt]");
-    if (!b) return;
-    if (b.dataset.tt === "view") { view = b.dataset.v; pick = ""; who = ""; }
-    if (b.dataset.tt === "group") pick = b.dataset.v;
-    if (b.dataset.tt === "print") return print();
-    render();
+    if (e.target.closest('[data-tt="print"]')) print();
   }
 
   function mount(el, d) {
@@ -190,8 +162,8 @@ window.TimetableView = (function () {
       el.dataset.ttBound = "1";
       el.addEventListener("click", onClick);
       el.addEventListener("change", e => {
-        if (e.target.matches("[data-tt-pick]")) { pick = e.target.value; render(); }
-        if (e.target.matches("[data-tt-who]")) { who = e.target.value; pick = ""; render(); }
+        if (e.target.matches("[data-tt-cls]")) { cls = e.target.value; render(); }
+        if (e.target.matches("[data-tt-who]")) { who = e.target.value; render(); }
         if (e.target.matches("[data-tt-paper]")) paper = e.target.value;
       });
     }

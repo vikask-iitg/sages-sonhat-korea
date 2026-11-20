@@ -59,3 +59,8 @@
 .tt-list thead th.tt-name { width: 170px; }
 .tt-list tbody th.tt-name { vertical-align: middle; }
 .tt-none { padding: 18px; color: #667; }
+.tt-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; font-weight: 600; color: #0b3d91; }
+.tt-field .tt-pick, .tt-field .tt-paper { min-width: 0; }
+.tt-field:nth-child(1) .tt-pick { width: 200px; } .tt-field:nth-child(2) .tt-pick { width: 240px; }
+.tt-controls { align-items: flex-end; }
+@media (max-width: 700px) { .tt-field { flex: 1 1 100%; } .tt-field .tt-pick { width: 100% !important; } }
