@@ -1,7 +1,8 @@
 // Full school timetable, built from the arrangement data (timetable[day][teacher][period] = ["Class 9 (Science)"]).
 // Shared by the admin (Timetable / Arrangements → Full timetable tab) and the public page /pages/timetable.html.
 // Two dropdowns: Class (all, a composite group 1–5 / 6–8 / 9–12, or one class) and Teacher (all, or one teacher's periods only).
-// Every view is one compact table for the whole week (a cell lists days only where a period changes) and prints on one sheet.
+// Every view is one compact table for the whole week — periods down, classes across (a cell lists days only where a
+// period changes) — and prints on one sheet.
 // Full subject and teacher names throughout.
 // Usage: TimetableView.mount(el, { timetable, teachers, periodTimes })
 
@@ -73,19 +74,12 @@ window.TimetableView = (function () {
   }
   const periodHead = p => `P-${p}<small>${esc(time(p))}</small>`;
 
-  // Composite: periods down the left, the group's classes across the top
+  // Every view: periods P-1..P-7 down the first column, the chosen classes across the top row
   function composite(cols) {
     const rows = PERIODS.map(p => `<tr><th scope="row" class="tt-per">${periodHead(p)}</th>${cols.map(c => weekCell(c.grid, p)).join("")}</tr>`).join("");
-    return `<table class="tt-grid tt-composite"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+    // Each class column at least 125px so full names stay whole; more columns than fit scroll sideways (Period column frozen)
+    return `<table class="tt-grid tt-composite" style="min-width: ${92 + cols.length * 125}px"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
   }
-  // One row per class, P-1..P-7 across the top
-  function list(rowsData) {
-    const rows = rowsData.map(it => `<tr><th scope="row" class="tt-name">${esc(it.name)}</th>${PERIODS.map(p => weekCell(it.grid, p)).join("")}</tr>`).join("");
-    // Class column as wide as its longest name (e.g. "Class 12") plus padding
-    const longest = Math.max(5, ...rowsData.map(it => it.name.length));
-    return `<table class="tt-grid tt-composite tt-list"><thead><tr><th class="tt-name" style="width: calc(${longest}ch + 22px)">Class</th>${PERIODS.map(p => `<th>${periodHead(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
-  }
-
   // The sheet for the current Class + Teacher choice: { title, note, html }
   function sheet() {
     const rows = byClass(who), g = GROUPS.findIndex(([name]) => name === cls);
@@ -93,7 +87,7 @@ window.TimetableView = (function () {
     const note = "Monday to Saturday in one table · days are shown only where a period changes";
     const shown = g >= 0 ? rows.filter(r => inGroup(r.name, g)) : cls ? rows.filter(r => r.name === cls) : rows;
     if (!shown.length) return { title, note: "", html: `<p class="tt-none">${who ? `${esc(who)} has no periods in ${esc(cls || "any class")}.` : "Nothing in the timetable yet."}</p>` };
-    return { title, note, html: g >= 0 ? composite(shown) : list(shown) };
+    return { title, note, html: composite(shown) };
   }
 
   function render() {
@@ -110,7 +104,7 @@ window.TimetableView = (function () {
         <label class="tt-field"><span>Teacher</span><select class="tt-pick" data-tt-who>
           <option value="">All teachers</option>${teachers().map(t => `<option${t === who ? " selected" : ""}>${esc(t)}</option>`).join("")}
         </select></label>
-        <button type="button" class="tt-print" data-tt="print">🖨 Print</button>
+        <button type="button" class="tt-print" data-tt="print">🖨 ${who ? "Print your timetable" : "Print"}</button>
       </div>
       <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3><div class="tt-scroll">${sh.html}</div></section>`;
   }
@@ -124,7 +118,7 @@ window.TimetableView = (function () {
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 13px; margin: 0 0 2px; text-align: center; } h2 { font-size: 11px; margin: 0 0 4px; text-align: center; font-weight: normal; }
-      table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; line-height: 1.25; }
+      table { width: 100%; min-width: 0 !important; border-collapse: collapse; table-layout: fixed; font-size: 11px; line-height: 1.25; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; text-align: left; word-wrap: break-word; }
       thead th { background: #e6e6e6; text-align: center; } th small { display: block; font-weight: normal; font-size: 9px; }
       tbody th { background: #f4f4f4; vertical-align: middle; } th.tt-per { width: 8%; white-space: nowrap; } th.tt-name { white-space: nowrap; }
