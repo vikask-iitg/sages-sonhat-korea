@@ -180,23 +180,35 @@ window.SubstitutionAdmin = (() => {
 
   // Free, present teachers for a slot, best first (same fairness rules as the original app):
   // avoid a 4th period in a row, avoid whoever substituted on the previous working day, then fewer periods today, then fewer this month.
-  const candidatesFor = (k, busy = busyMap(k)) => candidatesAt(plan[k].period, busy);
-  function candidatesAt(p, busy = busyMap()) {
-    const prevDate = previousWorkingDate(date), prevPlan = data.savedDays[prevDate] || null, todayPlan = data.savedDays[date] || {};
+  // A teacher's arrangement workload: periods in the arrangement history (since the last "New month" reset,
+  // leaving out this date's saved list) plus arrangements already given in today's draft (ignoring one slot)
+  function arrangementLoad(t, skip = -1) {
+    const savedToday = (data.savedDays[date] || {})[t] || [];
+    const draft = plan.filter((i, j) => j !== skip && i.assignedTeacher === t).length;
+    return Math.max(0, (data.history[t]?.count || 0) - savedToday.length) + draft;
+  }
+
+  // Free, present teachers for a period, best first — balancing the workload:
+  // 1) no 4th period in a row, 2) fewest arrangement periods so far (history + today's draft),
+  // 3) not whoever substituted on the previous working day, 4) fewest periods today, then by name.
+  const candidatesFor = (k, busy = busyMap(k)) => candidatesAt(plan[k].period, busy, k);
+  function candidatesAt(p, busy = busyMap(), skip = -1) {
+    const prevDate = previousWorkingDate(date), prevPlan = data.savedDays[prevDate] || null;
     const prevDayPeriods = t => {
       if (prevPlan) return prevPlan[t]?.length ? prevPlan[t] : null;
       const h = data.history[t];
       return h && h.lastDate === prevDate && h.lastPeriods.length ? h.lastPeriods : null;
     };
-    const countExclToday = t => (data.history[t]?.count || 0) - (todayPlan[t] || []).length;
+    const load = Object.fromEntries(teachers.map(t => [t, arrangementLoad(t, skip)]));
     return teachers.filter(t => !absentSet.has(t) && !busy[t].has(p)).sort((a, b) => {
       const fourA = createsFourConsecutive(busy[a], p) ? 1 : 0, fourB = createsFourConsecutive(busy[b], p) ? 1 : 0;
       if (fourA !== fourB) return fourA - fourB;
+      if (load[a] !== load[b]) return load[a] - load[b];
       const prevA = prevDayPeriods(a), prevB = prevDayPeriods(b);
       const repA = prevA ? (prevA.includes(p) ? 2 : 1) : 0, repB = prevB ? (prevB.includes(p) ? 2 : 1) : 0;
       if (repA !== repB) return repA - repB;
       if (busy[a].size !== busy[b].size) return busy[a].size - busy[b].size;
-      return countExclToday(a) - countExclToday(b) || a.localeCompare(b);
+      return a.localeCompare(b);
     });
   }
 
@@ -312,7 +324,7 @@ window.SubstitutionAdmin = (() => {
         const k = slotIndex.get(slotKey({ absentTeacher: t, period: p, classDesc: cls }));
         const on = needed.has(p) && k !== undefined, sub = on ? plan[k].assignedTeacher : "";
         const busy = on ? busyMap(k) : busyMap(), st = on ? slotStatus(k, busy) : null;
-        const opts = [...new Set([...(sub ? [sub] : []), ...candidatesAt(p, busy)])];
+        const opts = [...new Set([...(sub ? [sub] : []), ...candidatesAt(p, busy, on ? k : -1)])];
         const attrs = `data-subchange="assign" data-t="${jsArg(t)}" data-p="${p}" data-c="${esc(cls)}"`;
         return `<div class="sub-pcard ${!on ? "is-covered" : sub ? "is-done" : "is-empty"}">
           <div class="sub-pcard-head"><b>P-${p}</b><small>${esc(ptime(p, day))}</small></div>
@@ -320,7 +332,7 @@ window.SubstitutionAdmin = (() => {
           <div class="sub-pcard-pick">
             <select ${attrs} aria-label="Substitute for ${esc(t)}, P-${p}">
               <option value=""${on && !sub ? " selected" : ""}>— Not assigned —</option>
-              ${opts.map(x => `<option value="${esc(x)}"${x === sub ? " selected" : ""}>${esc(x)} (${busy[x]?.size || 0})</option>`).join("")}
+              ${opts.map(x => `<option value="${esc(x)}"${x === sub ? " selected" : ""}>${esc(x)} (${arrangementLoad(x, on ? k : -1)} arr · ${busy[x]?.size || 0} today)</option>`).join("")}
               <option value="__covered"${!on ? " selected" : ""}>✓ Already covered</option>
             </select>
             ${sub ? `<button type="button" class="sub-time-del" data-sub="unassign" data-i="${k}" title="Remove ${esc(sub)}" aria-label="Remove substitute">✕</button>` : ""}
@@ -363,7 +375,7 @@ window.SubstitutionAdmin = (() => {
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>1. Absent teachers</h3><button type="button" class="btn-sm" data-sub="clearAbsent">Clear</button></div>
-        <p class="hint">Tap the teachers who are absent. For each of their periods, choose a present teacher from the list — it shows only teachers who are free in that period, with <b>(number)</b> = their periods today. A free teacher is suggested for you.</p>
+        <p class="hint">Tap the teachers who are absent. For each of their periods, choose a present teacher from the list — it shows only teachers who are free in that period, with <b>(arr · today)</b> = arrangement periods they have had so far this month and periods they teach today. The teacher with the fewest arrangements is suggested, so the load stays balanced.</p>
         <div class="sub-chips">${sorted().map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
         ${absentBoxes}
       </div>

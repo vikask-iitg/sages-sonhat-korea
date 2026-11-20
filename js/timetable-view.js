@@ -130,16 +130,19 @@ window.TimetableView = (function () {
         <label class="tt-field"><span>Teacher</span><select class="tt-pick" data-tt-who>
           <option value="">All teachers</option>${teachers().map(t => `<option${t === who ? " selected" : ""}>${esc(t)}</option>`).join("")}
         </select></label>
-        <button type="button" class="tt-print" data-tt="print">🖨 ${who ? "Print your timetable" : "Print"}</button>
+        ${who ? `<button type="button" class="tt-print" data-tt="download">⬇ Download your timetable</button>` : `<button type="button" class="tt-print" data-tt="print">🖨 Print</button>`}
       </div>
       <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
   }
 
-  // Opens a clean printable page — one sheet, school name on top, A4 landscape, shrunk to fit one page if needed.
-  function print() {
-    const w = window.open("", "_blank");
-    if (!w) return alert("Please allow pop-ups to print the timetable.");
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Timetable — ${esc(SCHOOL)}</title><style>
+  // Title of the print window / downloaded PDF (also its file name):
+  // the teacher's name for "your timetable", otherwise the class or group
+  const printTitle = () => `${who || cls || "All classes"} - Timetable - SAGES Sonhat`.replace(/[\\/:*?"<>|]/g, "-");
+
+  // The printable sheet as a full HTML page — one sheet, school name on top, A4 landscape.
+  // withPrint: add the script that shrinks it to one page and opens the print dialog.
+  function sheetDoc(withPrint) {
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(printTitle())}</title><link rel="icon" href="/images/favicon.png"><style>
       @page { size: A4 landscape; margin: 8mm; }
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
@@ -156,7 +159,7 @@ window.TimetableView = (function () {
       .tt-var + .tt-var { border-top: 1.5px solid #333; margin-top: 3px; padding-top: 3px; } .tt-var em { font-style: normal; font-weight: bold; text-decoration: underline; margin-right: 4px; }
     </style></head><body>
       ${(sh => `<section><h1>${esc(SCHOOL)}</h1><h2>${esc(sh.title)}</h2>${note() ? `<p class="headnote">${noteHtml()}</p>` : ""}${sh.html}</section>`)(sheet())}
-      <script>
+      ${withPrint ? `<script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {
           const mm = 96 / 25.4, [W, H] = [297, 210];
@@ -171,12 +174,64 @@ window.TimetableView = (function () {
           });
           window.print();
         };
-      <\/script></body></html>`);
+      <\/script>` : ""}</body></html>`;
+  }
+
+  // Opens the sheet in a new window and prints it
+  function print() {
+    const w = window.open("", "_blank");
+    if (!w) return alert("Please allow pop-ups to print the timetable.");
+    w.document.write(sheetDoc(true));
     w.document.close();
+  }
+
+  // Downloads the sheet straight away as a one-page A4 PDF named after the teacher (no print window).
+  // html2canvas + jsPDF are loaded from cdnjs only when needed.
+  const loadScript = src => new Promise((ok, fail) => {
+    if (document.querySelector(`script[src="${src}"]`)) return ok();
+    const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = fail; document.head.appendChild(el);
+  });
+  async function download(btn) {
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = "⏳ Preparing PDF…";
+    const frame = document.createElement("iframe");
+    try {
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      // Lay the sheet out off-screen, sized like the printed page
+      frame.style.cssText = "position:fixed;left:-12000px;top:0;width:1200px;height:900px;border:0;visibility:hidden";
+      document.body.appendChild(frame);
+      const doc = frame.contentDocument;
+      doc.open(); doc.write(sheetDoc(false)); doc.close();
+      await new Promise(r => setTimeout(r, 50));
+      const sec = doc.querySelector("section");
+      sec.style.background = "#fff"; sec.style.padding = "4px";
+      // html2canvas draws text a little low with tight line-heights: give the PDF copy roomier lines
+      doc.head.insertAdjacentHTML("beforeend", `<style>body, table { line-height: 1.5 !important; } h4.tt-sub { margin: 10px 0 6px !important; }
+        th, td { padding: 3px 5px 5px !important; } h1, h2, p.headnote { line-height: 1.5 !important; }</style>`);
+      // Widest layout that still fits the page height (same rule as printing)
+      const mm = 96 / 25.4, pageW = (297 - 16) * mm, pageH = (210 - 16) * mm;
+      const fits = z => { sec.style.width = pageW / z + "px"; return sec.scrollHeight * z <= pageH; };
+      let lo = 0.1, hi = 1;
+      if (fits(1)) lo = 1; else for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; fits(m) ? (lo = m) : (hi = m); }
+      sec.style.width = pageW / lo + "px";
+      const canvas = await window.html2canvas(sec, { scale: 2, backgroundColor: "#ffffff", logging: false });
+      const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const k = Math.min((297 - 16) / canvas.width, (210 - 16) / canvas.height), w = canvas.width * k, h = canvas.height * k;
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (297 - w) / 2, 8, w, h);
+      pdf.setProperties({ title: printTitle() });
+      pdf.save(printTitle() + ".pdf");
+    } catch (err) {
+      alert("Sorry, the PDF could not be made. Please check your internet connection and try again.");
+    } finally {
+      frame.remove(); btn.disabled = false; btn.textContent = label;
+    }
   }
 
   function onClick(e) {
     if (e.target.closest('[data-tt="print"]')) print();
+    const dl = e.target.closest('[data-tt="download"]');
+    if (dl && !dl.disabled) download(dl);
   }
 
   function mount(el, d) {
