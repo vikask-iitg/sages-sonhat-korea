@@ -56,7 +56,7 @@
 .tt-composite i.free { color: #9aa3b5; }
 /* By class / By teacher: one row per class or teacher */
 .tt-list { min-width: 1000px; }
-.tt-list thead th.tt-name { width: 170px; }
+.tt-list th.tt-name { white-space: nowrap; }
 .tt-list tbody th.tt-name { vertical-align: middle; }
 .tt-none { padding: 18px; color: #667; }
 .tt-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; font-weight: 600; color: #0b3d91; }

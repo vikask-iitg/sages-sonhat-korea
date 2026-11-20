@@ -81,7 +81,9 @@ window.TimetableView = (function () {
   // One row per class, P-1..P-7 across the top
   function list(rowsData) {
     const rows = rowsData.map(it => `<tr><th scope="row" class="tt-name">${esc(it.name)}</th>${PERIODS.map(p => weekCell(it.grid, p)).join("")}</tr>`).join("");
-    return `<table class="tt-grid tt-composite tt-list"><thead><tr><th class="tt-name">Class</th>${PERIODS.map(p => `<th>${periodHead(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+    // Class column as wide as its longest name (e.g. "Class 12") plus padding
+    const longest = Math.max(5, ...rowsData.map(it => it.name.length));
+    return `<table class="tt-grid tt-composite tt-list"><thead><tr><th class="tt-name" style="width: calc(${longest}ch + 22px)">Class</th>${PERIODS.map(p => `<th>${periodHead(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   // The sheet for the current Class + Teacher choice: { title, note, html }
@@ -126,7 +128,7 @@ window.TimetableView = (function () {
       table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; line-height: 1.25; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; text-align: left; word-wrap: break-word; }
       thead th { background: #e6e6e6; text-align: center; } th small { display: block; font-weight: normal; font-size: 9px; }
-      tbody th { background: #f4f4f4; vertical-align: middle; } th.tt-per { width: 8%; white-space: nowrap; } th.tt-name { width: 13%; }
+      tbody th { background: #f4f4f4; vertical-align: middle; } th.tt-per { width: 8%; white-space: nowrap; } th.tt-name { white-space: nowrap; }
       td b::after { content: " – "; font-weight: normal; } td span { color: #333; }
       td.free { color: #999; text-align: center; vertical-align: middle; } i.free { color: #999; } hr { border: 0; border-top: 1px dashed #999; margin: 2px 0; }
       .tt-var + .tt-var { border-top: 1.5px solid #333; margin-top: 3px; padding-top: 3px; } .tt-var em { font-style: normal; font-weight: bold; text-decoration: underline; margin-right: 4px; }
