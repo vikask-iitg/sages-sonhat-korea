@@ -14,6 +14,7 @@ const MENU = [
       ["Administrative Staff", "/pages/administration.html#staff"],
       ["Parent Teacher Association", "/pages/administration.html#pta"],
       ["Daily Arrangement", "/pages/arrangement.html"],
+      ["School Timetable", "/pages/timetable.html"],
     ],
   },
   {

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Timetable – Swami Atmanand School, Sonhat</title>
+  <!-- Link preview (WhatsApp, Facebook, X) and search -->
+  <meta name="description" content="The full SAGES Sonhat school timetable for every day and period, by teacher or by class, ready to print.">
+  <link rel="canonical" href="https://sagessonhatkorea.vercel.app/pages/timetable.html">
+  <meta name="theme-color" content="#0b3d91">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SAGES Sonhat">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:title" content="School Timetable – Swami Atmanand School, Sonhat">
+  <meta property="og:description" content="The full SAGES Sonhat school timetable for every day and period, by teacher or by class, ready to print.">
+  <meta property="og:url" content="https://sagessonhatkorea.vercel.app/pages/timetable.html">
+  <meta property="og:image" content="https://sagessonhatkorea.vercel.app/images/og-image.jpg?v=4">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Swami Atmanand Government English Medium School, Sonhat">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="School Timetable – Swami Atmanand School, Sonhat">
+  <meta name="twitter:description" content="The full SAGES Sonhat school timetable for every day and period, by teacher or by class, ready to print.">
+  <meta name="twitter:image" content="https://sagessonhatkorea.vercel.app/images/og-image.jpg?v=4">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/timetable.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <div class="page-banner">
+    <h1>School Timetable</h1>
+    <div class="breadcrumb"><a href="/">Home</a> / <a href="/pages/administration.html">Administration</a> / School Timetable</div>
+  </div>
+
+  <!-- Full timetable, kept up to date from the admin panel's Arrangement section (js/timetable-view.js) -->
+  <section>
+    <div class="container" id="timetable">
+      <p class="empty">Loading the timetable…</p>
+    </div>
+  </section>
+
+  <div id="site-footer"></div>
+  <script src="/js/main.js"></script>
+  <script src="/js/substitution-defaults.js"></script>
+  <script src="/js/timetable-view.js"></script>
+  <script>
+    // Saved timetable from the admin panel; the built-in 2026-27 timetable until the admin saves one.
+    fetch("/api/substitution").then(r => (r.ok ? r.json() : {})).catch(() => ({})).then(d => {
+      TimetableView.mount(document.getElementById("timetable"), {
+        timetable: d.timetable || buildDefaultTimetable(),
+        teachers: d.teachers || TEACHERS,
+        periodTimes: { ...PERIOD_TIMES, ...(d.periodTimes || {}) },
+      });
+    });
+  </script>
+</body>
+</html>

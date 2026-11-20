@@ -61,6 +61,7 @@ button, input, select, textarea { font: inherit; }
 .btn-sm { display: inline-block; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff;
   cursor: pointer; font-size: 13px; color: var(--text); }
 .btn-sm.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-sm.primary.unsaved { background: var(--accent); border-color: var(--accent); color: var(--primary-dark); font-weight: 600; }
 .btn-sm.danger { color: var(--danger); border-color: #f1c4c4; }
 .btn-sm.busy { opacity: .6; pointer-events: none; }
 .btn-sm.busy::after { content: " …"; }
@@ -295,3 +296,10 @@ button, input, select, textarea { font: inherit; }
   .sub-tact { grid-column: 1 / -1; }
   .sub-tact .btn-sm { flex: 1; text-align: center; }
 }
+
+/* Period timings editor */
+.sub-times { display: grid; grid-template-columns: 1fr; gap: 8px; max-width: 560px; }
+.sub-time { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fafbfd; }
+.sub-time b { min-width: 34px; }
+.sub-time input { flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.sub-time span { color: #667; font-size: 13px; }

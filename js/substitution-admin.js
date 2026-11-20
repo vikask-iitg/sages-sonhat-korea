@@ -76,6 +76,7 @@ window.SubstitutionAdmin = (() => {
     });
     d.savedDays = d.savedDays && typeof d.savedDays === "object" ? d.savedDays : {};
     d.published = d.published && typeof d.published === "object" ? d.published : {};
+    d.periodTimes = { ...PERIOD_TIMES, ...(d.periodTimes && typeof d.periodTimes === "object" ? d.periodTimes : {}) };
     return d;
   }
 
@@ -84,11 +85,19 @@ window.SubstitutionAdmin = (() => {
       method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(data),
     }).catch(() => null);
     if (res?.status === 401) { toast("Session expired — log in again, then save.", true); return false; }
+    if (res?.status === 409) { toast("Not saved: the arrangement was changed in another tab or device. Reload this page to get the latest, then make your change again.", true); return false; }
     if (!res?.ok) { toast("Could not save. Please try again.", true); return false; }
+    data.rev = (await res.json().catch(() => ({}))).rev ?? data.rev;
     toast(message);
     return true;
   }
 
+  // Period timings are saved data ("10:15 - 11:05", 12-hour clock without am/pm, as on the school timetable).
+  const ptime = p => data.periodTimes[p] || "";
+  // "01:25" (afternoon) <-> "13:25" for <input type="time">. School hours run from about 7 am to 6 pm.
+  const toInput = hm => { const [h, m] = (hm || "").trim().split(":").map(Number); if (isNaN(h) || isNaN(m)) return "";
+    return `${String(h < 7 ? h + 12 : h).padStart(2, "0")}:${String(m).padStart(2, "0")}`; };
+  const fromInput = v => { const [h, m] = v.split(":").map(Number); return `${String(h % 12 || 12).padStart(2, "0")}:${String(m).padStart(2, "0")}`; };
   const tt = (dy, t, p) => data.timetable[dy][t][p] || [];
   const scheduled = (dy, t) => ALL_PERIODS.filter(p => tt(dy, t, p).length);
   const freePeriods = (dy, t) => ALL_PERIODS.filter(p => !tt(dy, t, p).length);
@@ -190,7 +199,7 @@ window.SubstitutionAdmin = (() => {
       day,
       absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ALL_PERIODS)).has(p)) })),
       present: teachers.filter(t => !absentSet.has(t)),
-      plan: plan.map(i => ({ period: i.period, time: PERIOD_TIMES[i.period], classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
+      plan: plan.map(i => ({ period: i.period, time: ptime(i.period), classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
       publishedAt: new Date().toISOString(),
     };
     if (await save(old ? "Arrangement updated and re-published." : "Saved and published — teachers can now see it.")) render();
@@ -226,14 +235,14 @@ window.SubstitutionAdmin = (() => {
     const absentRows = absent.map(t => {
       const sch = scheduled(day, t);
       const needed = absentPeriods[t] || new Set(ALL_PERIODS);
-      const pills = sch.length ? sch.map(p => `<button type="button" class="sub-pill ${needed.has(p) ? "need" : "off"}" data-sub="absentPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${esc(tt(day, t, p).join(" / "))} (${PERIOD_TIMES[p]})">${needed.has(p) ? "☑" : "☐"} P-${p}</button>`).join("")
+      const pills = sch.length ? sch.map(p => `<button type="button" class="sub-pill ${needed.has(p) ? "need" : "off"}" data-sub="absentPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${esc(tt(day, t, p).join(" / "))} (${ptime(p)})">${needed.has(p) ? "☑" : "☐"} P-${p}</button>`).join("")
         : `<span class="sub-muted">No regular class today</span>`;
       return `<div class="sub-slot absent"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
     }).join("");
     const freeRows = avail.map(t => {
       const free = freePeriods(day, t);
       const pills = free.length ? free.map(p => { const blocked = blockedPeriods[t]?.has(p);
-        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${PERIOD_TIMES[p]}">${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("")
+        return `<button type="button" class="sub-pill ${blocked ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${ptime(p)}">${blocked ? "✕" : "✓"} P-${p}</button>`; }).join("")
         : `<span class="sub-muted">No free period today</span>`;
       return `<div class="sub-slot"><b>${esc(t)}</b><div class="sub-pills">${pills}</div></div>`;
     }).join("");
@@ -242,7 +251,7 @@ window.SubstitutionAdmin = (() => {
         <div class="sub-card-head"><h3>Arrangement for ${esc(date)} (${DAY_NAMES[day]})</h3>${data.published[date] ? `<span class="sub-tag">Published</span>` : `<span class="sub-tag draft">Not published yet</span>`}</div>
         <div class="sub-table-wrap"><table class="sub-table">
           <tr><th>Period</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th><th>Note</th></tr>
-          ${plan.map(i => `<tr><td><b>P-${i.period}</b><small>${PERIOD_TIMES[i.period]}</small></td><td>${esc(i.classDesc)}</td><td class="sub-abs">${esc(i.absentTeacher)}</td>
+          ${plan.map(i => `<tr><td><b>P-${i.period}</b><small>${ptime(i.period)}</small></td><td>${esc(i.classDesc)}</td><td class="sub-abs">${esc(i.absentTeacher)}</td>
             <td class="sub-asg">${i.assignedTeacher ? esc(i.assignedTeacher) : "—"}</td><td><span class="sub-badge ${i.badge}">${esc(i.status)}</span></td></tr>`).join("")}
         </table></div>
         <div class="sub-actions">
@@ -303,6 +312,16 @@ window.SubstitutionAdmin = (() => {
   function timetableHtml() {
     return `
       <div class="sub-card">
+        <div class="sub-card-head"><h3>Period timings</h3></div>
+        <p class="hint">Change the start and end time of any period, then click <b>Save timings</b>. New arrangements and the teachers' page use the new times.</p>
+        <div class="sub-times">
+          ${ALL_PERIODS.map(p => { const [a, b] = ptime(p).split("-").map(x => x.trim());
+            return `<div class="sub-time"><b>P-${p}</b><input type="time" data-pt="${p}" data-end="0" value="${toInput(a)}"><span>to</span><input type="time" data-pt="${p}" data-end="1" value="${toInput(b)}"></div>`; }).join("")}
+        </div>
+        <div class="sub-actions"><button type="button" class="btn-sm primary" data-sub="saveTimes">💾 Save timings</button>
+          <button type="button" class="btn-sm" data-sub="defaultTimes">Use default timings</button></div>
+      </div>
+      <div class="sub-card">
         <div class="sub-card-head"><h3>Master timetable</h3><button type="button" class="btn-sm danger" data-sub="resetTimetable">Reset to default</button></div>
         <div class="sub-row">
           <label class="field"><span>Day</span><select data-subchange="ttDay">${DAYS.map(d => `<option value="${d}"${d === ttDay ? " selected" : ""}>${DAY_NAMES[d]}</option>`).join("")}</select></label>
@@ -311,14 +330,14 @@ window.SubstitutionAdmin = (() => {
         <p class="hint">Write the class and subject for each period, e.g. <i>Class 9 (Science)</i>. Separate two classes with a comma. Leave empty for a free period.</p>
         <div class="sub-table-wrap"><table class="sub-table">
           <tr><th>Period</th><th>Class &amp; subject</th><th></th></tr>
-          ${ALL_PERIODS.map(p => `<tr><td><b>P-${p}</b><small>${PERIOD_TIMES[p]}</small></td>
+          ${ALL_PERIODS.map(p => `<tr><td><b>P-${p}</b><small>${ptime(p)}</small></td>
             <td><input class="sub-input" data-ttp="${p}" value="${esc(tt(ttDay, ttTeacher, p).join(", "))}" placeholder="Free period"></td>
             <td><button type="button" class="btn-sm primary" data-sub="savePeriod" data-p="${p}">Save</button></td></tr>`).join("")}
         </table></div>
       </div>`;
   }
 
-  // Staff from the website (Faculty + Administrative Staff + Principal) who aren't in the arrangement list yet.
+  // Teaching staff from the website (Principal + Faculty) who aren't in the arrangement list yet.
   // `content` is the site content loaded by admin.js.
   function staffNotInList() {
     const site = typeof content !== "undefined" && content ? content : {};
@@ -360,10 +379,11 @@ window.SubstitutionAdmin = (() => {
   function render() {
     root.innerHTML = `
       <div class="sub-tabs">
-        ${[["daily", "📅 Daily arrangement"], ["history", "📊 History"], ["timetable", "🗓 Timetable"], ["teachers", "👥 Teachers"]].map(([k, l]) =>
+        ${[["daily", "📅 Daily arrangement"], ["history", "📊 History"], ["timetable", "🗓 Timetable"], ["full", "📋 Full timetable"], ["teachers", "👥 Teachers"]].map(([k, l]) =>
           `<button type="button" class="sub-tab${tab === k ? " active" : ""}" data-sub="tab" data-k="${k}">${l}</button>`).join("")}
       </div>
-      ${{ daily: dailyHtml, history: historyHtml, timetable: timetableHtml, teachers: teachersHtml }[tab]()}`;
+      ${{ daily: dailyHtml, history: historyHtml, timetable: timetableHtml, teachers: teachersHtml, full: () => `<div class="sub-card"><p class="hint">The finished timetable built from the Timetable tab, the same one teachers see on the website's <a href="/pages/timetable.html" target="_blank">School Timetable</a> page.</p><div id="tt-root"></div></div>` }[tab]()}`;
+    if (tab === "full") TimetableView.mount(root.querySelector("#tt-root"), data);
   }
 
   // ---------- events ----------
@@ -432,6 +452,27 @@ window.SubstitutionAdmin = (() => {
       if (await save(`${t} removed from the arrangement list.`)) render();
       return;
     }
+    if (a === "saveTimes" || a === "defaultTimes") {
+      let times;
+      if (a === "defaultTimes") {
+        if (!confirm("Go back to the default period timings?")) return;
+        times = { ...PERIOD_TIMES };
+      } else {
+        times = {};
+        for (const p of ALL_PERIODS) {
+          const [s0, e0] = [0, 1].map(i => root.querySelector(`[data-pt="${p}"][data-end="${i}"]`).value);
+          if (!s0 || !e0) return toast(`Enter both times for P-${p}.`, true);
+          if (s0 >= e0) return toast(`P-${p} must end after it starts.`, true);
+          times[p] = `${fromInput(s0)} - ${fromInput(e0)}`;
+        }
+      }
+      data.periodTimes = times;
+      // Keep today's and later published lists in step with the new times
+      const today = isoDate(new Date());
+      Object.keys(data.published).filter(d => d >= today).forEach(d => data.published[d].plan.forEach(i => { i.time = ptime(i.period); }));
+      if (await save(a === "defaultTimes" ? "Default timings restored." : "Period timings saved.")) render();
+      return;
+    }
     if (a === "editTeacherTT") { ttTeacher = t; tab = "timetable"; return render(); }
     if (a === "savePeriod") {
       const v = root.querySelector(`[data-ttp="${p}"]`).value.trim();
@@ -440,6 +481,19 @@ window.SubstitutionAdmin = (() => {
       return;
     }
     render();
+  }
+
+  // Typing in a timetable period or a timing turns its Save button yellow until it is saved.
+  function onInput(e) {
+    const el = e.target;
+    if (el.dataset.ttp) {
+      const p = Number(el.dataset.ttp);
+      root.querySelector(`[data-sub="savePeriod"][data-p="${p}"]`)?.classList.toggle("unsaved", el.value.trim() !== tt(ttDay, ttTeacher, p).join(", "));
+    }
+    if (el.dataset.pt) {
+      const changed = ALL_PERIODS.some(p => [0, 1].some(i => root.querySelector(`[data-pt="${p}"][data-end="${i}"]`).value !== toInput(ptime(p).split("-")[i])));
+      root.querySelector('[data-sub="saveTimes"]')?.classList.toggle("unsaved", changed);
+    }
   }
 
   function onChange(e) {
@@ -460,7 +514,7 @@ window.SubstitutionAdmin = (() => {
       table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}th{background:#eee}</style></head><body>
       <h1>Swami Atmanand Govt. English Medium School, Sonhat</h1><h2>Substitution Arrangement — ${esc(date)} (${DAY_NAMES[day]})</h2>
       <table><tr><th>Period</th><th>Time</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th></tr>
-      ${plan.map(i => `<tr><td>P-${i.period}</td><td>${PERIOD_TIMES[i.period]}</td><td>${esc(i.classDesc)}</td><td>${esc(i.absentTeacher)}</td><td>${esc(i.assignedTeacher || "No free teacher (merge class)")}</td></tr>`).join("")}
+      ${plan.map(i => `<tr><td>P-${i.period}</td><td>${ptime(i.period)}</td><td>${esc(i.classDesc)}</td><td>${esc(i.absentTeacher)}</td><td>${esc(i.assignedTeacher || "No free teacher (merge class)")}</td></tr>`).join("")}
       </table><script>window.onload=()=>window.print()<\/script></body></html>`);
     w.document.close();
   }
@@ -479,6 +533,7 @@ window.SubstitutionAdmin = (() => {
       el.dataset.bound = "1";
       el.addEventListener("click", onClick);
       el.addEventListener("change", onChange);
+      el.addEventListener("input", onInput);
     }
   }
 

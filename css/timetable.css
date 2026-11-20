@@ -1,0 +1,37 @@
+/* Full timetable view (js/timetable-view.js) — used on /pages/timetable.html and in the admin panel */
+.tt-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.tt-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #d5dbe8; border-radius: 10px; overflow: hidden; background: #fff; }
+.tt-seg button { border: 0; border-right: 1px solid #d5dbe8; background: #fff; padding: 8px 13px; font: inherit; font-size: 14px; cursor: pointer; color: #1d2a44; }
+.tt-seg button:last-child { border-right: 0; }
+.tt-seg button.on { background: #0b3d91; color: #fff; font-weight: 600; }
+.tt-print { margin-left: auto; border: 0; border-radius: 10px; padding: 9px 16px; background: #f7a823; color: #062a66; font: inherit; font-weight: 600; cursor: pointer; }
+
+.tt-day { margin-bottom: 26px; }
+.tt-day h3 { font-size: 17px; color: #0b3d91; margin: 0 0 8px; }
+.tt-day h3 span { font-size: 13px; font-weight: 500; color: #667; margin-left: 6px; }
+.tt-scroll { overflow-x: auto; border: 1px solid #d5dbe8; border-radius: 10px; background: #fff; }
+
+.tt-grid { width: 100%; min-width: 860px; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+.tt-grid th, .tt-grid td { border: 1px solid #e3e7f0; padding: 7px 8px; vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+.tt-grid thead th { background: #0b3d91; color: #fff; text-align: center; font-weight: 600; position: sticky; top: 0; }
+.tt-grid thead th small { display: block; font-weight: 400; font-size: 11.5px; opacity: .85; }
+.tt-grid thead th:first-child { width: 170px; }
+.tt-grid tbody th { background: #f5f7fb; color: #1d2a44; font-weight: 600; position: sticky; left: 0; z-index: 1; }
+.tt-grid tbody tr:nth-child(even) td { background: #fbfcfe; }
+.tt-grid td b { display: block; color: #0b3d91; font-weight: 600; }
+.tt-grid td span { display: block; color: #3c4658; font-size: 12.5px; }
+.tt-grid td.free { color: #9aa3b5; text-align: center; vertical-align: middle; font-style: italic; }
+.tt-grid hr { border: 0; border-top: 1px dashed #cfd6e4; margin: 4px 0; }
+.tt-grid .num { width: 70px; text-align: center; vertical-align: middle; font-weight: 600; }
+
+@media (max-width: 700px) {
+  .tt-print { margin-left: 0; width: 100%; }
+  .tt-seg { width: 100%; }
+  .tt-seg button { flex: 1; padding: 8px 6px; }
+  .tt-grid { font-size: 12px; min-width: 760px; }
+  .tt-grid thead th:first-child { width: 120px; }
+}
+.tt-pick { padding: 9px 12px; border: 1px solid #d5dbe8; border-radius: 10px; font: inherit; font-size: 14px; background: #fff; min-width: 220px; }
+.tt-grid tbody th { vertical-align: middle; }
+.tt-grid thead th:first-child { width: 120px; }
+@media (max-width: 700px) { .tt-pick { width: 100%; } .tt-grid thead th:first-child { width: 96px; } }
