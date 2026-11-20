@@ -291,8 +291,8 @@ window.SubstitutionAdmin = (() => {
   }
 
   function whatsappText() {
-    let text = `*SAGES SONHAT - SUBSTITUTION LIST*\n📅 Date: ${date} (${day})\n----------------------\n`;
-    plan.forEach(i => { text += `• *P-${i.period}* | ${i.classDesc}\n   Absent: ${i.absentTeacher} ➔ *${i.assignedTeacher || "No free teacher (merge class)"}*\n`; });
+    let text = `*SAGES SONHAT - ARRANGEMENT CLASS*\n📅 Date: ${date} (${day})\n----------------------\n`;
+    plan.forEach(i => { text += `• *P-${i.period}* (${ptime(i.period, day)}) | ${i.classDesc}\n   Absent: ${i.absentTeacher} ➔ *${i.assignedTeacher || "No free teacher (merge class)"}*\n`; });
     return text + `----------------------\nFull list: ${location.origin}/pages/arrangement.html`;
   }
 
@@ -664,10 +664,10 @@ window.SubstitutionAdmin = (() => {
 
   function printPlan() {
     const w = window.open("", "_blank");
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Substitution ${esc(date)}</title>
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Arrangement Class ${esc(date)}</title>
       <style>body{font-family:Arial,sans-serif;padding:20px}h1{font-size:18px;margin:0}h2{font-size:14px;color:#555;margin:4px 0 14px}
       table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}th{background:#eee}</style></head><body>
-      <h1>Swami Atmanand Govt. English Medium School, Sonhat</h1><h2>Substitution Arrangement — ${esc(date)} (${DAY_NAMES[day]})</h2>
+      <h1>Swami Atmanand Govt. English Medium School, Sonhat</h1><h2>Arrangement Class — ${esc(date)} (${DAY_NAMES[day]})</h2>
       <table><tr><th>Period</th><th>Time</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th></tr>
       ${plan.map(i => `<tr><td>P-${i.period}</td><td>${ptime(i.period, day)}</td><td>${esc(i.classDesc)}</td><td>${esc(i.absentTeacher)}</td><td>${esc(i.assignedTeacher || "No free teacher (merge class)")}</td></tr>`).join("")}
       </table><script>window.onload=()=>window.print()<\/script></body></html>`);
