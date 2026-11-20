@@ -303,7 +303,9 @@ window.SubstitutionAdmin = (() => {
     const site = typeof content !== "undefined" && content ? content : {};
     const titled = n => n.split(/\s+/).map(w => (w === "MD" ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())).join(" ");
     const have = new Set(teachers.map(t => t.toLowerCase()));
-    const names = [...(site.faculty || []), ...(site.staff || [])].map(x => (x.name || "").trim()).filter(Boolean).map(titled);
+    // Teaching staff only: the Principal and the Faculty list. Administrative staff (assistant grade, peons, watchman) never take classes.
+    const names = [site.principal || {}, ...(site.faculty || [])].map(x => (x.name || "").trim()).filter(Boolean)
+      .map(n => (/^dr\.?\s/i.test(n) ? "Dr. " + titled(n.replace(/^dr\.?\s+/i, "")) : titled(n)));
     return [...new Set(names)].filter(n => !have.has(n.toLowerCase())).sort((a, b) => a.localeCompare(b));
   }
 
@@ -315,8 +317,8 @@ window.SubstitutionAdmin = (() => {
         <div class="sub-card-head"><h3>Add a teacher</h3></div>
         <p class="hint">When a new teacher joins, add them here, then enter their periods in the <b>Timetable</b> tab so the generator knows when they are busy.</p>
         <div class="sub-row">
-          <label class="field"><span>From the website's staff list</span>
-            <select data-subchange="pickStaff"><option value="">${fromStaff.length ? "Choose a staff member…" : "Everyone is already in the list"}</option>
+          <label class="field"><span>From the Principal &amp; faculty list</span>
+            <select data-subchange="pickStaff"><option value="">${fromStaff.length ? "Choose a faculty member…" : "All faculty are already in the list"}</option>
               ${fromStaff.map(n => `<option>${esc(n)}</option>`).join("")}</select></label>
           <label class="field"><span>…or type a name</span><input class="sub-input" id="sub-new-teacher" placeholder="e.g. Ramesh Kumar Sahu" maxlength="60"></label>
         </div>
