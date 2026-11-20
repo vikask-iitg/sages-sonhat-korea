@@ -9,6 +9,8 @@ window.SubstitutionAdmin = (() => {
   const ALL_PERIODS = [1, 2, 3, 4, 5, 6, 7];
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const jsArg = s => esc(JSON.stringify(s)); // safe inside an HTML attribute
+  // Teachers in A–Z order for every list on screen (TEACHERS keeps the timetable's own order)
+  const SORTED = [...TEACHERS].sort((a, b) => a.localeCompare(b));
 
   let root = null;
   let data = null;          // { timetable, history, savedDays, published }
@@ -18,7 +20,7 @@ window.SubstitutionAdmin = (() => {
   let absentSet = new Set(), availSet = new Set(TEACHERS);
   let absentPeriods = {}, blockedPeriods = {};
   let plan = [];
-  let ttDay = "MON", ttTeacher = TEACHERS[0];
+  let ttDay = "MON", ttTeacher = [...TEACHERS].sort((a, b) => a.localeCompare(b))[0];
 
   const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const dayOf = iso => ["MON", "MON", "TUE", "WED", "THU", "FRI", "SAT"][new Date(iso + "T00:00:00").getDay()];
@@ -29,9 +31,27 @@ window.SubstitutionAdmin = (() => {
     return isoDate(d);
   }
 
+  // Rename teachers saved under the phone app's short names to their full names.
+  function migrateNames(d) {
+    const full = n => LEGACY_NAMES[n] || n;
+    const renameKeys = obj => {
+      if (!obj || typeof obj !== "object") return obj;
+      return Object.fromEntries(Object.entries(obj).map(([k, v]) => [full(k), v]));
+    };
+    if (d.timetable) DAYS.forEach(dy => { d.timetable[dy] = renameKeys(d.timetable[dy]); });
+    d.history = renameKeys(d.history);
+    if (d.savedDays) Object.keys(d.savedDays).forEach(k => { d.savedDays[k] = renameKeys(d.savedDays[k]); });
+    if (d.published) Object.values(d.published).forEach(x => {
+      x.absent?.forEach(a => { a.teacher = full(a.teacher); });
+      if (Array.isArray(x.present)) x.present = x.present.map(full);
+      x.plan?.forEach(i => { i.absentTeacher = full(i.absentTeacher); if (i.assignedTeacher) i.assignedTeacher = full(i.assignedTeacher); });
+    });
+  }
+
   // Make sure every day / teacher / period exists, so older saved data keeps working when teachers are added.
   function normalize(raw) {
     const d = raw && typeof raw === "object" ? raw : {};
+    migrateNames(d);
     const fresh = buildDefaultTimetable();
     if (!d.timetable || typeof d.timetable !== "object") d.timetable = fresh;
     DAYS.forEach(dy => {
@@ -178,8 +198,8 @@ window.SubstitutionAdmin = (() => {
     `<button type="button" class="sub-chip ${cls}" ${disabled ? "disabled" : `data-sub="${onclick}"`}>${icon}<span>${esc(label)}</span></button>`;
 
   function dailyHtml() {
-    const absent = TEACHERS.filter(t => absentSet.has(t));
-    const avail = TEACHERS.filter(t => availSet.has(t) && !absentSet.has(t));
+    const absent = SORTED.filter(t => absentSet.has(t));
+    const avail = SORTED.filter(t => availSet.has(t) && !absentSet.has(t));
     const absentRows = absent.map(t => {
       const sch = scheduled(day, t);
       const needed = absentPeriods[t] || new Set(ALL_PERIODS);
@@ -221,11 +241,11 @@ window.SubstitutionAdmin = (() => {
       <div class="sub-card">
         <div class="sub-card-head"><h3>1. Absent teachers</h3><button type="button" class="btn-sm" data-sub="clearAbsent">Clear</button></div>
         ${absent.length ? `<p class="hint">Their periods that need a substitute are ticked. Untick any period already covered.</p><div class="sub-slots">${absentRows}</div>` : ""}
-        <div class="sub-chips">${TEACHERS.map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
+        <div class="sub-chips">${SORTED.map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>2. Teachers available for substitution</h3><span><button type="button" class="btn-sm" data-sub="allAvail">All</button> <button type="button" class="btn-sm" data-sub="noneAvail">None</button></span></div>
-        <div class="sub-chips">${TEACHERS.map(t => { const ab = absentSet.has(t), av = availSet.has(t) && !ab;
+        <div class="sub-chips">${SORTED.map(t => { const ab = absentSet.has(t), av = availSet.has(t) && !ab;
           return chip(ab ? "disabled" : av ? "avail-on" : "", "avail", av ? "✓" : "☐", t, ab).replace('data-sub="avail"', `data-sub="avail" data-t="${jsArg(t)}"`); }).join("")}</div>
         ${avail.length ? `<p class="hint">Free periods of the selected teachers. Tap a period to block it (✕) if the teacher is busy with other work.</p><div class="sub-slots">${freeRows}</div>` : ""}
       </div>
@@ -241,7 +261,7 @@ window.SubstitutionAdmin = (() => {
         <p class="hint">How many arrangement periods each teacher has taken. The generator uses this to share duties fairly.</p>
         <div class="sub-table-wrap"><table class="sub-table">
           <tr><th>Teacher</th><th>Total</th><th>Last duty</th></tr>
-          ${TEACHERS.map(t => { const h = data.history[t];
+          ${SORTED.map(t => { const h = data.history[t];
             return `<tr><td><b>${esc(t)}</b></td><td><span class="sub-badge ok">${h.count} periods</span></td><td>${h.lastDate ? `${esc(h.lastDate)} (P-${h.lastPeriods.join(", P-")})` : "—"}</td></tr>`; }).join("")}
         </table></div>
       </div>
@@ -261,7 +281,7 @@ window.SubstitutionAdmin = (() => {
         <div class="sub-card-head"><h3>Master timetable</h3><button type="button" class="btn-sm danger" data-sub="resetTimetable">Reset to default</button></div>
         <div class="sub-row">
           <label class="field"><span>Day</span><select data-subchange="ttDay">${DAYS.map(d => `<option value="${d}"${d === ttDay ? " selected" : ""}>${DAY_NAMES[d]}</option>`).join("")}</select></label>
-          <label class="field"><span>Teacher</span><select data-subchange="ttTeacher">${TEACHERS.map(t => `<option${t === ttTeacher ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
+          <label class="field"><span>Teacher</span><select data-subchange="ttTeacher">${SORTED.map(t => `<option${t === ttTeacher ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
         </div>
         <p class="hint">Write the class and subject for each period, e.g. <i>Class 9 (Science)</i>. Separate two classes with a comma. Leave empty for a free period.</p>
         <div class="sub-table-wrap"><table class="sub-table">

@@ -27,7 +27,9 @@
       <div class="arr-summary">
         <div class="arr-box absent">
           <h3>🔴 Absent <span>${x.absent.length}</span></h3>
-          <ul>${x.absent.map(a => `<li><b>${esc(a.teacher)}</b>${a.periods?.length ? `<small>Periods: P-${a.periods.join(", P-")}</small>` : ""}</li>`).join("") || "<li>None</li>"}</ul>
+          <div class="arr-absent">${[...x.absent].sort((a, b) => a.teacher.localeCompare(b.teacher)).map(a => `
+            <div class="${a.teacher === mine ? "me" : ""}"><b>${esc(a.teacher)}</b>
+              ${a.periods?.length ? `<span class="arr-periods">${a.periods.map(p => `<i>P-${p}</i>`).join("")}</span>` : ""}</div>`).join("") || `<p class="empty">None</p>`}</div>
         </div>
         <div class="arr-box present">
           <h3>🟢 Present <span>${x.present.length}</span></h3>
@@ -39,8 +41,8 @@
         ${rows.length ? `<div class="table-wrap"><table>
           <tr><th>Period</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Arrangement by</th></tr>
           ${rows.map(i => `<tr class="${mine && i.assignedTeacher === mine ? "me" : ""}">
-            <td><b>P-${i.period}</b><small>${esc(i.time || "")}</small></td><td>${esc(i.classDesc)}</td>
-            <td class="arr-abs">${esc(i.absentTeacher)}</td><td class="arr-sub">${i.assignedTeacher ? esc(i.assignedTeacher) : "No free teacher (merge class)"}</td></tr>`).join("")}
+            <td data-label="Period"><b>P-${i.period}</b><small>${esc(i.time || "")}</small></td><td data-label="Class">${esc(i.classDesc)}</td>
+            <td class="arr-abs" data-label="Absent">${esc(i.absentTeacher)}</td><td class="arr-sub" data-label="Arrangement by">${i.assignedTeacher ? esc(i.assignedTeacher) : "No free teacher (merge class)"}</td></tr>`).join("")}
         </table></div>` : `<p class="empty">${mine ? `${esc(mine)} has no arrangement periods on this day.` : "No arrangement periods on this day."}</p>`}
       </div>`;
   }
