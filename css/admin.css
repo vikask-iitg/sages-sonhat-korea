@@ -357,10 +357,3 @@ button, input, select, textarea { font: inherit; }
 .sub-pcard.is-covered select { color: #667; font-weight: 500; }
 .sub-pcard .sub-badge { align-self: flex-start; }
 .sub-card > .sub-chips + .sub-group { margin-top: 16px; }
-/* Teachers already given a substitution: green tag with their periods */
-.sub-chip.has-sub { border-color: #b9dfbc; background: #f3faf3; }
-.sub-chip-tag { margin-left: auto; padding: 1px 7px; border-radius: 10px; background: #e3f3e4; color: #1b5e20; font-style: normal; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
-/* Live summary in Review & publish */
-.sub-summary { margin-top: 10px; }
-.sub-summary tr.unassigned td.sub-asg { color: #b71c1c; font-weight: 600; }
-.sub-summary td.sub-asg { color: #1b5e20; font-weight: 600; }
