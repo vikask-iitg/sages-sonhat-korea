@@ -41,7 +41,7 @@
 .tt-composite thead th.tt-dayname { width: 104px; }
 .tt-composite thead th.tt-per { width: 92px; }
 .tt-composite tbody th.tt-dayname { background: #0b3d91; color: #fff; text-align: center; vertical-align: middle; font-size: 14px; }
-.tt-composite tbody th.tt-per { background: #f5f7fb; font-weight: 600; white-space: nowrap; position: static; }
+.tt-composite tbody th.tt-per { background: #f5f7fb; font-weight: 600; white-space: nowrap; }
 .tt-composite tbody th.tt-per small { display: block; font-weight: 400; font-size: 11px; color: #667; }
 .tt-composite tr.daystart > * { border-top: 3px solid #0b3d91; }
 .tt-composite td { padding: 5px 7px; }
@@ -70,3 +70,16 @@
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%230b3d91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 12px 8px;
   cursor: pointer;
 }
+
+/* Freeze the first column (Class, or Period on the composite sheets) while the table scrolls sideways */
+.tt-grid { overflow: visible; border-radius: 0; box-shadow: none; } /* the site-wide table style sets overflow: hidden, which stops sticky cells */
+.tt-grid tr > :first-child { position: sticky; left: 0; z-index: 2; }
+.tt-grid thead tr > :first-child { z-index: 3; }
+.tt-grid tbody tr > th:first-child { background: #f5f7fb; box-shadow: inset -1px 0 0 #d5dbe8, 4px 0 6px -4px rgba(11, 61, 145, .25); }
+.tt-grid thead tr > th:first-child { box-shadow: 4px 0 6px -4px rgba(0, 0, 0, .3); }
+/* Separate borders so the frozen column stays fully opaque (merged borders let scrolled cells show at its edge) */
+.tt-grid { border-collapse: separate; border-spacing: 0; }
+.tt-grid th, .tt-grid td { border: 0; border-right: 1px solid #e3e7f0; border-bottom: 1px solid #e3e7f0; }
+.tt-grid tr > :last-child { border-right: 0; }
+.tt-grid tbody tr:last-child > * { border-bottom: 0; }
+.tt-grid thead th { border-right-color: rgba(255, 255, 255, .18); border-bottom: 0; }
