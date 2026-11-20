@@ -28,7 +28,7 @@ window.TimetableView = (function () {
     return { cls: `Class ${m[2]}`, n: Number(m[2]), subject: FULL[sub] || sub };
   }
 
-  let root, data, cls = "", who = "", paper = "A4"; // cls: "" (all), a group like "Classes 1 – 5", or "Class 9"
+  let root, data, cls = "", who = ""; // cls: "" (all), a group like "Classes 1 – 5", or "Class 9"
 
   const time = p => (data.periodTimes || {})[p] || "";
   const teachers = () => [...(data.teachers || Object.keys(data.timetable.MON || {}))].sort((a, b) => a.localeCompare(b));
@@ -110,18 +110,17 @@ window.TimetableView = (function () {
         <label class="tt-field"><span>Teacher</span><select class="tt-pick" data-tt-who>
           <option value="">All teachers</option>${teachers().map(t => `<option${t === who ? " selected" : ""}>${esc(t)}</option>`).join("")}
         </select></label>
-        <label class="tt-field"><span>Paper</span><select class="tt-paper" data-tt-paper>${["A4", "A3"].map(x => `<option value="${x}"${x === paper ? " selected" : ""}>${x}</option>`).join("")}</select></label>
         <button type="button" class="tt-print" data-tt="print">🖨 Print</button>
       </div>
       <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3><div class="tt-scroll">${sh.html}</div></section>`;
   }
 
-  // Opens a clean printable page — one sheet, school name on top, A4 or A3 landscape, shrunk to fit one page if needed.
+  // Opens a clean printable page — one sheet, school name on top, A4 landscape, shrunk to fit one page if needed.
   function print() {
     const w = window.open("", "_blank");
     if (!w) return alert("Please allow pop-ups to print the timetable.");
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Timetable — ${esc(SCHOOL)}</title><style>
-      @page { size: ${paper} landscape; margin: 8mm; }
+      @page { size: A4 landscape; margin: 8mm; }
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 13px; margin: 0 0 2px; text-align: center; } h2 { font-size: 11px; margin: 0 0 4px; text-align: center; font-weight: normal; }
@@ -137,7 +136,7 @@ window.TimetableView = (function () {
       <script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {
-          const mm = 96 / 25.4, [W, H] = ${paper === "A3" ? "[420, 297]" : "[297, 210]"};
+          const mm = 96 / 25.4, [W, H] = [297, 210];
           const pageW = (W - 16) * mm, pageH = ((H - 16) * mm - 6) * 0.92;
           document.querySelectorAll("section").forEach(s => {
             // Largest zoom z where the sheet, laid out (pageW / z) wide, is no taller than pageH / z
@@ -166,7 +165,6 @@ window.TimetableView = (function () {
       el.addEventListener("change", e => {
         if (e.target.matches("[data-tt-cls]")) { cls = e.target.value; render(); }
         if (e.target.matches("[data-tt-who]")) { who = e.target.value; render(); }
-        if (e.target.matches("[data-tt-paper]")) paper = e.target.value;
       });
     }
   }
