@@ -340,3 +340,20 @@ button, input, select, textarea { font: inherit; }
   .sub-arr .sub-badge { grid-column: 1 / -1; justify-self: start; }
 }
 .sub-arr-per small { white-space: nowrap; }
+/* Absent teacher → one card per period with the substitute dropdown */
+.sub-group h4 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sub-group h4 .sub-x { margin-left: auto; width: 28px; height: 28px; border: 1px solid #f1c4c4; border-radius: 6px; background: #fff; color: var(--danger); cursor: pointer; }
+.sub-pcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; padding: 12px; background: #fff; }
+.sub-pcard { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.sub-pcard.is-done { border-color: #b9dfbc; background: #f6fbf6; }
+.sub-pcard.is-empty { border-color: #f3d9a9; background: #fffaf0; }
+.sub-pcard.is-covered { background: #f5f7fb; opacity: .75; }
+.sub-pcard-head { display: flex; align-items: baseline; gap: 8px; }
+.sub-pcard-head b { font-size: 15px; color: var(--primary); } .sub-pcard-head small { color: #667; font-size: 12px; }
+.sub-pcard-cls { font-weight: 500; font-size: 14px; }
+.sub-pcard-pick { display: flex; gap: 6px; align-items: center; }
+.sub-pcard-pick select { flex: 1; min-width: 0; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-weight: 600; background: #fff; color: #1b5e20; }
+.sub-pcard.is-empty select { color: #b71c1c; border-color: #f1c4c4; }
+.sub-pcard.is-covered select { color: #667; font-weight: 500; }
+.sub-pcard .sub-badge { align-self: flex-start; }
+.sub-card > .sub-chips + .sub-group { margin-top: 16px; }
