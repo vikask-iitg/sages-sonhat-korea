@@ -9,18 +9,20 @@ window.SubstitutionAdmin = (() => {
   const ALL_PERIODS = [1, 2, 3, 4, 5, 6, 7];
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const jsArg = s => esc(JSON.stringify(s)); // safe inside an HTML attribute
-  // Teachers in A–Z order for every list on screen (TEACHERS keeps the timetable's own order)
-  const SORTED = [...TEACHERS].sort((a, b) => a.localeCompare(b));
+  // The school's teacher list is saved with the arrangement data (admin can add/remove teachers);
+  // it starts from the default TEACHERS. sorted() gives A–Z order for every list on screen.
+  let teachers = [...TEACHERS];
+  const sorted = () => [...teachers].sort((a, b) => a.localeCompare(b));
 
   let root = null;
   let data = null;          // { timetable, history, savedDays, published }
   let tab = "daily";
   // Daily screen state (not saved until "Save & Publish")
   let date = "", day = "MON";
-  let absentSet = new Set(), availSet = new Set(TEACHERS);
+  let absentSet = new Set(), availSet = new Set(teachers);
   let absentPeriods = {}, blockedPeriods = {};
   let plan = [];
-  let ttDay = "MON", ttTeacher = [...TEACHERS].sort((a, b) => a.localeCompare(b))[0];
+  let ttDay = "MON", ttTeacher = "";
 
   const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const dayOf = iso => ["MON", "MON", "TUE", "WED", "THU", "FRI", "SAT"][new Date(iso + "T00:00:00").getDay()];
@@ -52,17 +54,19 @@ window.SubstitutionAdmin = (() => {
   function normalize(raw) {
     const d = raw && typeof raw === "object" ? raw : {};
     migrateNames(d);
+    d.teachers = Array.isArray(d.teachers) && d.teachers.length ? d.teachers.map(n => LEGACY_NAMES[n] || n) : [...TEACHERS];
+    teachers = d.teachers;
     const fresh = buildDefaultTimetable();
     if (!d.timetable || typeof d.timetable !== "object") d.timetable = fresh;
     DAYS.forEach(dy => {
       d.timetable[dy] = d.timetable[dy] || {};
-      TEACHERS.forEach(t => {
-        d.timetable[dy][t] = d.timetable[dy][t] || fresh[dy][t];
+      teachers.forEach(t => {
+        d.timetable[dy][t] = d.timetable[dy][t] || fresh[dy][t] || {};
         ALL_PERIODS.forEach(p => { if (!Array.isArray(d.timetable[dy][t][p])) d.timetable[dy][t][p] = []; });
       });
     });
     d.history = d.history && typeof d.history === "object" ? d.history : {};
-    TEACHERS.forEach(t => {
+    teachers.forEach(t => {
       const h = d.history[t] = d.history[t] || {};
       if (typeof h.count !== "number") h.count = 0;
       if (typeof h.lastDate !== "string") h.lastDate = "";
@@ -88,7 +92,7 @@ window.SubstitutionAdmin = (() => {
   const freePeriods = (dy, t) => ALL_PERIODS.filter(p => !tt(dy, t, p).length);
 
   function resetDaily() {
-    absentSet = new Set(); availSet = new Set(TEACHERS); absentPeriods = {}; blockedPeriods = {}; plan = [];
+    absentSet = new Set(); availSet = new Set(teachers); absentPeriods = {}; blockedPeriods = {}; plan = [];
   }
 
   // ---------- generation (same rules as the original app) ----------
@@ -110,7 +114,7 @@ window.SubstitutionAdmin = (() => {
     if (!vacant.length) return toast("The absent teachers have no regular periods on this day.", true);
 
     const busy = {};
-    TEACHERS.forEach(t => { busy[t] = new Set(scheduled(day, t)); });
+    teachers.forEach(t => { busy[t] = new Set(scheduled(day, t)); });
     const prevDate = previousWorkingDate(date);
     const prevPlan = data.savedDays[prevDate] || null;
     const todayPlan = data.savedDays[date] || {};
@@ -156,7 +160,7 @@ window.SubstitutionAdmin = (() => {
     // Undo the counts of a previously saved list for this date, then add the new one
     if (old) Object.keys(old).forEach(t => { if (data.history[t]) data.history[t].count = Math.max(0, data.history[t].count - old[t].length); });
     data.savedDays[date] = perTeacher;
-    TEACHERS.forEach(t => {
+    teachers.forEach(t => {
       const h = data.history[t];
       if (perTeacher[t]) h.count += perTeacher[t].length;
       const dates = Object.keys(data.savedDays).filter(d => data.savedDays[d][t]?.length).sort();
@@ -166,7 +170,7 @@ window.SubstitutionAdmin = (() => {
     data.published[date] = {
       day,
       absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ALL_PERIODS)).has(p)) })),
-      present: TEACHERS.filter(t => !absentSet.has(t)),
+      present: teachers.filter(t => !absentSet.has(t)),
       plan: plan.map(i => ({ period: i.period, time: PERIOD_TIMES[i.period], classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
       publishedAt: new Date().toISOString(),
     };
@@ -179,7 +183,7 @@ window.SubstitutionAdmin = (() => {
     Object.keys(old).forEach(t => { if (data.history[t]) data.history[t].count = Math.max(0, data.history[t].count - old[t].length); });
     delete data.savedDays[d];
     delete data.published[d];
-    TEACHERS.forEach(t => {
+    teachers.forEach(t => {
       const h = data.history[t];
       const dates = Object.keys(data.savedDays).filter(x => data.savedDays[x][t]?.length).sort();
       h.lastDate = dates.at(-1) || ""; h.lastPeriods = dates.length ? data.savedDays[h.lastDate][t] : [];
@@ -198,8 +202,8 @@ window.SubstitutionAdmin = (() => {
     `<button type="button" class="sub-chip ${cls}" ${disabled ? "disabled" : `data-sub="${onclick}"`}>${icon}<span>${esc(label)}</span></button>`;
 
   function dailyHtml() {
-    const absent = SORTED.filter(t => absentSet.has(t));
-    const avail = SORTED.filter(t => availSet.has(t) && !absentSet.has(t));
+    const absent = sorted().filter(t => absentSet.has(t));
+    const avail = sorted().filter(t => availSet.has(t) && !absentSet.has(t));
     const absentRows = absent.map(t => {
       const sch = scheduled(day, t);
       const needed = absentPeriods[t] || new Set(ALL_PERIODS);
@@ -241,11 +245,11 @@ window.SubstitutionAdmin = (() => {
       <div class="sub-card">
         <div class="sub-card-head"><h3>1. Absent teachers</h3><button type="button" class="btn-sm" data-sub="clearAbsent">Clear</button></div>
         ${absent.length ? `<p class="hint">Their periods that need a substitute are ticked. Untick any period already covered.</p><div class="sub-slots">${absentRows}</div>` : ""}
-        <div class="sub-chips">${SORTED.map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
+        <div class="sub-chips">${sorted().map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>2. Teachers available for substitution</h3><span><button type="button" class="btn-sm" data-sub="allAvail">All</button> <button type="button" class="btn-sm" data-sub="noneAvail">None</button></span></div>
-        <div class="sub-chips">${SORTED.map(t => { const ab = absentSet.has(t), av = availSet.has(t) && !ab;
+        <div class="sub-chips">${sorted().map(t => { const ab = absentSet.has(t), av = availSet.has(t) && !ab;
           return chip(ab ? "disabled" : av ? "avail-on" : "", "avail", av ? "✓" : "☐", t, ab).replace('data-sub="avail"', `data-sub="avail" data-t="${jsArg(t)}"`); }).join("")}</div>
         ${avail.length ? `<p class="hint">Free periods of the selected teachers. Tap a period to block it (✕) if the teacher is busy with other work.</p><div class="sub-slots">${freeRows}</div>` : ""}
       </div>
@@ -261,7 +265,7 @@ window.SubstitutionAdmin = (() => {
         <p class="hint">How many arrangement periods each teacher has taken. The generator uses this to share duties fairly.</p>
         <div class="sub-table-wrap"><table class="sub-table">
           <tr><th>Teacher</th><th>Total</th><th>Last duty</th></tr>
-          ${SORTED.map(t => { const h = data.history[t];
+          ${sorted().map(t => { const h = data.history[t];
             return `<tr><td><b>${esc(t)}</b></td><td><span class="sub-badge ok">${h.count} periods</span></td><td>${h.lastDate ? `${esc(h.lastDate)} (P-${h.lastPeriods.join(", P-")})` : "—"}</td></tr>`; }).join("")}
         </table></div>
       </div>
@@ -281,7 +285,7 @@ window.SubstitutionAdmin = (() => {
         <div class="sub-card-head"><h3>Master timetable</h3><button type="button" class="btn-sm danger" data-sub="resetTimetable">Reset to default</button></div>
         <div class="sub-row">
           <label class="field"><span>Day</span><select data-subchange="ttDay">${DAYS.map(d => `<option value="${d}"${d === ttDay ? " selected" : ""}>${DAY_NAMES[d]}</option>`).join("")}</select></label>
-          <label class="field"><span>Teacher</span><select data-subchange="ttTeacher">${SORTED.map(t => `<option${t === ttTeacher ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
+          <label class="field"><span>Teacher</span><select data-subchange="ttTeacher">${sorted().map(t => `<option${t === ttTeacher ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
         </div>
         <p class="hint">Write the class and subject for each period, e.g. <i>Class 9 (Science)</i>. Separate two classes with a comma. Leave empty for a free period.</p>
         <div class="sub-table-wrap"><table class="sub-table">
@@ -293,13 +297,51 @@ window.SubstitutionAdmin = (() => {
       </div>`;
   }
 
+  // Staff from the website (Faculty + Administrative Staff + Principal) who aren't in the arrangement list yet.
+  // `content` is the site content loaded by admin.js.
+  function staffNotInList() {
+    const site = typeof content !== "undefined" && content ? content : {};
+    const titled = n => n.split(/\s+/).map(w => (w === "MD" ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())).join(" ");
+    const have = new Set(teachers.map(t => t.toLowerCase()));
+    const names = [...(site.faculty || []), ...(site.staff || [])].map(x => (x.name || "").trim()).filter(Boolean).map(titled);
+    return [...new Set(names)].filter(n => !have.has(n.toLowerCase())).sort((a, b) => a.localeCompare(b));
+  }
+
+  function teachersHtml() {
+    const fromStaff = staffNotInList();
+    const periodsPerWeek = t => DAYS.reduce((n, dy) => n + scheduled(dy, t).length, 0);
+    return `
+      <div class="sub-card">
+        <div class="sub-card-head"><h3>Add a teacher</h3></div>
+        <p class="hint">When a new teacher joins, add them here, then enter their periods in the <b>Timetable</b> tab so the generator knows when they are busy.</p>
+        <div class="sub-row">
+          <label class="field"><span>From the website's staff list</span>
+            <select data-subchange="pickStaff"><option value="">${fromStaff.length ? "Choose a staff member…" : "Everyone is already in the list"}</option>
+              ${fromStaff.map(n => `<option>${esc(n)}</option>`).join("")}</select></label>
+          <label class="field"><span>…or type a name</span><input class="sub-input" id="sub-new-teacher" placeholder="e.g. Ramesh Kumar Sahu" maxlength="60"></label>
+        </div>
+        <button type="button" class="btn-sm primary" data-sub="addTeacher" style="margin-top:10px">＋ Add teacher</button>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-head"><h3>Teachers in the arrangement list <span class="sub-tag">${teachers.length}</span></h3></div>
+        <div class="sub-table-wrap"><table class="sub-table">
+          <tr><th>Teacher</th><th>Periods / week</th><th></th></tr>
+          ${sorted().map(t => { const n = periodsPerWeek(t);
+            return `<tr><td><b>${esc(t)}</b></td><td>${n ? n : `<span class="sub-badge warn">No periods yet — set in Timetable</span>`}</td>
+              <td style="text-align:right"><button type="button" class="btn-sm" data-sub="editTeacherTT" data-t="${jsArg(t)}">🗓 Timetable</button>
+              <button type="button" class="btn-sm danger" data-sub="removeTeacher" data-t="${jsArg(t)}">Remove</button></td></tr>`; }).join("")}
+        </table></div>
+        <p class="hint">Removing a teacher takes them out of future arrangements. Their past history stays in the records.</p>
+      </div>`;
+  }
+
   function render() {
     root.innerHTML = `
       <div class="sub-tabs">
-        ${[["daily", "📅 Daily arrangement"], ["history", "📊 History"], ["timetable", "🗓 Timetable"]].map(([k, l]) =>
+        ${[["daily", "📅 Daily arrangement"], ["history", "📊 History"], ["timetable", "🗓 Timetable"], ["teachers", "👥 Teachers"]].map(([k, l]) =>
           `<button type="button" class="sub-tab${tab === k ? " active" : ""}" data-sub="tab" data-k="${k}">${l}</button>`).join("")}
       </div>
-      ${tab === "daily" ? dailyHtml() : tab === "history" ? historyHtml() : timetableHtml()}`;
+      ${{ daily: dailyHtml, history: historyHtml, timetable: timetableHtml, teachers: teachersHtml }[tab]()}`;
   }
 
   // ---------- events ----------
@@ -317,7 +359,7 @@ window.SubstitutionAdmin = (() => {
     if (a === "avail") { availSet.has(t) ? availSet.delete(t) : availSet.add(t); plan = []; }
     if (a === "blockPeriod") { const s = blockedPeriods[t] = blockedPeriods[t] || new Set(); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
     if (a === "clearAbsent") { resetDaily(); }
-    if (a === "allAvail") { TEACHERS.forEach(x => { if (!absentSet.has(x)) availSet.add(x); }); plan = []; }
+    if (a === "allAvail") { teachers.forEach(x => { if (!absentSet.has(x)) availSet.add(x); }); plan = []; }
     if (a === "noneAvail") { availSet.clear(); plan = []; }
     if (a === "generate") return generate();
     if (a === "publish") return saveAndPublish();
@@ -331,7 +373,7 @@ window.SubstitutionAdmin = (() => {
     if (a === "print") return printPlan();
     if (a === "resetHistory") {
       if (!confirm("Start a new month? Every teacher's arrangement count goes back to 0 (last duty dates are kept).")) return;
-      TEACHERS.forEach(x => { data.history[x].count = 0; });
+      teachers.forEach(x => { data.history[x].count = 0; });
       data.savedDays = {};
       if (await save("Counts reset for the new month.")) render();
       return;
@@ -342,6 +384,26 @@ window.SubstitutionAdmin = (() => {
       if (await save("Timetable reset to default.")) render();
       return;
     }
+    if (a === "addTeacher") {
+      const name = (root.querySelector("#sub-new-teacher").value || "").trim().replace(/\s+/g, " ");
+      if (!name) return toast("Choose a staff member or type a name first.", true);
+      if (teachers.some(t => t.toLowerCase() === name.toLowerCase())) return toast(`${name} is already in the list.`, true);
+      teachers.push(name);
+      DAYS.forEach(dy => { data.timetable[dy][name] = data.timetable[dy][name] || Object.fromEntries(ALL_PERIODS.map(p => [p, []])); });
+      data.history[name] = data.history[name] || { count: 0, lastDate: "", lastPeriods: [] };
+      availSet.add(name);
+      if (await save(`${name} added. Now set their periods in the Timetable tab.`)) { ttTeacher = name; render(); }
+      return;
+    }
+    if (a === "removeTeacher") {
+      if (!confirm(`Remove ${t} from the arrangement list? They won't be given arrangements any more. Past history is kept.`)) return;
+      teachers.splice(teachers.indexOf(t), 1);
+      absentSet.delete(t); availSet.delete(t); plan = [];
+      if (ttTeacher === t) ttTeacher = sorted()[0] || "";
+      if (await save(`${t} removed from the arrangement list.`)) render();
+      return;
+    }
+    if (a === "editTeacherTT") { ttTeacher = t; tab = "timetable"; return render(); }
     if (a === "savePeriod") {
       const v = root.querySelector(`[data-ttp="${p}"]`).value.trim();
       data.timetable[ttDay][ttTeacher][p] = v ? v.split(",").map(s => s.trim()).filter(Boolean) : [];
@@ -358,6 +420,7 @@ window.SubstitutionAdmin = (() => {
     if (k === "day") { day = e.target.value; plan = []; }
     if (k === "ttDay") ttDay = e.target.value;
     if (k === "ttTeacher") ttTeacher = e.target.value;
+    if (k === "pickStaff") { root.querySelector("#sub-new-teacher").value = e.target.value; return; }
     render();
   }
 
@@ -379,6 +442,8 @@ window.SubstitutionAdmin = (() => {
     if (!data) {
       const res = await fetch(`/api/substitution?t=${Date.now()}`, { cache: "no-store" }).catch(() => null);
       data = normalize(res?.ok ? await res.json() : null);
+      availSet = new Set(teachers);
+      ttTeacher = sorted()[0] || "";
       date = isoDate(new Date()); day = dayOf(date);
     }
     render();
