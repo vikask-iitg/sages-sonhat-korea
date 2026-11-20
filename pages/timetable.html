@@ -53,7 +53,9 @@
         timetable: d.timetable || buildDefaultTimetable(),
         teachers: d.teachers || TEACHERS,
         periodTimes: d.periodTimes && Object.keys(d.periodTimes).length ? d.periodTimes : PERIOD_TIMES,
-        periodTimesSat: d.periodTimesSat || null,
+        periodTimesSat: d.periodTimesSat || (d.timetable ? null : PERIOD_TIMES_SAT),
+        periodBreaks: d.periodBreaks || PERIOD_BREAKS,
+        periodBreaksSat: d.periodBreaksSat || (d.timetable ? null : PERIOD_BREAKS_SAT),
       });
     });
   </script>

@@ -1,4 +1,4 @@
-// Default timetable data for the Arrangement / Substitution tool.
+// Default timetable data for the Timetable / Arrangements tool.
 // Copied unchanged from the school's Smart Substitution Manager (index-v12.html, timetable 2026-27).
 // The admin can edit the timetable from the admin panel; these values are only the starting point.
 
@@ -11,6 +11,56 @@ const PERIOD_TIMES = {
     6: "02:45 - 03:25",
     7: "03:25 - 04:00"
 };
+
+// Saturday (session 2026-27): a shorter day — Bagless Day for Classes 1–8, revision for Classes 9–12.
+// Lunch 10:30 – 11:00 sits between P-5 and P-6.
+const PERIOD_TIMES_SAT = {
+    1: "08:00 - 08:30",
+    2: "08:30 - 09:00",
+    3: "09:00 - 09:30",
+    4: "09:30 - 10:00",
+    5: "10:00 - 10:30",
+    6: "11:00 - 11:30"
+};
+
+// Breaks between periods: { after period: { time, label } }
+const PERIOD_BREAKS = { 4: { time: "01:25 - 02:00", label: "Lunch" } };
+const PERIOD_BREAKS_SAT = { 5: { time: "10:30 - 11:00", label: "Lunch" } };
+
+// Saturday timetable from the school's "Saturday Time Table, Session 2026-27" sheet: [period, teacher, class (subject)]
+const SATURDAY_TIMETABLE = (() => {
+    const B = "Bagless Activity", R = s => `Revision – ${s}`;
+    // Classes 1–8 per period: teachers for Class 1, 2, … 8 (all Bagless Activity)
+    const bagless = {
+        1: ["Naveen Kumar Bharti", "Pankaj Lakra", "Sangeeta Bhagat", "Reenu Jaiswal", "Ashish Kumar Pandey", "Kajal Parveen Iraque", "Utkarsh Singh", "Keshav Kumar"],
+        2: ["Sangeeta Bhagat", "Vibha Rani Thakur", "Pankaj Lakra", "Ashish Kumar Pandey", "Reenu Jaiswal", "Utkarsh Singh", "Shalu Tripathi", "Suman Pandey"],
+        3: ["MD Asfaque", "Lobhesh Kumar Pradhan", "Vibha Rani Thakur", "Naveen Kumar Bharti", "Shubhjeet Chandra", "Suman Pandey", "Kajal Parveen Iraque", "Keshav Kumar"],
+        4: ["Pankaj Lakra", "MD Asfaque", "Shubhjeet Chandra", "Alpna Lakra", "Pravina Sahu", "Keshav Kumar", "Utkarsh Singh", "Shalu Tripathi"],
+        5: ["Vibha Rani Thakur", "Sangeeta Bhagat", "MD Asfaque", "Shubhjeet Chandra", "Lobhesh Kumar Pradhan", "Shalu Tripathi", "Keshav Kumar", "Kajal Parveen Iraque"],
+        6: ["Naveen Kumar Bharti", "Naveen Kumar Bharti", "Lobhesh Kumar Pradhan", "Reenu Jaiswal", "Ashish Kumar Pandey", "Kajal Parveen Iraque", "Shalu Tripathi", "Utkarsh Singh"],
+    };
+    // Classes 9–12: [period, class, teacher, subject]
+    const higher = [
+        [1, 9, "Divya Gupta", "Science"], [1, 10, "Khushboo Maharaj", "Social Science"],
+        [1, 11, "Alpna Lakra", "Physics"], [1, 11, "Nikita Dubey", "Accounts"], [1, 12, "Chandradeep Panda", "English"],
+        [2, 9, "Kalpana Shukla", "Hindi"], [2, 10, "Shivam Kumar", "Maths"],
+        [2, 11, "Pravina Sahu", "Chemistry"], [2, 11, "Chetna Raj", "Economics"],
+        [2, 12, "Alpna Lakra", "Physics"], [2, 12, "Khushboo Maharaj", "Economics"],
+        [3, 9, "Shivam Kumar", "Maths"], [3, 10, "Kalpana Shukla", "Hindi"], [3, 11, "Chandradeep Panda", "English"],
+        [3, 12, "Pravina Sahu", "Chemistry"], [3, 12, "Chetna Raj", "Business"],
+        [4, 9, "Chandradeep Panda", "English"], [4, 10, "Suman Pandey", "Sanskrit"], [4, 11, "Kalpana Shukla", "Hindi"],
+        [4, 12, "Shivam Kumar", "Maths"], [4, 12, "Divya Gupta", "Biology"], [4, 12, "Nikita Dubey", "Accounts"],
+        [5, 9, "Khushboo Maharaj", "Social Science"], [5, 10, "Chandradeep Panda", "English"],
+        [5, 11, "Divya Gupta", "Maths / Biology"], [5, 11, "Chetna Raj", "Business"], [5, 12, "Kalpana Shukla", "Hindi"],
+        [6, 9, "Suman Pandey", "Sanskrit"], [6, 10, "Divya Gupta", "Science"],
+        [6, 11, "Alpna Lakra", "Weekly Test"], [6, 11, "Chetna Raj", "Weekly Test"], [6, 11, "Khushboo Maharaj", "Weekly Test"],
+        [6, 12, "Pravina Sahu", "Weekly Test"], [6, 12, "Nikita Dubey", "Weekly Test"],
+    ];
+    const list = [];
+    Object.entries(bagless).forEach(([p, names]) => names.forEach((t, k) => list.push([Number(p), t, `Class ${k + 1} (${B})`])));
+    higher.forEach(([p, c, t, sub]) => list.push([p, t, `Class ${c} (${R(sub)})`]));
+    return list;
+})();
 
 const TEACHERS = [
     "Naveen Kumar Bharti",
@@ -182,6 +232,10 @@ function buildDefaultTimetable() {
     add(ALL, "Chetna Raj", 6, "Class 12 (Commerce/Business)");
     add(["MON", "TUE", "WED"], "Shubhjeet Chandra", 7, "Class 12 (Revision)");
     add(["THU", "FRI", "SAT"], "MD Asfaque", 7, "Class 12 (Library)");
+
+    // Saturday has its own timetable (replaces the weekday pattern above)
+    TEACHERS.forEach(t => { tt.SAT[t] = {}; Object.keys(PERIOD_TIMES_SAT).forEach(p => { tt.SAT[t][p] = []; }); });
+    SATURDAY_TIMETABLE.forEach(([p, t, desc]) => { if (tt.SAT[t]) tt.SAT[t][p].push(desc); });
 
     return tt;
 }

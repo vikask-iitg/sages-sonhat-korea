@@ -33,6 +33,7 @@ window.TimetableView = (function () {
 
   // Period timings decide each day's periods: Mon–Fri use periodTimes, Saturday periodTimesSat when it has its own.
   const timesOf = dy => (dy === "SAT" && data.periodTimesSat) || data.periodTimes || {};
+  const breaksOf = dy => (dy === "SAT" && data.periodTimesSat ? data.periodBreaksSat : data.periodBreaks) || {};
   const periodsOf = dy => Object.keys(timesOf(dy)).map(Number).sort((a, b) => a - b);
   const teachers = () => [...(data.teachers || Object.keys(data.timetable.MON || {}))].sort((a, b) => a.localeCompare(b));
   const slot = (dy, t, p) => ((data.timetable[dy] || {})[t] || {})[p] || [];
@@ -78,7 +79,9 @@ window.TimetableView = (function () {
 
   // Periods down the first column, the chosen classes across the top row, for the given days
   function composite(cols, days) {
-    const rows = periodsOf(days[0]).map(p => `<tr><th scope="row" class="tt-per">${periodHead(p, days[0])}</th>${cols.map(c => weekCell(c.grid, p, days)).join("")}</tr>`).join("");
+    const brk = breaksOf(days[0]);
+    const rows = periodsOf(days[0]).map(p => `<tr><th scope="row" class="tt-per">${periodHead(p, days[0])}</th>${cols.map(c => weekCell(c.grid, p, days)).join("")}</tr>${brk[p]
+      ? `<tr class="tt-break"><th scope="row" class="tt-per">${esc(brk[p].label)}<small>${esc(brk[p].time)}</small></th><td colspan="${cols.length}">${esc(brk[p].label)} · ${esc(brk[p].time)}</td></tr>` : ""}`).join("");
     // Each class column at least 125px so full names stay whole; more columns than fit scroll sideways (Period column frozen)
     return `<div class="tt-scroll"><table class="tt-grid tt-composite" style="min-width: ${92 + cols.length * 125}px"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
@@ -88,6 +91,7 @@ window.TimetableView = (function () {
   function saturdaySeparate(cols) {
     const week = data.periodTimes || {}, sat = data.periodTimesSat;
     if (sat && JSON.stringify(Object.entries(sat).sort()) !== JSON.stringify(Object.entries(week).sort())) return true;
+    if (sat && JSON.stringify(breaksOf("SAT")) !== JSON.stringify(breaksOf("MON"))) return true;
     let cells = 0, differ = 0;
     cols.forEach(c => periodsOf("MON").forEach(p => {
       const f = JSON.stringify((c.grid.FRI || {})[p] || []), s2 = JSON.stringify((c.grid.SAT || {})[p] || []);
@@ -137,6 +141,7 @@ window.TimetableView = (function () {
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 13px; margin: 0 0 2px; text-align: center; } h2 { font-size: 11px; margin: 0 0 4px; text-align: center; font-weight: normal; }
+      tr.tt-break td { text-align: center; font-weight: bold; letter-spacing: 1px; background: #eee; vertical-align: middle; } tr.tt-break th { background: #eee; white-space: normal; }
       h4.tt-sub { font-size: 12px; margin: 8px 0 3px; } h4.tt-sub:first-of-type { margin-top: 0; } p.tt-none { font-size: 11px; color: #666; }
       table { width: 100%; min-width: 0 !important; border-collapse: collapse; table-layout: fixed; font-size: 11px; line-height: 1.25; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; text-align: left; word-wrap: break-word; }

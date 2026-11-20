@@ -25,7 +25,7 @@ window.SubstitutionAdmin = (() => {
   let plan = [];
   let carriedFrom = "";     // date whose absent list was carried over into this one
   let ttDay = "MON", ttTeacher = "";
-  let timesSet = "WEEK", timesDraft = null; // timesDraft: [[start, end], ...] as "HH:MM" while editing    // which period timings the Timetable tab is editing: "WEEK" (Mon–Fri) or "SAT"
+  let timesSet = "WEEK", timesDraft = null, breaksDraft = null; // while editing: periods [[start, end]], breaks { after: [start, end, label] } ("HH:MM")    // which period timings the Timetable tab is editing: "WEEK" (Mon–Fri) or "SAT"
 
   const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
@@ -61,7 +61,12 @@ window.SubstitutionAdmin = (() => {
     d.teachers = Array.isArray(d.teachers) && d.teachers.length ? d.teachers.map(n => LEGACY_NAMES[n] || n) : [...TEACHERS];
     teachers = d.teachers;
     const fresh = buildDefaultTimetable();
-    if (!d.timetable || typeof d.timetable !== "object") d.timetable = fresh;
+    if (!d.timetable || typeof d.timetable !== "object") {
+      d.timetable = fresh;
+      d.periodTimesSat = d.periodTimesSat || { ...PERIOD_TIMES_SAT };
+      d.periodBreaksSat = d.periodBreaksSat || { ...PERIOD_BREAKS_SAT };
+    }
+    if (!d.periodBreaks || typeof d.periodBreaks !== "object") d.periodBreaks = { ...PERIOD_BREAKS };
     DAYS.forEach(dy => {
       d.timetable[dy] = d.timetable[dy] || {};
       teachers.forEach(t => {
@@ -99,6 +104,8 @@ window.SubstitutionAdmin = (() => {
   // Period timings are saved data ("10:15 - 11:05", 12-hour clock without am/pm, as on the school timetable).
   // Saturday has its own timings once saved (data.periodTimesSat); until then it uses the Monday–Friday ones.
   const timesOf = dy => (dy === "SAT" && data.periodTimesSat) || data.periodTimes;
+  // Breaks after a period ({ 4: { time, label } }); Saturday's go with its own timings
+  const breaksOf = dy => (dy === "SAT" && data.periodTimesSat ? data.periodBreaksSat : data.periodBreaks) || {};
   const ptime = (p, dy) => timesOf(dy)[p] || "";
   // The periods a day has: P-1..P-n from its timings (Mon–Fri and Saturday can differ)
   const periodsFor = dy => Object.keys(timesOf(dy)).map(Number).sort((a, b) => a - b);
@@ -320,9 +327,20 @@ window.SubstitutionAdmin = (() => {
   const timesDay = () => (timesSet === "SAT" ? "SAT" : "MON");
   const savedDraft = () => periodsFor(timesDay()).map(p => ptime(p, timesDay()).split("-").map(x => toInput(x.trim())));
   const draft = () => (timesDraft = timesDraft || savedDraft());
-  const draftChanged = () => JSON.stringify(draft()) !== JSON.stringify(savedDraft());
+  const savedBreaks = () => Object.fromEntries(Object.entries(breaksOf(timesDay())).map(([k, v]) => [k, [...v.time.split("-").map(x => toInput(x.trim())), v.label || "Lunch"]]));
+  const bdraft = () => (breaksDraft = breaksDraft || savedBreaks());
+  const draftChanged = () => JSON.stringify(draft()) !== JSON.stringify(savedDraft()) || JSON.stringify(bdraft()) !== JSON.stringify(savedBreaks());
   // "HH:MM" + minutes
   const addMin = (hm, m) => { const [h, mi] = hm.split(":").map(Number), t = Math.min(h * 60 + mi + m, 23 * 60 + 59); return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
+
+  // Between two periods: the break's times and name, or a button to add one
+  function breakRow(after) {
+    const br = bdraft()[after];
+    if (!br) return `<button type="button" class="sub-break-add" data-sub="addBreak" data-k="${after}">＋ Lunch break after P-${after}</button>`;
+    return `<div class="sub-time sub-break"><input class="sub-break-name" data-bl="${after}" value="${esc(br[2])}" maxlength="20" aria-label="Break name">
+      <input type="time" data-bt="${after}" data-end="0" value="${br[0]}"><span>to</span><input type="time" data-bt="${after}" data-end="1" value="${br[1]}">
+      <button type="button" class="sub-time-del" data-sub="delBreak" data-k="${after}" title="Remove break" aria-label="Remove break">✕</button></div>`;
+  }
 
   function timetableHtml() {
     return `
@@ -336,7 +354,7 @@ window.SubstitutionAdmin = (() => {
         <div class="sub-times">
           ${draft().map(([a, b], k) => { const p = k + 1, last = p === draft().length;
             return `<div class="sub-time"><b>P-${p}</b><input type="time" data-pt="${p}" data-end="0" value="${a}"><span>to</span><input type="time" data-pt="${p}" data-end="1" value="${b}">${last && p > 1
-              ? `<button type="button" class="sub-time-del" data-sub="delPeriod" title="Remove P-${p}" aria-label="Remove P-${p}">✕</button>` : `<span class="sub-time-gap"></span>`}</div>`; }).join("")}
+              ? `<button type="button" class="sub-time-del" data-sub="delPeriod" title="Remove P-${p}" aria-label="Remove P-${p}">✕</button>` : `<span class="sub-time-gap"></span>`}</div>${last ? "" : breakRow(p)}`; }).join("")}
           <button type="button" class="btn-sm sub-time-add" data-sub="addPeriod">＋ Add period</button>
         </div>
         <div class="sub-actions"><button type="button" class="btn-sm primary${draftChanged() ? " unsaved" : ""}" data-sub="saveTimes">💾 Save timings</button>
@@ -451,6 +469,8 @@ window.SubstitutionAdmin = (() => {
     if (a === "resetTimetable") {
       if (!confirm("Reset the master timetable to the default 2026-27 timetable? Your edits will be lost.")) return;
       data.timetable = buildDefaultTimetable();
+      data.periodTimesSat = { ...PERIOD_TIMES_SAT };
+      data.periodBreaksSat = { ...PERIOD_BREAKS_SAT };
       if (await save("Timetable reset to default.")) render();
       return;
     }
@@ -475,21 +495,27 @@ window.SubstitutionAdmin = (() => {
     }
     if (a === "timesSet") {
       if (timesDraft && draftChanged() && !confirm("You have unsaved timing changes. Switch anyway and discard them?")) return;
-      timesSet = b.dataset.k; timesDraft = null; return render();
+      timesSet = b.dataset.k; timesDraft = null; breaksDraft = null; return render();
     }
     if (a === "addPeriod") { const d = draft(), end = d.length ? d.at(-1)[1] : "10:00"; d.push([end, addMin(end, 40)]); return render(); }
     if (a === "delPeriod") {
       const d = draft(), p = d.length, days = timesSet === "SAT" ? ["SAT"] : DAYS.filter(x => x !== "SAT" || !data.periodTimesSat);
       const busy = teachers.filter(t => days.some(dy => tt(dy, t, p).length));
       if (busy.length && !confirm(`P-${p} has classes for ${busy.length} teacher(s) (${busy.slice(0, 3).join(", ")}${busy.length > 3 ? "…" : ""}). Remove the period anyway? Their entries are kept but hidden until the period is added back.`)) return;
-      d.pop(); return render();
+      d.pop(); Object.keys(bdraft()).forEach(k => { if (Number(k) >= d.length) delete bdraft()[k]; }); return render();
+    }
+    if (a === "addBreak") {
+      const k = Number(b.dataset.k), d = draft(), start = d[k - 1][1], next = d[k][0];
+      bdraft()[k] = [start, next > start ? next : addMin(start, 30), "Lunch"]; return render();
+    }
+    if (a === "delBreak") { delete bdraft()[b.dataset.k]; return render();
     }
     if (a === "saveTimes" || a === "defaultTimes") {
       const sat = timesSet === "SAT";
-      let times = null;
+      let times = null, breaks = null;
       if (a === "defaultTimes") {
         if (!confirm(sat ? "Make Saturday use the Monday – Friday timings again?" : "Go back to the default Monday – Friday timings?")) return;
-        if (!sat) times = { ...PERIOD_TIMES };
+        if (!sat) { times = { ...PERIOD_TIMES }; breaks = { ...PERIOD_BREAKS }; }
       } else {
         times = {};
         for (const [k, [s0, e0]] of draft().entries()) {
@@ -498,10 +524,16 @@ window.SubstitutionAdmin = (() => {
           if (s0 >= e0) return toast(`P-${p} must end after it starts.`, true);
           times[p] = `${fromInput(s0)} - ${fromInput(e0)}`;
         }
+        breaks = {};
+        for (const [k, [s0, e0, label]] of Object.entries(bdraft())) {
+          if (!s0 || !e0 || s0 >= e0) return toast(`Check the times of the break after P-${k}.`, true);
+          breaks[k] = { time: `${fromInput(s0)} - ${fromInput(e0)}`, label: (label || "").trim() || "Break" };
+        }
       }
-      timesDraft = null;
-      if (sat) { if (times) data.periodTimesSat = times; else delete data.periodTimesSat; }
-      else data.periodTimes = times;
+      timesDraft = null; breaksDraft = null;
+      if (sat) {
+        if (times) { data.periodTimesSat = times; data.periodBreaksSat = breaks; } else { delete data.periodTimesSat; delete data.periodBreaksSat; }
+      } else { data.periodTimes = times; data.periodBreaks = breaks; }
       // Keep today's and later published lists in step with the new times
       const today = isoDate(new Date());
       Object.keys(data.published).filter(d => d >= today).forEach(d => { const x = data.published[d]; x.plan.forEach(i => { i.time = ptime(i.period, x.day); }); });
@@ -526,8 +558,10 @@ window.SubstitutionAdmin = (() => {
       const p = Number(el.dataset.ttp);
       root.querySelector(`[data-sub="savePeriod"][data-p="${p}"]`)?.classList.toggle("unsaved", el.value.trim() !== tt(ttDay, ttTeacher, p).join(", "));
     }
-    if (el.dataset.pt) {
-      draft()[Number(el.dataset.pt) - 1][Number(el.dataset.end)] = el.value;
+    if (el.dataset.bt) bdraft()[el.dataset.bt][Number(el.dataset.end)] = el.value;
+    if (el.dataset.bl) bdraft()[el.dataset.bl][2] = el.value;
+    if (el.dataset.pt || el.dataset.bt || el.dataset.bl) {
+      if (el.dataset.pt) draft()[Number(el.dataset.pt) - 1][Number(el.dataset.end)] = el.value;
       root.querySelector('[data-sub="saveTimes"]')?.classList.toggle("unsaved", draftChanged());
     }
   }
