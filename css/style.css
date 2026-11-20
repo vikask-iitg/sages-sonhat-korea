@@ -486,9 +486,5 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
   .arr-card td[data-label="Class"] { font-weight: 600; color: var(--primary-dark); }
   .arr-card td.arr-sub::before { content: "→ "; color: var(--muted); font-weight: 400; }
 }
-/* Names that don't fit their box scroll right-to-left: pause, scroll to the end, pause, start again */
-.arr-name { display: block; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
-.arr-name i { display: inline-block; font-style: normal; }
-.arr-name.scroll i { animation: name-scroll var(--dur, 6s) ease-in-out infinite; }
-@keyframes name-scroll { 0%, 20% { transform: translateX(0); } 75%, 100% { transform: translateX(var(--shift)); } }
-@media (prefers-reduced-motion: reduce) { .arr-name.scroll i { animation: none; } .arr-name { text-overflow: ellipsis; } }
+/* Long names wrap onto a second line, centred in their box like the shorter names */
+.arr-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }

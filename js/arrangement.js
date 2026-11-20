@@ -10,17 +10,8 @@
 
   let published = {}, dates = [], selected = "", mine = "";
 
-  // Long names stay on one line and, if they don't fit their box, scroll right-to-left (see .arr-name in style.css).
-  const nameTag = t => `<span class="arr-name"><i>${esc(t)}</i></span>`;
-  function fitNames() {
-    root.querySelectorAll(".arr-name").forEach(box => {
-      const over = box.firstElementChild.scrollWidth - box.clientWidth;
-      box.classList.toggle("scroll", over > 1);
-      box.style.setProperty("--shift", `${-(over + 6)}px`);
-      box.style.setProperty("--dur", `${Math.max(5, 3 + over / 15).toFixed(1)}s`);
-    });
-  }
-  window.addEventListener("resize", () => { clearTimeout(fitNames.t); fitNames.t = setTimeout(fitNames, 150); });
+  // Long names wrap onto a second line inside their box (see .arr-name in style.css).
+  const nameTag = t => `<span class="arr-name">${esc(t)}</span>`;
 
   function render() {
     if (!dates.length) {
@@ -58,7 +49,6 @@
             <td class="arr-abs" data-label="Absent">${esc(i.absentTeacher)}</td><td class="arr-sub" data-label="Arrangement by">${i.assignedTeacher ? esc(i.assignedTeacher) : "No free teacher (merge class)"}</td></tr>`).join("")}
         </table></div>` : `<p class="empty">${mine ? `${esc(mine)} has no arrangement periods on this day.` : "No arrangement periods on this day."}</p>`}
       </div>`;
-    fitNames();
   }
 
   root.addEventListener("change", e => {
