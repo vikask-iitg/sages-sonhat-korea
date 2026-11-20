@@ -15,7 +15,23 @@
 
   function render() {
     if (!dates.length) {
-      root.innerHTML = `<div class="arr-empty">📭 No arrangement has been published yet. Please check again later.</div>`;
+      root.innerHTML = `
+        <div class="arr-empty">
+          <div class="arr-empty-art" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="12" y="10" width="40" height="46" rx="6"/><path d="M24 10V6h16v4"/><path d="M21 26h22M21 35h22M21 44h12"/>
+            </svg>
+            <span class="arr-empty-badge">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+          </div>
+          <h3>No arrangement published yet</h3>
+          <p>Today's teacher arrangement will appear here as soon as the school publishes it — who is absent, who is present, and who takes each period.</p>
+          <div class="arr-empty-actions">
+            <button type="button" class="arr-btn primary" data-arr="reload">↻ Check again</button>
+            <a class="arr-btn" href="/pages/timetable.html">📅 View School Timetable</a>
+          </div>
+        </div>`;
       return;
     }
     const x = published[selected];
@@ -50,6 +66,8 @@
         </table></div>` : `<p class="empty">${mine ? `${esc(mine)} has no arrangement periods on this day.` : "No arrangement periods on this day."}</p>`}
       </div>`;
   }
+
+  root.addEventListener("click", e => { if (e.target.closest('[data-arr="reload"]')) location.reload(); });
 
   root.addEventListener("change", e => {
     const k = e.target.dataset.arr;
