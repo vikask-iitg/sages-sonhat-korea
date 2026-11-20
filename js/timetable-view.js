@@ -75,7 +75,7 @@ window.TimetableView = (function () {
     if (vs.length === 1) return vs[0].list.length ? `<td>${line(vs[0].list)}</td>` : `<td class="free">—</td>`;
     return `<td>${vs.map(v => `<div class="tt-var"><em>${dayLabel(v.days)}</em>${line(v.list)}</div>`).join("")}</td>`;
   }
-  // Line at the top of every timetable, e.g. "W.E.F 16/06/2026 · Prayer time 10:00 – 10:15"
+  // Line at the top of every timetable, e.g. "W.E.F. 16-06-2026 - Prayer Time: 10:00 AM - 10:15 AM"
   const note = () => (typeof data.timetableNote === "string" ? data.timetableNote : (typeof TIMETABLE_NOTE !== "undefined" ? TIMETABLE_NOTE : "")).trim();
   const periodHead = (p, dy) => `P-${p}<small>${esc(timesOf(dy)[p] || "")}</small>`;
 

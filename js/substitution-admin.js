@@ -415,7 +415,7 @@ window.SubstitutionAdmin = (() => {
       <div class="sub-card">
         <div class="sub-card-head"><h3>Heading on every timetable</h3></div>
         <p class="hint">Shown at the top of the School Timetable page and on every printed timetable, e.g. the start date and prayer time.</p>
-        <div class="sub-pcard-pick"><input class="sub-input" id="sub-tt-note" value="${esc(data.timetableNote)}" maxlength="140" placeholder="W.E.F 16/06/2026 · Prayer time 10:00 – 10:15">
+        <div class="sub-pcard-pick"><input class="sub-input" id="sub-tt-note" value="${esc(data.timetableNote)}" maxlength="140" placeholder="W.E.F. 16-06-2026 - Prayer Time: 10:00 AM - 10:15 AM">
           <button type="button" class="btn-sm primary" data-sub="saveNote">💾 Save</button></div>
       </div>
       <div class="sub-card">
