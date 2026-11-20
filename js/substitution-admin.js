@@ -22,9 +22,11 @@ window.SubstitutionAdmin = (() => {
   let absentSet = new Set(), availSet = new Set(teachers);
   let absentPeriods = {}, blockedPeriods = {};
   let plan = [];
+  let carriedFrom = "";     // date whose absent list was carried over into this one
   let ttDay = "MON", ttTeacher = "";
 
   const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
   const dayOf = iso => ["MON", "MON", "TUE", "WED", "THU", "FRI", "SAT"][new Date(iso + "T00:00:00").getDay()];
   // Previous working day (Mon -> Sat, others -> yesterday)
   function previousWorkingDate(iso) {
@@ -92,7 +94,24 @@ window.SubstitutionAdmin = (() => {
   const freePeriods = (dy, t) => ALL_PERIODS.filter(p => !tt(dy, t, p).length);
 
   function resetDaily() {
-    absentSet = new Set(); availSet = new Set(teachers); absentPeriods = {}; blockedPeriods = {}; plan = [];
+    absentSet = new Set(); availSet = new Set(teachers); absentPeriods = {}; blockedPeriods = {}; plan = []; carriedFrom = "";
+  }
+
+  // Fill the Daily screen for a date: its published arrangement if there is one,
+  // otherwise carry over the absent teachers of the latest earlier published day.
+  function loadDate(d) {
+    resetDaily();
+    date = d; day = data.published[d]?.day || dayOf(d);
+    const pub = data.published[d];
+    const prev = pub ? null : Object.keys(data.published).filter(x => x < d).sort().at(-1);
+    const src = pub || (prev && data.published[prev]);
+    if (!src) return;
+    src.absent.filter(a => teachers.includes(a.teacher)).forEach(a => {
+      absentSet.add(a.teacher); availSet.delete(a.teacher);
+      absentPeriods[a.teacher] = pub ? new Set(a.periods) : new Set(ALL_PERIODS);
+    });
+    if (pub) plan = pub.plan.map(i => ({ ...i, status: "Published", badge: "ok" }));
+    else carriedFrom = prev;
   }
 
   // ---------- generation (same rules as the original app) ----------
@@ -177,8 +196,8 @@ window.SubstitutionAdmin = (() => {
     if (await save(old ? "Arrangement updated and re-published." : "Saved and published — teachers can now see it.")) render();
   }
 
-  async function unpublish(d) {
-    if (!confirm(`Remove the published arrangement for ${d}? Teachers will no longer see it, and its counts will be taken off the history.`)) return;
+  async function unpublish(d, ask = true) {
+    if (ask && !confirm(`Remove the published arrangement for ${d}? Teachers will no longer see it, and its counts will be taken off the history.`)) return;
     const old = data.savedDays[d] || {};
     Object.keys(old).forEach(t => { if (data.history[t]) data.history[t].count = Math.max(0, data.history[t].count - old[t].length); });
     delete data.savedDays[d];
@@ -188,7 +207,7 @@ window.SubstitutionAdmin = (() => {
       const dates = Object.keys(data.savedDays).filter(x => data.savedDays[x][t]?.length).sort();
       h.lastDate = dates.at(-1) || ""; h.lastPeriods = dates.length ? data.savedDays[h.lastDate][t] : [];
     });
-    if (await save("Removed.")) render();
+    if (await save("Removed.")) { if (d === date) resetDaily(); render(); }
   }
 
   function whatsappText() {
@@ -240,7 +259,9 @@ window.SubstitutionAdmin = (() => {
           <label class="field"><span>Date</span><input type="date" data-subchange="date" value="${esc(date)}"></label>
           <label class="field"><span>Timetable day</span><select data-subchange="day">${DAYS.map(d => `<option value="${d}"${d === day ? " selected" : ""}>${DAY_NAMES[d]}</option>`).join("")}</select></label>
         </div>
-        ${data.published[date] ? `<p class="sub-note">✔ An arrangement for this date is already published. Generating again and publishing will replace it.</p>` : ""}
+        ${data.published[date] ? `<p class="sub-note">✔ The arrangement for this date is published and shown below. Change it and generate again to replace it.</p>`
+          : carriedFrom ? `<p class="sub-note carry">↪ Absent teachers carried over from <b>${esc(niceDate(carriedFrom))}</b>. Change them if needed, or reset to start fresh.</p>` : ""}
+        <button type="button" class="btn-sm danger" data-sub="resetDay" style="margin-top:10px">↺ Reset ${date === isoDate(new Date()) ? "today's" : "this day's"} arrangement</button>
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>1. Absent teachers</h3><button type="button" class="btn-sm" data-sub="clearAbsent">Clear</button></div>
@@ -360,6 +381,13 @@ window.SubstitutionAdmin = (() => {
     if (a === "avail") { availSet.has(t) ? availSet.delete(t) : availSet.add(t); plan = []; }
     if (a === "blockPeriod") { const s = blockedPeriods[t] = blockedPeriods[t] || new Set(); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
     if (a === "clearAbsent") { resetDaily(); }
+    if (a === "resetDay") {
+      if (data.published[date]) {
+        if (!confirm(`Reset the arrangement for ${date}? It is published, so it will also be removed from the teachers' page (they will see the previous day's until you publish a new one).`)) return;
+        return unpublish(date, false);
+      }
+      resetDaily(); toast("Cleared — start fresh for this day.");
+    }
     if (a === "allAvail") { teachers.forEach(x => { if (!absentSet.has(x)) availSet.add(x); }); plan = []; }
     if (a === "noneAvail") { availSet.clear(); plan = []; }
     if (a === "generate") return generate();
@@ -417,7 +445,7 @@ window.SubstitutionAdmin = (() => {
   function onChange(e) {
     const k = e.target.dataset.subchange;
     if (!k || !root.contains(e.target)) return;
-    if (k === "date") { date = e.target.value; day = dayOf(date); plan = []; }
+    if (k === "date") { if (!e.target.value) return; loadDate(e.target.value); }
     if (k === "day") { day = e.target.value; plan = []; }
     if (k === "ttDay") ttDay = e.target.value;
     if (k === "ttTeacher") ttTeacher = e.target.value;
@@ -443,9 +471,8 @@ window.SubstitutionAdmin = (() => {
     if (!data) {
       const res = await fetch(`/api/substitution?t=${Date.now()}`, { cache: "no-store" }).catch(() => null);
       data = normalize(res?.ok ? await res.json() : null);
-      availSet = new Set(teachers);
       ttTeacher = sorted()[0] || "";
-      date = isoDate(new Date()); day = dayOf(date);
+      loadDate(isoDate(new Date()));
     }
     render();
     if (!el.dataset.bound) {
