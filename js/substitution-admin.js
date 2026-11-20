@@ -343,7 +343,7 @@ window.SubstitutionAdmin = (() => {
             <span><button type="button" class="btn-sm" data-sub="autoAssign">⚡ Fill empty periods</button> <button type="button" class="btn-sm" data-sub="clearAssign">Clear all</button></span></div>
           <div class="sub-actions">
             <button type="button" class="btn-sm btn-preview" data-sub="preview">👁 Preview</button>
-            <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish for teachers</button>
+            <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish</button>
             <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
             <button type="button" class="btn-sm" data-sub="copy">📋 Copy text</button>
             <button type="button" class="btn-sm" data-sub="print">🖨 Print</button>
