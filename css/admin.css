@@ -280,3 +280,17 @@ button, input, select, textarea { font: inherit; }
 .btn-sm.wa { background: #25d366; border-color: #25d366; color: #fff; }
 .sub-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
 @media (max-width: 600px) { .sub-row { grid-template-columns: 1fr; } .sub-slot b { min-width: 0; width: 100%; } }
+
+/* Teachers tab: one compact row per teacher; buttons stay side by side */
+.sub-tlist { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.sub-trow { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6px 14px; padding: 10px 14px; border-top: 1px solid var(--border); }
+.sub-trow:first-child { border-top: 0; }
+.sub-trow:nth-child(even) { background: #fafbfd; }
+.sub-tname { min-width: 0; overflow-wrap: anywhere; }
+.sub-tper { color: var(--muted, #667); font-size: 13px; white-space: nowrap; }
+.sub-tact { display: flex; gap: 6px; white-space: nowrap; }
+@media (max-width: 600px) {
+  .sub-trow { grid-template-columns: 1fr auto; padding: 10px 12px; }
+  .sub-tact { grid-column: 1 / -1; }
+  .sub-tact .btn-sm { flex: 1; text-align: center; }
+}

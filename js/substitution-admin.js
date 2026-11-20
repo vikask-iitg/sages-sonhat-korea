@@ -324,13 +324,12 @@ window.SubstitutionAdmin = (() => {
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>Teachers in the arrangement list <span class="sub-tag">${teachers.length}</span></h3></div>
-        <div class="sub-table-wrap"><table class="sub-table">
-          <tr><th>Teacher</th><th>Periods / week</th><th></th></tr>
+        <div class="sub-tlist">
           ${sorted().map(t => { const n = periodsPerWeek(t);
-            return `<tr><td><b>${esc(t)}</b></td><td>${n ? n : `<span class="sub-badge warn">No periods yet — set in Timetable</span>`}</td>
-              <td style="text-align:right"><button type="button" class="btn-sm" data-sub="editTeacherTT" data-t="${jsArg(t)}">🗓 Timetable</button>
-              <button type="button" class="btn-sm danger" data-sub="removeTeacher" data-t="${jsArg(t)}">Remove</button></td></tr>`; }).join("")}
-        </table></div>
+            return `<div class="sub-trow"><b class="sub-tname">${esc(t)}</b>
+              <span class="sub-tper">${n ? `${n} periods / week` : `<span class="sub-badge warn">No periods yet</span>`}</span>
+              <span class="sub-tact"><button type="button" class="btn-sm" data-sub="editTeacherTT" data-t="${jsArg(t)}">🗓 Timetable</button><button type="button" class="btn-sm danger" data-sub="removeTeacher" data-t="${jsArg(t)}">Remove</button></span></div>`; }).join("")}
+        </div>
         <p class="hint">Removing a teacher takes them out of future arrangements. Their past history stays in the records.</p>
       </div>`;
   }
