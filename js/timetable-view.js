@@ -75,8 +75,9 @@ window.TimetableView = (function () {
     if (vs.length === 1) return vs[0].list.length ? `<td>${line(vs[0].list)}</td>` : `<td class="free">—</td>`;
     return `<td>${vs.map(v => `<div class="tt-var"><em>${dayLabel(v.days)}</em>${line(v.list)}</div>`).join("")}</td>`;
   }
-  // Line at the top of every timetable, e.g. "W.E.F. 16-06-2026 - Prayer Time: 10:00 AM - 10:15 AM"
+  // Lines at the top of every timetable, e.g. "W.E.F. - 16/06/2026" and "Prayer Time - 10:00 AM - 10:15 AM"
   const note = () => (typeof data.timetableNote === "string" ? data.timetableNote : (typeof TIMETABLE_NOTE !== "undefined" ? TIMETABLE_NOTE : "")).trim();
+  const noteHtml = () => note().split("\n").map(esc).join("<br>");
   const periodHead = (p, dy) => `P-${p}<small>${esc(timesOf(dy)[p] || "")}</small>`;
 
   // Periods down the first column, the chosen classes across the top row, for the given days
@@ -131,7 +132,7 @@ window.TimetableView = (function () {
         </select></label>
         <button type="button" class="tt-print" data-tt="print">🖨 ${who ? "Print your timetable" : "Print"}</button>
       </div>
-      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${esc(note())}</span></p>` : ""}${sh.html}</section>`;
+      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
   }
 
   // Opens a clean printable page — one sheet, school name on top, A4 landscape, shrunk to fit one page if needed.
@@ -154,7 +155,7 @@ window.TimetableView = (function () {
       td.free { color: #999; text-align: center; vertical-align: middle; } i.free { color: #999; } hr { border: 0; border-top: 1px dashed #999; margin: 2px 0; }
       .tt-var + .tt-var { border-top: 1.5px solid #333; margin-top: 3px; padding-top: 3px; } .tt-var em { font-style: normal; font-weight: bold; text-decoration: underline; margin-right: 4px; }
     </style></head><body>
-      ${(sh => `<section><h1>${esc(SCHOOL)}</h1><h2>${esc(sh.title)}</h2>${note() ? `<p class="headnote">${esc(note())}</p>` : ""}${sh.html}</section>`)(sheet())}
+      ${(sh => `<section><h1>${esc(SCHOOL)}</h1><h2>${esc(sh.title)}</h2>${note() ? `<p class="headnote">${noteHtml()}</p>` : ""}${sh.html}</section>`)(sheet())}
       <script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {

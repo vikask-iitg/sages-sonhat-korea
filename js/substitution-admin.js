@@ -414,8 +414,8 @@ window.SubstitutionAdmin = (() => {
     return `
       <div class="sub-card">
         <div class="sub-card-head"><h3>Heading on every timetable</h3></div>
-        <p class="hint">Shown at the top of the School Timetable page and on every printed timetable, e.g. the start date and prayer time.</p>
-        <div class="sub-pcard-pick"><input class="sub-input" id="sub-tt-note" value="${esc(data.timetableNote)}" maxlength="140" placeholder="W.E.F. 16-06-2026 - Prayer Time: 10:00 AM - 10:15 AM">
+        <p class="hint">Shown at the top of the School Timetable page and on every printed timetable, e.g. the start date and prayer time. Each line here is a separate line there.</p>
+        <div class="sub-pcard-pick"><textarea class="sub-input" id="sub-tt-note" rows="2" maxlength="200" placeholder="W.E.F. - 16/06/2026&#10;Prayer Time - 10:00 AM - 10:15 AM">${esc(data.timetableNote)}</textarea>
           <button type="button" class="btn-sm primary" data-sub="saveNote">💾 Save</button></div>
       </div>
       <div class="sub-card">
@@ -575,7 +575,7 @@ window.SubstitutionAdmin = (() => {
       return;
     }
     if (a === "saveNote") {
-      data.timetableNote = root.querySelector("#sub-tt-note").value.trim();
+      data.timetableNote = root.querySelector("#sub-tt-note").value.split("\n").map(l => l.trim()).filter(Boolean).join("\n");
       if (await save(data.timetableNote ? "Timetable heading saved." : "Timetable heading removed.")) render();
       return;
     }
