@@ -84,3 +84,6 @@
 .tt-grid tr.tt-break td { background: #fff4e5 !important; color: #8a5300; text-align: center; font-weight: 700; letter-spacing: .5px; vertical-align: middle; }
 .tt-grid tr.tt-break th { background: #fff4e5 !important; color: #8a5300; }
 .tt-grid tr.tt-break th { white-space: normal; }
+/* Heading line at the top of every timetable */
+.tt-headnote { margin: 4px 0 14px; text-align: center; }
+.tt-headnote span { display: inline-block; padding: 6px 16px; border-radius: 20px; background: #fff4e5; border: 1px solid #f3d9a9; color: #8a5300; font-size: 14px; font-weight: 600; }

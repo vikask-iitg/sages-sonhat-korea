@@ -23,6 +23,9 @@ const PERIOD_TIMES_SAT = {
     6: "11:00 - 11:30"
 };
 
+// Line printed at the top of every timetable (editable in the admin panel)
+const TIMETABLE_NOTE = "W.E.F. - 16/06/2026\nPrayer Time - 10:00 AM - 10:15 AM";
+
 // Breaks between periods: { after period: { time, label } }
 const PERIOD_BREAKS = { 2: { time: "11:50 - 12:00", label: "Short break" }, 4: { time: "01:25 - 02:00", label: "Lunch" } };
 const PERIOD_BREAKS_SAT = { 5: { time: "10:30 - 11:00", label: "Lunch" } };
