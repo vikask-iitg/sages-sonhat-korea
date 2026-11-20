@@ -64,3 +64,11 @@
 .tt-field:nth-child(1) .tt-pick { width: 200px; } .tt-field:nth-child(2) .tt-pick { width: 240px; }
 .tt-controls { align-items: flex-end; }
 @media (max-width: 700px) { .tt-field { flex: 1 1 100%; } .tt-field .tt-pick { width: 100% !important; } }
+/* Own dropdown arrow, inset from the edge (same in admin and on the public page) */
+.tt-controls select {
+  -webkit-appearance: none; appearance: none;
+  padding: 9px 38px 9px 12px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%230b3d91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 12px 8px;
+  cursor: pointer;
+}
+.tt-controls .tt-paper { width: 84px; }
