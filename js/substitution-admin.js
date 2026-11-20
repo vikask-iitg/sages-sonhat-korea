@@ -469,7 +469,11 @@ window.SubstitutionAdmin = (() => {
       syncPlan();
     }
     if (a === "absentPeriod") { const s = absentPeriods[t] = absentPeriods[t] || new Set(ANY_PERIOD); s.has(p) ? s.delete(p) : s.add(p); syncPlan(); }
-    if (a === "unassign") plan[Number(b.dataset.i)].assignedTeacher = "";
+    if (a === "unassign") {
+      const i = plan[Number(b.dataset.i)];
+      toast(`${i.assignedTeacher} removed from P-${i.period}, ${i.classDesc} for ${i.absentTeacher}.`);
+      i.assignedTeacher = "";
+    }
     if (a === "autoAssign") { const left = autoAssign(); if (left) toast(`${left} period(s) have no free teacher — merge class.`, true); }
     if (a === "clearAssign") plan.forEach(i => { i.assignedTeacher = ""; });
     if (a === "avail") { availSet.has(t) ? availSet.delete(t) : availSet.add(t); plan = []; }
@@ -608,11 +612,12 @@ window.SubstitutionAdmin = (() => {
     if (k === "assign") {
       const t = JSON.parse(e.target.dataset.t), p = Number(e.target.dataset.p), cls = e.target.dataset.c, v = e.target.value;
       const set = absentPeriods[t] = absentPeriods[t] || new Set(ANY_PERIOD);
-      if (v === "__covered") { set.delete(p); syncPlan(false); }
+      if (v === "__covered") { set.delete(p); syncPlan(false); toast(`P-${p} of ${t} marked as already covered.`); }
       else {
         if (!set.has(p)) { set.add(p); syncPlan(false); }
         const slot = plan.find(i => slotKey(i) === slotKey({ absentTeacher: t, period: p, classDesc: cls }));
         if (slot) slot.assignedTeacher = v;
+        toast(v ? `${v} assigned to P-${p}, ${cls} for ${t}.` : `P-${p}, ${cls} for ${t} — not assigned.`);
       }
     }
     if (k === "ttDay") ttDay = e.target.value;
