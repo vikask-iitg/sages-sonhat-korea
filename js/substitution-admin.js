@@ -342,7 +342,7 @@ window.SubstitutionAdmin = (() => {
           <div class="sub-arr-bar"><span><b>${plan.length}</b> periods to cover · <b class="ok">${assigned}</b> assigned${plan.length - assigned ? ` · <b class="bad">${plan.length - assigned}</b> not assigned` : ""}</span>
             <span><button type="button" class="btn-sm" data-sub="autoAssign">⚡ Fill empty periods</button> <button type="button" class="btn-sm" data-sub="clearAssign">Clear all</button></span></div>
           <div class="sub-actions">
-            <button type="button" class="btn-sm" data-sub="preview">👁 Preview</button>
+            <button type="button" class="btn-sm btn-preview" data-sub="preview">👁 Preview</button>
             <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish for teachers</button>
             <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
             <button type="button" class="btn-sm" data-sub="copy">📋 Copy text</button>
