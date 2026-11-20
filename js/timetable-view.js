@@ -4,12 +4,12 @@
 // Every view is one compact table for the whole week — periods down, classes across (a cell lists days only where a
 // period changes) — and prints on one sheet.
 // Full subject and teacher names throughout.
-// Usage: TimetableView.mount(el, { timetable, teachers, periodTimes })
+// Usage: TimetableView.mount(el, { timetable, teachers, periodTimes, periodTimesSat? })
 
 window.TimetableView = (function () {
   const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT"];
   const DAY_NAMES = { MON: "Monday", TUE: "Tuesday", WED: "Wednesday", THU: "Thursday", FRI: "Friday", SAT: "Saturday" };
-  const PERIODS = [1, 2, 3, 4, 5, 6, 7];
+  const WEEKDAYS = DAYS.slice(0, 5);
   const SCHOOL = "Swami Atmanand Govt. English Medium School, Sonhat";
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -31,7 +31,10 @@ window.TimetableView = (function () {
 
   let root, data, cls = "", who = ""; // cls: "" (all), a group like "Classes 1 – 5", or "Class 9"
 
-  const time = p => (data.periodTimes || {})[p] || "";
+  // Period timings decide each day's periods: Mon–Fri use periodTimes, Saturday periodTimesSat when it has its own.
+  const timesOf = dy => (dy === "SAT" && data.periodTimesSat) || data.periodTimes || {};
+  const breaksOf = dy => (dy === "SAT" && data.periodTimesSat ? data.periodBreaksSat : data.periodBreaks) || {};
+  const periodsOf = dy => Object.keys(timesOf(dy)).map(Number).sort((a, b) => a - b);
   const teachers = () => [...(data.teachers || Object.keys(data.timetable.MON || {}))].sort((a, b) => a.localeCompare(b));
   const slot = (dy, t, p) => ((data.timetable[dy] || {})[t] || {})[p] || [];
 
@@ -39,7 +42,7 @@ window.TimetableView = (function () {
   // With `only`, keeps just that teacher's periods (and only the classes they teach).
   function byClass(only = "") {
     const g = {}, order = {};
-    teachers().filter(t => !only || t === only).forEach(t => DAYS.forEach(dy => PERIODS.forEach(p => slot(dy, t, p).forEach(e => {
+    teachers().filter(t => !only || t === only).forEach(t => DAYS.forEach(dy => periodsOf(dy).forEach(p => slot(dy, t, p).forEach(e => {
       const i = parse(e); order[i.cls] = i.n;
       const day = ((g[i.cls] = g[i.cls] || {})[dy] = g[i.cls][dy] || {});
       (day[p] = day[p] || []).push({ top: i.subject, sub: t });
@@ -60,9 +63,9 @@ window.TimetableView = (function () {
   }
 
   // One cell for a whole week: shown once when every day is the same; otherwise each version with its days.
-  function weekCell(grid, p) {
+  function weekCell(grid, p, days) {
     const variants = new Map(); // same content → days
-    DAYS.forEach(dy => {
+    days.forEach(dy => {
       const list = (grid[dy] || {})[p] || [];
       const key = JSON.stringify(list);
       (variants.get(key) || variants.set(key, { list, days: [] }).get(key)).days.push(dy);
@@ -72,22 +75,42 @@ window.TimetableView = (function () {
     if (vs.length === 1) return vs[0].list.length ? `<td>${line(vs[0].list)}</td>` : `<td class="free">—</td>`;
     return `<td>${vs.map(v => `<div class="tt-var"><em>${dayLabel(v.days)}</em>${line(v.list)}</div>`).join("")}</td>`;
   }
-  const periodHead = p => `P-${p}<small>${esc(time(p))}</small>`;
+  const periodHead = (p, dy) => `P-${p}<small>${esc(timesOf(dy)[p] || "")}</small>`;
 
-  // Every view: periods P-1..P-7 down the first column, the chosen classes across the top row
-  function composite(cols) {
-    const rows = PERIODS.map(p => `<tr><th scope="row" class="tt-per">${periodHead(p)}</th>${cols.map(c => weekCell(c.grid, p)).join("")}</tr>`).join("");
+  // Periods down the first column, the chosen classes across the top row, for the given days
+  function composite(cols, days) {
+    const brk = breaksOf(days[0]);
+    const rows = periodsOf(days[0]).map(p => `<tr><th scope="row" class="tt-per">${periodHead(p, days[0])}</th>${cols.map(c => weekCell(c.grid, p, days)).join("")}</tr>${brk[p]
+      ? `<tr class="tt-break"><th scope="row" class="tt-per">${esc(brk[p].label)}<small>${esc(brk[p].time)}</small></th><td colspan="${cols.length}">${esc(brk[p].label)} · ${esc(brk[p].time)}</td></tr>` : ""}`).join("");
     // Each class column at least 125px so full names stay whole; more columns than fit scroll sideways (Period column frozen)
-    return `<table class="tt-grid tt-composite" style="min-width: ${92 + cols.length * 125}px"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+    return `<div class="tt-scroll"><table class="tt-grid tt-composite" style="min-width: ${92 + cols.length * 125}px"><thead><tr><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
+
+  // Saturday gets its own table when it doesn't fit the Monday–Friday one: different periods or timings,
+  // or a timetable that differs from Friday's in more than a quarter of its periods.
+  function saturdaySeparate(cols) {
+    const week = data.periodTimes || {}, sat = data.periodTimesSat;
+    if (sat && JSON.stringify(Object.entries(sat).sort()) !== JSON.stringify(Object.entries(week).sort())) return true;
+    if (sat && JSON.stringify(breaksOf("SAT")) !== JSON.stringify(breaksOf("MON"))) return true;
+    let cells = 0, differ = 0;
+    cols.forEach(c => periodsOf("MON").forEach(p => {
+      const f = JSON.stringify((c.grid.FRI || {})[p] || []), s2 = JSON.stringify((c.grid.SAT || {})[p] || []);
+      if (f !== "[]" || s2 !== "[]") { cells++; if (f !== s2) differ++; }
+    }));
+    return cells > 0 && differ / cells > 0.25;
+  }
+
   // The sheet for the current Class + Teacher choice: { title, note, html }
   function sheet() {
     const rows = byClass(who), g = GROUPS.findIndex(([name]) => name === cls);
     const title = `${cls || "All classes"}${who ? ` — ${who}'s periods` : ""} — Weekly timetable`;
-    const note = "Monday to Saturday in one table · days are shown only where a period changes";
     const shown = g >= 0 ? rows.filter(r => inGroup(r.name, g)) : cls ? rows.filter(r => r.name === cls) : rows;
     if (!shown.length) return { title, note: "", html: `<p class="tt-none">${who ? `${esc(who)} has no periods in ${esc(cls || "any class")}.` : "Nothing in the timetable yet."}</p>` };
-    return { title, note, html: composite(shown) };
+    if (!saturdaySeparate(shown)) return { title, note: "Monday to Saturday in one table · days are shown only where a period changes", html: composite(shown, DAYS) };
+    const satCols = shown.filter(c => periodsOf("SAT").some(p => ((c.grid.SAT || {})[p] || []).length));
+    return { title, note: "Monday to Friday, with Saturday in its own table",
+      html: `<h4 class="tt-sub">Monday – Friday</h4>${composite(shown, WEEKDAYS)}
+        <h4 class="tt-sub">Saturday</h4>${satCols.length ? composite(satCols, ["SAT"]) : `<p class="tt-none">No classes on Saturday.</p>`}` };
   }
 
   function render() {
@@ -106,7 +129,7 @@ window.TimetableView = (function () {
         </select></label>
         <button type="button" class="tt-print" data-tt="print">🖨 ${who ? "Print your timetable" : "Print"}</button>
       </div>
-      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3><div class="tt-scroll">${sh.html}</div></section>`;
+      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${sh.html}</section>`;
   }
 
   // Opens a clean printable page — one sheet, school name on top, A4 landscape, shrunk to fit one page if needed.
@@ -118,6 +141,8 @@ window.TimetableView = (function () {
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 13px; margin: 0 0 2px; text-align: center; } h2 { font-size: 11px; margin: 0 0 4px; text-align: center; font-weight: normal; }
+      tr.tt-break td { text-align: center; font-weight: bold; letter-spacing: 1px; background: #eee; vertical-align: middle; } tr.tt-break th { background: #eee; white-space: normal; }
+      h4.tt-sub { font-size: 12px; margin: 8px 0 3px; } h4.tt-sub:first-of-type { margin-top: 0; } p.tt-none { font-size: 11px; color: #666; }
       table { width: 100%; min-width: 0 !important; border-collapse: collapse; table-layout: fixed; font-size: 11px; line-height: 1.25; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; text-align: left; word-wrap: break-word; }
       thead th { background: #e6e6e6; text-align: center; } th small { display: block; font-weight: normal; font-size: 9px; }
