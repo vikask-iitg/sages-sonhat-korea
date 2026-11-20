@@ -446,8 +446,11 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .arr-box ul { list-style: none; display: grid; gap: 8px; }
 .arr-box li b { color: #b71c1c; font-size: 14px; }
 .arr-box li small { display: block; color: var(--muted); font-size: 12px; }
-.arr-names { display: flex; flex-wrap: wrap; gap: 6px; }
-.arr-names span { padding: 4px 10px; border-radius: 14px; background: #e8f5e9; color: #1b5e20; font-size: 13px; }
+/* Present teachers: equal-width columns, sorted A–Z */
+.arr-names { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.arr-names span { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; background: #f1f8f2;
+  border: 1px solid #d7ecd9; color: #1b5e20; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arr-names span::before { content: ""; width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--green); }
 .arr-names span.me { background: var(--accent); color: var(--primary-dark); font-weight: 600; }
 .arr-card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: var(--shadow); }
 .arr-card h3 { font-size: 17px; margin-bottom: 12px; }
@@ -457,3 +460,4 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .arr-card tr.me td { background: #fff4d6 !important; }
 .arr-empty { text-align: center; padding: 40px 20px; background: #fff; border-radius: 12px; box-shadow: var(--shadow); color: var(--muted); font-size: 16px; }
 @media (max-width: 700px) { .arr-controls, .arr-summary { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .arr-names { grid-template-columns: 1fr 1fr; } }

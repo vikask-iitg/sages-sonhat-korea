@@ -31,7 +31,7 @@
         </div>
         <div class="arr-box present">
           <h3>🟢 Present <span>${x.present.length}</span></h3>
-          <div class="arr-names">${x.present.map(t => `<span class="${t === mine ? "me" : ""}">${esc(t)}</span>`).join("")}</div>
+          <div class="arr-names">${[...x.present].sort((a, b) => a.localeCompare(b)).map(t => `<span class="${t === mine ? "me" : ""}">${esc(t)}</span>`).join("")}</div>
         </div>
       </div>
       <div class="arr-card">
