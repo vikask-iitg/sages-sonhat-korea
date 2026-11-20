@@ -131,7 +131,7 @@ window.TimetableView = (function () {
         </select></label>
         <button type="button" class="tt-print" data-tt="print">🖨 ${who ? "Print your timetable" : "Print"}</button>
       </div>
-      <section class="tt-day">${note() ? `<p class="tt-headnote">${esc(note())}</p>` : ""}<h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${sh.html}</section>`;
+      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${esc(note())}</span></p>` : ""}${sh.html}</section>`;
   }
 
   // Opens a clean printable page — one sheet, school name on top, A4 landscape, shrunk to fit one page if needed.
@@ -144,7 +144,7 @@ window.TimetableView = (function () {
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 13px; margin: 0 0 2px; text-align: center; } h2 { font-size: 11px; margin: 0 0 4px; text-align: center; font-weight: normal; }
       tr.tt-break td { text-align: center; font-weight: bold; letter-spacing: 1px; background: #eee; vertical-align: middle; } tr.tt-break th { background: #eee; white-space: normal; }
-      p.headnote { margin: 0 0 3px; text-align: center; font-size: 11px; font-weight: bold; letter-spacing: .3px; }
+      p.headnote { margin: -2px 0 6px; text-align: center; font-size: 11px; font-weight: bold; letter-spacing: .3px; }
       h4.tt-sub { font-size: 12px; margin: 8px 0 3px; } h4.tt-sub:first-of-type { margin-top: 0; } p.tt-none { font-size: 11px; color: #666; }
       table { width: 100%; min-width: 0 !important; border-collapse: collapse; table-layout: fixed; font-size: 11px; line-height: 1.25; }
       th, td { border: 1px solid #555; padding: 4px 5px; vertical-align: top; text-align: left; word-wrap: break-word; }
@@ -154,7 +154,7 @@ window.TimetableView = (function () {
       td.free { color: #999; text-align: center; vertical-align: middle; } i.free { color: #999; } hr { border: 0; border-top: 1px dashed #999; margin: 2px 0; }
       .tt-var + .tt-var { border-top: 1.5px solid #333; margin-top: 3px; padding-top: 3px; } .tt-var em { font-style: normal; font-weight: bold; text-decoration: underline; margin-right: 4px; }
     </style></head><body>
-      ${(sh => `<section><h1>${esc(SCHOOL)}</h1>${note() ? `<p class="headnote">${esc(note())}</p>` : ""}<h2>${esc(sh.title)}</h2>${sh.html}</section>`)(sheet())}
+      ${(sh => `<section><h1>${esc(SCHOOL)}</h1><h2>${esc(sh.title)}</h2>${note() ? `<p class="headnote">${esc(note())}</p>` : ""}${sh.html}</section>`)(sheet())}
       <script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {
