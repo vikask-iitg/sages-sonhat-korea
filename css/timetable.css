@@ -47,6 +47,6 @@
 .tt-composite td { padding: 5px 7px; }
 @media (max-width: 700px) { .tt-composite { min-width: 860px; } .tt-composite thead th.tt-dayname { width: 80px; } }
 .tt-paper { padding: 9px 10px; border: 1px solid #d5dbe8; border-radius: 10px; font: inherit; font-size: 14px; background: #fff; }
-.tt-composite { min-width: 1500px; }
+.tt-composite { min-width: 900px; }
 .tt-composite td { font-size: 12px; }
 .tt-composite th, .tt-composite td { overflow-wrap: normal; word-break: normal; hyphens: manual; }

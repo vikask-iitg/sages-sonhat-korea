@@ -51,10 +51,19 @@ window.TimetableView = (function () {
       return { name: t, grid };
     });
   }
-  // Composite: every class on one sheet
-  const byGroup = () => { const classes = byClass(); return classes.length ? [{ name: "All classes", classes }] : []; };
+  // Composite: three sheets — Classes 1–5, 6–8 and 9–12 (anything that isn't "Class N" goes on the last one)
+  const GROUPS = [["Classes 1 – 5", 1, 5], ["Classes 6 – 8", 6, 8], ["Classes 9 – 12", 9, 12]];
+  function byGroup() {
+    const classes = byClass();
+    const num = c => Number((c.name.match(/\d+/) || [99])[0]);
+    return GROUPS.map(([name, lo, hi], k) => ({ name, classes: classes.filter(c => (num(c) >= lo && num(c) <= hi) || (k === GROUPS.length - 1 && !/^Class \d+$/.test(c.name))) }));
+  }
   const items = () => (view === "composite" ? byGroup() : view === "class" ? byClass() : byTeacher());
-  const shown = () => { const all = items(); return pick ? all.filter(x => x.name === pick) : all; };
+  const shown = () => {
+    const all = items();
+    if (view === "composite") return all.filter(x => x.name === (pick || GROUPS[0][0]));
+    return pick ? all.filter(x => x.name === pick) : all;
+  };
 
   // Composite: days (each split into P-1..P-7) down the left, classes across the top
   function composite(group) {
@@ -65,7 +74,7 @@ window.TimetableView = (function () {
         return items.length ? `<td>${items.map(i => `<b>${esc(i.top)}</b><span>${esc(i.sub)}</span>`).join("<hr>")}</td>` : `<td class="free">—</td>`;
       }).join("")}</tr>`).join("")).join("");
     return { html: `<table class="tt-grid tt-composite"><thead><tr><th class="tt-dayname">Day</th><th class="tt-per">Period</th>${cols.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`,
-      summary: `${cols.length} classes · Monday to Saturday` };
+      summary: "Monday to Saturday" };
   }
 
   // Days down the left, periods 1–7 across the top
@@ -92,31 +101,32 @@ window.TimetableView = (function () {
           <button type="button" data-tt="view" data-v="class" class="${view === "class" ? "on" : ""}">🏫 By class</button>
           <button type="button" data-tt="view" data-v="teacher" class="${view === "teacher" ? "on" : ""}">👩‍🏫 By teacher</button>
         </div>
-        ${view === "composite" ? "" : `<select class="tt-pick" data-tt-pick aria-label="Show">
+        ${view === "composite" ? `<div class="tt-seg" role="group" aria-label="Classes">${GROUPS.map(([g]) =>
+          `<button type="button" data-tt="group" data-v="${g}" class="${(pick || GROUPS[0][0]) === g ? "on" : ""}">${g}</button>`).join("")}</div>` : `<select class="tt-pick" data-tt-pick aria-label="Show">
           <option value="">${allLabel(all.length)}</option>
           ${all.map(x => `<option${x.name === pick ? " selected" : ""}>${esc(x.name)}</option>`).join("")}
         </select>`}
         <select class="tt-paper" data-tt-paper aria-label="Paper size">${["A4", "A3"].map(x => `<option value="${x}"${x === paper ? " selected" : ""}>${x} paper</option>`).join("")}</select>
-        <button type="button" class="tt-print" data-tt="print">🖨 Print ${view === "composite" ? "on one sheet" : pick ? esc(pick) : view === "class" ? "all classes" : "all teachers"}</button>
+        <button type="button" class="tt-print" data-tt="print">🖨 Print ${view === "composite" ? esc(pick || GROUPS[0][0]) : pick ? esc(pick) : view === "class" ? "all classes" : "all teachers"}</button>
       </div>
       ${shown().map(item => { const t = table(item);
         return `<section class="tt-day"><h3>${esc(heading(item))} <span>${esc(t.summary)}</span></h3><div class="tt-scroll">${t.html}</div></section>`; }).join("")}`;
   }
 
   // Opens a clean printable page, one sheet per class / teacher / class group, school name on top.
-  // Landscape, A4 or A3; each sheet is shrunk to fit its page if needed (the composite fits all classes on one).
+  // A4 or A3; composite sheets (42 period rows) print portrait, the others landscape. Each sheet shrinks to fit one page.
   function print() {
     const w = window.open("", "_blank");
     if (!w) return alert("Please allow pop-ups to print the timetable.");
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Timetable — ${esc(SCHOOL)}</title><style>
-      @page { size: ${paper} landscape; margin: 8mm; }
+      @page { size: ${paper} ${view === "composite" ? "portrait" : "landscape"}; margin: 8mm; }
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
       h1 { font-size: 15px; margin: 0 0 2px; text-align: center; } h2 { font-size: 13px; margin: 0 0 6px; text-align: center; font-weight: normal; }
       table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
-      ${view === "composite" ? `table { font-size: 10px; line-height: 1.15; } table.tt-composite td, table.tt-composite th { padding: 1px 2px; } table.tt-composite th.tt-dayname { width: 2.6%; text-align: center; font-size: 11px; }
+      ${view === "composite" ? `table { font-size: 10px; line-height: 1.15; } table.tt-composite td, table.tt-composite th { padding: 1px 2px; } table.tt-composite th.tt-dayname { width: 3.6%; text-align: center; font-size: 11px; }
         .tt-dayname span { writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; }
-        table.tt-composite th.tt-per { width: 4.6%; white-space: nowrap; } tr.daystart > * { border-top: 2px solid #000; } tbody th small, thead th small { display: block; font-weight: normal; font-size: 8px; }
+        table.tt-composite th.tt-per { width: 9%; white-space: nowrap; } tr.daystart > * { border-top: 2px solid #000; } tbody th small, thead th small { display: block; font-weight: normal; font-size: 8px; }
         .tt-composite td b, .tt-composite td span { display: inline; } .tt-composite td b::after { content: " – "; font-weight: normal; } h1 { font-size: 13px; } h2 { font-size: 11px; margin-bottom: 3px; }`
         : `tbody td { height: 22mm; }`}
       th, td { border: 1px solid #555; padding: 3px 4px; vertical-align: top; text-align: left; word-wrap: break-word; }
@@ -128,7 +138,7 @@ window.TimetableView = (function () {
       <script>
         // Shrink any sheet larger than the printable area so it stays on one page, keeping the full page width.
         window.onload = () => {
-          const mm = 96 / 25.4, [W, H] = ${paper === "A3" ? "[420, 297]" : "[297, 210]"};
+          const mm = 96 / 25.4, [W, H] = ${JSON.stringify((paper === "A3" ? [420, 297] : [297, 210])[view === "composite" ? "reverse" : "slice"]())};
           const pageW = (W - 16) * mm, pageH = ((H - 16) * mm - 6) * 0.92;
           document.querySelectorAll("section").forEach(s => {
             // Largest zoom z where the sheet, laid out (pageW / z) wide, is no taller than pageH / z
@@ -148,6 +158,7 @@ window.TimetableView = (function () {
     const b = e.target.closest("[data-tt]");
     if (!b) return;
     if (b.dataset.tt === "view") { view = b.dataset.v; pick = ""; }
+    if (b.dataset.tt === "group") pick = b.dataset.v;
     if (b.dataset.tt === "print") return print();
     render();
   }
