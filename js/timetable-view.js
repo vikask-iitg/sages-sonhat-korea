@@ -135,11 +135,15 @@ window.TimetableView = (function () {
       <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
   }
 
+  // Print window title = tab name and the suggested file name when saving as PDF:
+  // the teacher's name when printing "your timetable", otherwise the class or group
+  const printTitle = () => `${who || cls || "All classes"} - Timetable - SAGES Sonhat`.replace(/[\\/:*?"<>|]/g, "-");
+
   // Opens a clean printable page — one sheet, school name on top, A4 landscape, shrunk to fit one page if needed.
   function print() {
     const w = window.open("", "_blank");
     if (!w) return alert("Please allow pop-ups to print the timetable.");
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Timetable — ${esc(SCHOOL)}</title><style>
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(printTitle())}</title><link rel="icon" href="/images/favicon.png"><style>
       @page { size: A4 landscape; margin: 8mm; }
       body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; }
       section { page-break-after: always; } section:last-child { page-break-after: auto; }
