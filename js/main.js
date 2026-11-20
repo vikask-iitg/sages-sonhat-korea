@@ -13,6 +13,7 @@ const MENU = [
       ["Faculty", "/pages/administration.html#faculty"],
       ["Administrative Staff", "/pages/administration.html#staff"],
       ["Parent Teacher Association", "/pages/administration.html#pta"],
+      ["Daily Arrangement", "/pages/arrangement.html"],
     ],
   },
   {

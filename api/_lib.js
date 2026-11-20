@@ -52,6 +52,20 @@ export function json(data, status = 200, headers = {}) {
   });
 }
 
+// Previews and local dev read and write under "staging/", so testing never changes the live site's data.
+export const STAGE_PREFIX = process.env.VERCEL_ENV === "production" ? "" : "staging/";
+
+// Reads a JSON document from Blob storage; outside production, falls back to the live copy until staging has its own.
+export async function readDoc(name) {
+  const tries = STAGE_PREFIX ? [STAGE_PREFIX + name, name] : [name];
+  for (const key of tries) {
+    // The query string skips the Blob CDN cache so saved edits show up straight away.
+    const res = await fetch(`${blobBase()}/${key}?t=${Date.now()}`, { cache: "no-store" });
+    if (res.ok) return res.text();
+  }
+  return null;
+}
+
 // Token format: vercel_blob_rw_<storeId>_<secret>; public files live under the store's own host.
 export function blobBase() {
   const storeId = (process.env.BLOB_READ_WRITE_TOKEN || "").split("_")[3] || "";
