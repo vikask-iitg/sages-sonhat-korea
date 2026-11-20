@@ -365,3 +365,8 @@ button, input, select, textarea { font: inherit; }
   cursor: pointer;
 }
 .sub-pcards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+/* Absent teacher header: who covers each period */
+.sub-who { display: flex; flex-wrap: wrap; gap: 6px 8px; padding: 0 12px 10px; background: #fdecea; font-size: 13px; }
+.sub-who span { padding: 3px 9px; border-radius: 12px; background: #fff; border: 1px solid #b9dfbc; color: #1b5e20; font-weight: 600; }
+.sub-who span b { color: var(--primary); }
+.sub-who span.none { border-color: #f1c4c4; color: #b71c1c; }

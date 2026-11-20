@@ -293,9 +293,12 @@ window.SubstitutionAdmin = (() => {
           ${st ? `<span class="sub-badge ${st.badge}">${esc(st.text)}</span>` : ""}
         </div>`;
       }));
-      const toCover = plan.filter(i => i.absentTeacher === t).length;
+      const mine = plan.filter(i => i.absentTeacher === t), toCover = mine.length;
+      // Who covers each period, right in the header (updates as soon as a dropdown changes)
+      const who = mine.map(i => `<span class="${i.assignedTeacher ? "" : "none"}"><b>P-${i.period}</b> → ${i.assignedTeacher ? esc(i.assignedTeacher) : "not assigned"}</span>`).join("");
       return `<div class="sub-group"><h4>${esc(t)} <small>absent · ${cards.length ? `${toCover} period${toCover === 1 ? "" : "s"} to cover` : "no class today"}</small>
           <button type="button" class="sub-x" data-sub="absent" data-t="${jsArg(t)}" title="Mark ${esc(t)} present again" aria-label="Mark present">✕</button></h4>
+        ${who ? `<div class="sub-who">${who}</div>` : ""}
         ${cards.length ? `<div class="sub-pcards">${cards.join("")}</div>` : ""}</div>`;
     }).join("");
     const result = !absent.length ? "" : `
