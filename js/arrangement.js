@@ -58,13 +58,23 @@
     render();
   });
 
-  fetch("/api/substitution")
+  // ?preview=1 — the admin's unpublished draft (from the admin panel, same browser), shown with a banner
+  const preview = (() => {
+    if (!new URLSearchParams(location.search).has("preview")) return null;
+    try { return JSON.parse(localStorage.getItem("sages-arrangement-preview")); } catch { return null; }
+  })();
+  if (preview) {
+    document.body.classList.add("arr-preview");
+    root.insertAdjacentHTML("beforebegin", `<div class="arr-preview-note">👁 Preview — not published yet. Teachers will see this after the admin publishes.</div>`);
+  }
+
+  (preview ? Promise.resolve({ published: { [preview.date]: preview.entry } }) : fetch("/api/substitution")
     .then(r => (r.ok ? r.json() : { published: {} }))
-    .catch(() => ({ published: {} }))
+    .catch(() => ({ published: {} })))
     .then(d => {
       published = d.published || {};
       dates = Object.keys(published).sort().reverse();
-      selected = published[today] ? today : dates[0] || "";
+      selected = preview ? preview.date : published[today] ? today : dates[0] || "";
       render();
     });
 })();

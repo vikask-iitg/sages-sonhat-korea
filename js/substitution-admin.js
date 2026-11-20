@@ -214,6 +214,45 @@ window.SubstitutionAdmin = (() => {
     return null; // fine — nothing to flag
   }
 
+  // What the teachers' Daily Arrangement page shows for this date
+  function publishedEntry() {
+    return {
+      day,
+      absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ANY_PERIOD)).has(p)) })),
+      present: teachers.filter(t => !absentSet.has(t)),
+      plan: plan.map(i => ({ period: i.period, time: ptime(i.period, day), classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
+      publishedAt: new Date().toISOString(),
+    };
+  }
+
+  // Preview: the real teachers' page in a window, fed the unpublished draft through localStorage (same site)
+  const PREVIEW_KEY = "sages-arrangement-preview";
+  function openPreview() {
+    closePreview(); // an old preview window, if any (this also clears the stored draft, so store it after)
+    try { localStorage.setItem(PREVIEW_KEY, JSON.stringify({ date, entry: publishedEntry() })); }
+    catch { return toast("Preview needs browser storage — please allow it, or publish directly.", true); }
+    const box = document.createElement("div");
+    box.className = "sub-preview";
+    box.innerHTML = `<div class="sub-preview-win" role="dialog" aria-modal="true" aria-label="Preview of the Daily Arrangement page">
+        <div class="sub-preview-bar"><b>👁 Preview — this is what teachers will see</b>
+          <span><button type="button" class="btn-sm primary" data-prev="publish">💾 Publish now</button> <button type="button" class="btn-sm" data-prev="close">Close</button></span></div>
+        <iframe src="/pages/arrangement.html?preview=1&t=${Date.now()}" title="Daily Arrangement preview"></iframe>
+      </div>`;
+    box.addEventListener("click", e => {
+      const act = e.target.closest("[data-prev]")?.dataset.prev;
+      if (act === "close" || e.target === box) closePreview();
+      if (act === "publish") saveAndPublish();
+    });
+    document.body.appendChild(box);
+    document.addEventListener("keydown", previewKey);
+  }
+  function previewKey(e) { if (e.key === "Escape") closePreview(); }
+  function closePreview() {
+    document.querySelector(".sub-preview")?.remove();
+    document.removeEventListener("keydown", previewKey);
+    try { localStorage.removeItem(PREVIEW_KEY); } catch {}
+  }
+
   async function saveAndPublish() {
     if (!plan.length) return;
     const empty = plan.filter(i => !i.assignedTeacher).length;
@@ -232,13 +271,8 @@ window.SubstitutionAdmin = (() => {
       if (dates.length) { h.lastDate = dates.at(-1); h.lastPeriods = data.savedDays[h.lastDate][t]; }
       else if (h.lastDate === date) { h.lastDate = ""; h.lastPeriods = []; }
     });
-    data.published[date] = {
-      day,
-      absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ANY_PERIOD)).has(p)) })),
-      present: teachers.filter(t => !absentSet.has(t)),
-      plan: plan.map(i => ({ period: i.period, time: ptime(i.period, day), classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
-      publishedAt: new Date().toISOString(),
-    };
+    data.published[date] = publishedEntry();
+    closePreview();
     if (await save(old ? "Arrangement updated and re-published." : "Saved and published — teachers can now see it.")) render();
   }
 
@@ -308,6 +342,7 @@ window.SubstitutionAdmin = (() => {
           <div class="sub-arr-bar"><span><b>${plan.length}</b> periods to cover · <b class="ok">${assigned}</b> assigned${plan.length - assigned ? ` · <b class="bad">${plan.length - assigned}</b> not assigned` : ""}</span>
             <span><button type="button" class="btn-sm" data-sub="autoAssign">⚡ Fill empty periods</button> <button type="button" class="btn-sm" data-sub="clearAssign">Clear all</button></span></div>
           <div class="sub-actions">
+            <button type="button" class="btn-sm" data-sub="preview">👁 Preview</button>
             <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish for teachers</button>
             <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
             <button type="button" class="btn-sm" data-sub="copy">📋 Copy text</button>
@@ -490,6 +525,7 @@ window.SubstitutionAdmin = (() => {
     if (a === "noneAvail") { availSet.clear(); plan = []; }
     if (a === "publish") return saveAndPublish();
     if (a === "unpublish") return unpublish(b.dataset.d);
+    if (a === "preview") return openPreview();
     if (a === "whatsapp") return window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(whatsappText()), "_blank");
     if (a === "copy") {
       try { await navigator.clipboard.writeText(whatsappText()); toast("Copied — paste it in WhatsApp."); }

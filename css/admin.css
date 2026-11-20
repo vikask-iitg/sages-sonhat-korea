@@ -371,3 +371,9 @@ button, input, select, textarea { font: inherit; }
 .sub-who span b { color: var(--primary); }
 .sub-who span.none { border-color: #f1c4c4; color: #b71c1c; }
 @media (max-width: 600px) { .sub-who { flex-direction: column; align-items: flex-start; } }
+/* Preview window */
+.sub-preview { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(10, 20, 45, .55); }
+.sub-preview-win { width: min(1100px, 100%); height: min(90vh, 900px); display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
+.sub-preview-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; padding: 10px 14px; background: #fff4e5; color: #8a5300; border-bottom: 1px solid #f3d9a9; }
+.sub-preview-win iframe { flex: 1; width: 100%; border: 0; }
+@media (max-width: 600px) { .sub-preview { padding: 0; } .sub-preview-win { height: 100%; border-radius: 0; } }
