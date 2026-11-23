@@ -509,3 +509,4 @@ body.arr-preview #site-header, body.arr-preview #site-footer, body.arr-preview .
 body.arr-preview .arr-note { display: none; } body.arr-preview section { padding-top: 14px; }
 .arr-past { margin-top: 16px; border: 0; background: none; color: #0b3d91; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .arr-link { border: 0; background: none; padding: 0; color: #0b3d91; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+body.arr-preview .arr-controls { display: none; } /* admin view/preview windows: no date or teacher filter */
