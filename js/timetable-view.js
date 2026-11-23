@@ -132,7 +132,7 @@ window.TimetableView = (function () {
         </select></label>
         ${who ? `<button type="button" class="tt-print" data-tt="download">⬇ Download your timetable</button>` : `<button type="button" class="tt-print" data-tt="print">🖨 Print</button>`}
       </div>
-      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
+      <section class="tt-day${who ? " tt-mine" : ""}"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
   }
 
   // Title of the print window / downloaded PDF (also its file name):
@@ -204,6 +204,21 @@ window.TimetableView = (function () {
       const doc = frame.contentDocument;
       doc.open(); doc.write(sheetDoc(false)); doc.close();
       await new Promise(r => setTimeout(r, 50));
+      // Colourful copy for a teacher's own timetable: blue header row, light-blue period column,
+      // yellow cells for their periods, free periods left blank and white, peach break rows
+      if (who) {
+        doc.head.insertAdjacentHTML("beforeend", `<style>
+          h1 { color: #0b3d91; font-size: 15px !important; } h2 { color: #1d2a44; } p.headnote { color: #8a5300; } h4.tt-sub { color: #0b3d91; }
+          table { border-color: #9fb0d0; } th, td { border-color: #b8c4dc !important; }
+          thead th { background: #0b3d91 !important; color: #fff !important; } thead th small { color: #dbe5f7; }
+          tbody th { background: #e8f0fe !important; color: #0b3d91 !important; } tbody th small { color: #3c5a8f; }
+          td { background: #fff; }
+          td:not(.free) { background: #fff176 !important; text-align: center !important; vertical-align: middle !important; } td:not(.free) b { color: #0b3d91; } td:not(.free) span { color: #3d3000; }
+          td.free { background: #fff !important; color: transparent !important; }
+          tr.tt-break th, tr.tt-break td { background: #fde3d0 !important; color: #8a3b00 !important; }
+        </style>`);
+        doc.querySelectorAll("td.free").forEach(td => { td.textContent = ""; });
+      }
       const sec = doc.querySelector("section");
       sec.style.background = "#fff"; sec.style.padding = "4px";
       // html2canvas draws text a little low with tight line-heights: give the PDF copy roomier lines
@@ -215,7 +230,15 @@ window.TimetableView = (function () {
       let lo = 0.1, hi = 1;
       if (fits(1)) lo = 1; else for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; fits(m) ? (lo = m) : (hi = m); }
       sec.style.width = pageW / lo + "px";
-      const canvas = await window.html2canvas(sec, { scale: 2, backgroundColor: "#ffffff", logging: false });
+      // Let the browser lay out the text itself (foreignObject) so it sits exactly where it does on screen;
+      // fall back to html2canvas's own text drawing on browsers where that is not allowed.
+      const snap = async fo => {
+        const c = await window.html2canvas(sec, { scale: 2, backgroundColor: "#ffffff", logging: false, foreignObjectRendering: fo });
+        c.toDataURL("image/jpeg", 0.5); // throws if the browser marked the canvas as unsafe
+        return c;
+      };
+      let canvas;
+      try { canvas = await snap(true); } catch { canvas = await snap(false); }
       const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       const k = Math.min((297 - 16) / canvas.width, (210 - 16) / canvas.height), w = canvas.width * k, h = canvas.height * k;
       pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (297 - w) / 2, 8, w, h);

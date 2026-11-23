@@ -87,3 +87,12 @@
 /* Heading line at the top of every timetable */
 .tt-headnote { margin: 4px 0 14px; text-align: center; }
 .tt-headnote span { display: inline-block; padding: 6px 16px; border-radius: 20px; background: #fff4e5; border: 1px solid #f3d9a9; color: #8a5300; font-size: 14px; font-weight: 600; }
+
+/* A teacher's own timetable (Teacher selected): same colours as their PDF —
+   yellow for their periods, free periods blank, light-blue period column */
+.tt-mine .tt-grid tr:not(.tt-break) td:not(.free) { background: #fff176 !important; vertical-align: middle; text-align: center; }
+.tt-mine .tt-grid tr:not(.tt-break) td:not(.free) b { color: #0b3d91; }
+.tt-mine .tt-grid tr:not(.tt-break) td:not(.free) span { color: #3d3000; }
+.tt-mine .tt-grid td.free { background: #fff !important; color: transparent; font-size: 0; }
+.tt-mine .tt-grid tbody tr:not(.tt-break) > th:first-child { background: #e8f0fe; color: #0b3d91; }
+.tt-mine .tt-grid tbody tr:not(.tt-break) > th:first-child small { color: #3c5a8f; }
