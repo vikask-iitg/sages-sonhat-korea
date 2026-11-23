@@ -408,7 +408,7 @@ window.SubstitutionAdmin = (() => {
         </table></div>
       </div>
       <div class="sub-card">
-        <div class="sub-card-head"><h3>Published arrangements</h3><span class="sub-tag">${Object.keys(data.published).length} / ${KEEP_DAYS}</span></div>
+        <div class="sub-card-head"><h3>Published arrangements (Last ${KEEP_DAYS} days)</h3><span class="sub-tag">${Object.keys(data.published).length} / ${KEEP_DAYS}</span></div>
         <p class="hint">Only the latest ${KEEP_DAYS} arrangements are kept. When a new one is published, the oldest is removed automatically.</p>
         ${pub.length ? `<div class="sub-table-wrap"><table class="sub-table"><tr><th>Date</th><th>Absent</th><th>Substitutions</th><th></th></tr>
           ${pub.map(d => { const x = data.published[d];
