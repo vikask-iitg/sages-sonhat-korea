@@ -205,7 +205,7 @@ window.TimetableView = (function () {
       doc.open(); doc.write(sheetDoc(false)); doc.close();
       await new Promise(r => setTimeout(r, 50));
       // Colourful copy for a teacher's own timetable: blue header row, light-blue period column,
-      // gold cells for their periods, free periods left blank and white, peach break rows
+      // yellow cells for their periods, free periods left blank and white, peach break rows
       if (who) {
         doc.head.insertAdjacentHTML("beforeend", `<style>
           h1 { color: #0b3d91; font-size: 15px !important; } h2 { color: #1d2a44; } p.headnote { color: #8a5300; } h4.tt-sub { color: #0b3d91; }
@@ -213,7 +213,7 @@ window.TimetableView = (function () {
           thead th { background: #0b3d91 !important; color: #fff !important; } thead th small { color: #dbe5f7; }
           tbody th { background: #e8f0fe !important; color: #0b3d91 !important; } tbody th small { color: #3c5a8f; }
           td { background: #fff; }
-          td:not(.free) { background: #fff1d6 !important; } td:not(.free) b { color: #0b3d91; } td:not(.free) span { color: #5c4300; }
+          td:not(.free) { background: #fff176 !important; } td:not(.free) b { color: #0b3d91; } td:not(.free) span { color: #3d3000; }
           td.free { background: #fff !important; color: transparent !important; }
           tr.tt-break th, tr.tt-break td { background: #fde3d0 !important; color: #8a3b00 !important; }
         </style>`);
