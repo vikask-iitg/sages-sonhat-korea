@@ -28,7 +28,7 @@ window.SubstitutionAdmin = (() => {
   let timesSet = "WEEK", timesDraft = null, breaksDraft = null; // while editing: periods [[start, end]], breaks { after: [start, end, label] } ("HH:MM")    // which period timings the Timetable tab is editing: "WEEK" (Mon–Fri) or "SAT"
 
   const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
+  const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
   const dayOf = iso => ["MON", "MON", "TUE", "WED", "THU", "FRI", "SAT"][new Date(iso + "T00:00:00").getDay()];
   // Previous working day (Mon -> Sat, others -> yesterday)
   function previousWorkingDate(iso) {
