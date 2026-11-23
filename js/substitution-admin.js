@@ -266,6 +266,15 @@ window.SubstitutionAdmin = (() => {
     try { localStorage.removeItem(PREVIEW_KEY); } catch {}
   }
 
+  // Only the latest KEEP_DAYS published days are kept: publishing a new one removes the oldest.
+  // Fairness counts are not reduced (they reset with "New month"); the old day's list just goes.
+  const KEEP_DAYS = 30;
+  function pruneOld() {
+    const old = Object.keys(data.published).sort().reverse().slice(KEEP_DAYS);
+    old.forEach(d => { delete data.published[d]; delete data.savedDays[d]; });
+    return old;
+  }
+
   async function saveAndPublish() {
     if (!plan.length) return;
     const empty = plan.filter(i => !i.assignedTeacher).length;
@@ -285,8 +294,10 @@ window.SubstitutionAdmin = (() => {
       else if (h.lastDate === date) { h.lastDate = ""; h.lastPeriods = []; }
     });
     data.published[date] = publishedEntry();
+    const dropped = pruneOld();
     closePreview();
-    if (await save(old ? "Arrangement updated and re-published." : "Saved and published — teachers can now see it.")) render();
+    if (await save((old ? "Arrangement updated and re-published." : "Saved and published — teachers can now see it.")
+      + (dropped.length ? ` Oldest record removed (${dropped.join(", ")}) — only the latest ${KEEP_DAYS} are kept.` : ""))) render();
   }
 
   async function unpublish(d, ask = true) {
@@ -395,7 +406,8 @@ window.SubstitutionAdmin = (() => {
         </table></div>
       </div>
       <div class="sub-card">
-        <div class="sub-card-head"><h3>Published arrangements</h3></div>
+        <div class="sub-card-head"><h3>Published arrangements</h3><span class="sub-tag">${Object.keys(data.published).length} / ${KEEP_DAYS}</span></div>
+        <p class="hint">Only the latest ${KEEP_DAYS} arrangements are kept. When a new one is published, the oldest is removed automatically.</p>
         ${pub.length ? `<div class="sub-table-wrap"><table class="sub-table"><tr><th>Date</th><th>Absent</th><th>Substitutions</th><th></th></tr>
           ${pub.map(d => { const x = data.published[d];
             return `<tr><td><b>${esc(d)}</b><small>${DAY_NAMES[x.day] || ""}</small></td><td>${x.absent.map(a => esc(a.teacher)).join(", ")}</td><td>${x.plan.length}</td>
