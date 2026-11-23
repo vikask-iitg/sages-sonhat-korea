@@ -213,7 +213,7 @@ window.TimetableView = (function () {
           thead th { background: #0b3d91 !important; color: #fff !important; } thead th small { color: #dbe5f7; }
           tbody th { background: #e8f0fe !important; color: #0b3d91 !important; } tbody th small { color: #3c5a8f; }
           td { background: #fff; }
-          td:not(.free) { background: #fff176 !important; } td:not(.free) b { color: #0b3d91; } td:not(.free) span { color: #3d3000; }
+          td:not(.free) { background: #fff176 !important; text-align: center !important; vertical-align: middle !important; } td:not(.free) b { color: #0b3d91; } td:not(.free) span { color: #3d3000; }
           td.free { background: #fff !important; color: transparent !important; }
           tr.tt-break th, tr.tt-break td { background: #fde3d0 !important; color: #8a3b00 !important; }
         </style>`);
@@ -230,7 +230,15 @@ window.TimetableView = (function () {
       let lo = 0.1, hi = 1;
       if (fits(1)) lo = 1; else for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; fits(m) ? (lo = m) : (hi = m); }
       sec.style.width = pageW / lo + "px";
-      const canvas = await window.html2canvas(sec, { scale: 2, backgroundColor: "#ffffff", logging: false });
+      // Let the browser lay out the text itself (foreignObject) so it sits exactly where it does on screen;
+      // fall back to html2canvas's own text drawing on browsers where that is not allowed.
+      const snap = async fo => {
+        const c = await window.html2canvas(sec, { scale: 2, backgroundColor: "#ffffff", logging: false, foreignObjectRendering: fo });
+        c.toDataURL("image/jpeg", 0.5); // throws if the browser marked the canvas as unsafe
+        return c;
+      };
+      let canvas;
+      try { canvas = await snap(true); } catch { canvas = await snap(false); }
       const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       const k = Math.min((297 - 16) / canvas.width, (210 - 16) / canvas.height), w = canvas.width * k, h = canvas.height * k;
       pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (297 - w) / 2, 8, w, h);
