@@ -107,7 +107,7 @@
   })();
   if (preview) {
     document.body.classList.add("arr-preview");
-    root.insertAdjacentHTML("beforebegin", `<div class="arr-preview-note">👁 Preview — not published yet. Teachers will see this after the admin publishes.</div>`);
+    if (!preview.published) root.insertAdjacentHTML("beforebegin", `<div class="arr-preview-note">👁 Preview — not published yet. Teachers will see this after the admin publishes.</div>`);
   }
 
   (preview ? Promise.resolve({ published: { [preview.date]: preview.entry } }) : fetch("/api/substitution")

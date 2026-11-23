@@ -240,15 +240,17 @@ window.SubstitutionAdmin = (() => {
 
   // Preview: the real teachers' page in a window, fed the unpublished draft through localStorage (same site)
   const PREVIEW_KEY = "sages-arrangement-preview";
-  function openPreview() {
+  // viewDate: show an already-published day read-only (History tab) instead of the current draft
+  function openPreview(viewDate = "") {
     closePreview(); // an old preview window, if any (this also clears the stored draft, so store it after)
-    try { localStorage.setItem(PREVIEW_KEY, JSON.stringify({ date, entry: publishedEntry() })); }
-    catch { return toast("Preview needs browser storage — please allow it, or publish directly.", true); }
+    const shown = viewDate ? { date: viewDate, entry: data.published[viewDate], published: true } : { date, entry: publishedEntry() };
+    try { localStorage.setItem(PREVIEW_KEY, JSON.stringify(shown)); }
+    catch { return toast("This view needs browser storage — please allow it.", true); }
     const box = document.createElement("div");
     box.className = "sub-preview";
-    box.innerHTML = `<div class="sub-preview-win" role="dialog" aria-modal="true" aria-label="Preview of the Daily Arrangement page">
-        <div class="sub-preview-bar"><b>👁 Preview — this is what teachers will see</b>
-          <span><button type="button" class="btn-sm primary" data-prev="publish">💾 Publish now</button> <button type="button" class="btn-sm" data-prev="close">Close</button></span></div>
+    box.innerHTML = `<div class="sub-preview-win" role="dialog" aria-modal="true" aria-label="${viewDate ? "Published arrangement" : "Preview of the Daily Arrangement page"}">
+        <div class="sub-preview-bar${viewDate ? " view" : ""}"><b>${viewDate ? `📋 Arrangement — ${esc(niceDate(viewDate))}` : "👁 Preview — this is what teachers will see"}</b>
+          <span>${viewDate ? "" : `<button type="button" class="btn-sm primary" data-prev="publish">💾 Publish now</button> `}<button type="button" class="btn-sm" data-prev="close">Close</button></span></div>
         <iframe src="/pages/arrangement.html?preview=1&t=${Date.now()}" title="Daily Arrangement preview"></iframe>
       </div>`;
     box.addEventListener("click", e => {
@@ -409,11 +411,11 @@ window.SubstitutionAdmin = (() => {
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>Published arrangements (Last ${KEEP_DAYS} days)</h3><span class="sub-tag">${Object.keys(data.published).length} / ${KEEP_DAYS}</span></div>
-        <p class="hint">Only the latest ${KEEP_DAYS} arrangements are kept. When a new one is published, the oldest is removed automatically.</p>
+        <p class="hint">Only the latest ${KEEP_DAYS} arrangements are kept. When a new one is published, the oldest is removed automatically. Click a day to open its arrangement.</p>
         ${pub.length ? `<div class="sub-table-wrap"><table class="sub-table"><tr><th>Date</th><th>Absent</th><th>Substitutions</th><th></th></tr>
           ${pub.map(d => { const x = data.published[d];
-            return `<tr><td><b>${esc(d)}</b><small>${DAY_NAMES[x.day] || ""}</small></td><td>${x.absent.map(a => esc(a.teacher)).join(", ")}</td><td>${x.plan.length}</td>
-              <td><button type="button" class="btn-sm danger" data-sub="unpublish" data-d="${esc(d)}">Remove</button></td></tr>`; }).join("")}
+            return `<tr class="sub-click" data-sub="viewDay" data-d="${esc(d)}" tabindex="0" title="Open the arrangement for ${esc(d)}"><td><b>${esc(d)}</b><small>${DAY_NAMES[x.day] || ""}</small></td><td>${x.absent.map(a => esc(a.teacher)).join(", ")}</td><td>${x.plan.length}</td>
+              <td class="sub-view">View ›</td></tr>`; }).join("")}
         </table></div>` : `<p class="sub-muted">Nothing published yet.</p>`}
       </div>`;
   }
@@ -559,6 +561,7 @@ window.SubstitutionAdmin = (() => {
     if (a === "publish") return saveAndPublish();
     if (a === "unpublish") return unpublish(b.dataset.d);
     if (a === "preview") return openPreview();
+    if (a === "viewDay") return openPreview(b.dataset.d);
     if (a === "whatsapp") return window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(whatsappText()), "_blank");
     if (a === "copy") {
       try { await navigator.clipboard.writeText(whatsappText()); toast("Copied — paste it in WhatsApp."); }
@@ -727,6 +730,7 @@ window.SubstitutionAdmin = (() => {
       el.addEventListener("click", onClick);
       el.addEventListener("change", onChange);
       el.addEventListener("input", onInput);
+      el.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches?.(".sub-click")) e.target.click(); });
     }
   }
 
