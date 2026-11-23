@@ -316,6 +316,8 @@ window.SubstitutionAdmin = (() => {
 
   function whatsappText() {
     let text = `*SAGES SONHAT - ARRANGEMENT CLASS*\n📅 Date: ${date} (${day})\n----------------------\n`;
+    const absentList = sorted().filter(t => absentSet.has(t));
+    if (absentList.length) text += `*Absent Teachers*\n${absentList.map((t, k) => `${k + 1}. ${t}`).join("\n")}\n----------------------\n`;
     plan.forEach(i => { text += `• *P-${i.period}* (${ptime(i.period, day)}) | ${i.classDesc}\n   Absent: ${i.absentTeacher} ➔ *${i.assignedTeacher || "No free teacher (merge class)"}*\n`; });
     return text + `----------------------\nFull list: ${location.origin}/pages/arrangement.html`;
   }
