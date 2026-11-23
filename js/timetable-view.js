@@ -132,7 +132,7 @@ window.TimetableView = (function () {
         </select></label>
         ${who ? `<button type="button" class="tt-print" data-tt="download">⬇ Download your timetable</button>` : `<button type="button" class="tt-print" data-tt="print">🖨 Print</button>`}
       </div>
-      <section class="tt-day"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
+      <section class="tt-day${who ? " tt-mine" : ""}"><h3>${esc(sh.title)} <span>${esc(sh.note)}</span></h3>${note() ? `<p class="tt-headnote"><span>${noteHtml()}</span></p>` : ""}${sh.html}</section>`;
   }
 
   // Title of the print window / downloaded PDF (also its file name):
