@@ -510,3 +510,9 @@ body.arr-preview .arr-note { display: none; } body.arr-preview section { padding
 .arr-past { margin-top: 16px; border: 0; background: none; color: #0b3d91; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .arr-link { border: 0; background: none; padding: 0; color: #0b3d91; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 body.arr-preview .arr-controls { display: none; } /* admin view/preview windows: no date or teacher filter */
+/* Arrangement: sports periods, 6th-period activity, merge notes, workload summary */
+.arr-sports { color: #1b5e20; font-weight: 700; }
+.arr-sub small { display: block; font-weight: 500; font-size: 12px; }
+.arr-act { color: #8a5300; } .arr-mnote { color: #3c5a8f; }
+.arr-note-sports { margin: 10px 0 0; padding: 8px 12px; border-radius: 8px; background: #e6f6ea; color: #1b5e20; font-weight: 600; }
+.arr-summary-t td, .arr-summary-t th { text-align: left; }

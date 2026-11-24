@@ -68,6 +68,10 @@ window.SubstitutionAdmin = (() => {
     }
     if (!d.periodBreaks || typeof d.periodBreaks !== "object") d.periodBreaks = { ...PERIOD_BREAKS };
     if (typeof d.timetableNote !== "string") d.timetableNote = TIMETABLE_NOTE;
+    // Wing of each teacher (Primary / Middle / Higher / Multipurpose) and their 10-digit WhatsApp number
+    d.wings = d.wings && typeof d.wings === "object" ? d.wings : {};
+    teachers.forEach(t => { if (!WINGS[d.wings[t]]) d.wings[t] = TEACHER_WINGS[t] || "multi"; });
+    d.mobiles = d.mobiles && typeof d.mobiles === "object" ? d.mobiles : {};
     DAYS.forEach(dy => {
       d.timetable[dy] = d.timetable[dy] || {};
       teachers.forEach(t => {
@@ -135,11 +139,12 @@ window.SubstitutionAdmin = (() => {
       absentSet.add(a.teacher); availSet.delete(a.teacher);
       absentPeriods[a.teacher] = pub ? new Set(a.periods) : new Set(ANY_PERIOD);
     });
-    if (pub) plan = pub.plan.map(i => ({ period: i.period, classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher || "" }));
+    if (pub) { plan = pub.plan.map(i => ({ period: i.period, classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher || "",
+      note: i.note || "", sports: i.sports || "", group: "", manual: true })); applyRules(); }
     else { carriedFrom = prev; syncPlan(); }
   }
 
-  // ---------- generation (same rules as the original app) ----------
+  // ---------- rules of the Smart Substitution & Arrangement System (session 2026-27) ----------
   function createsFourConsecutive(busy, candidate) {
     const s = new Set(busy); s.add(candidate);
     let streak = 0;
@@ -147,93 +152,194 @@ window.SubstitutionAdmin = (() => {
     return false;
   }
 
+  // Wings: Primary (Classes 1–5), Middle (6–8), Higher (9–12); Multipurpose teachers adjust anywhere
+  const wingOf = t => data.wings[t] || "multi";
+  const classNo = cls => Number((String(cls).match(/^\s*Class\s*(\d+)/i) || [])[1]) || 0;
+  const classWing = cls => { const n = classNo(cls); return !n ? "" : n <= 5 ? "primary" : n <= 8 ? "middle" : "higher"; };
+  const subjectOf = entry => (String(entry).match(/\((.*)\)\s*$/) || [, entry])[1];
+  const absentIn = wing => [...absentSet].filter(t => wingOf(t) === wing).length;
+
+  // Mass absence, Monday–Friday: P-7 becomes a sports period for a whole wing (or every class)
+  const SPORTS_P = 7;
+  function sportsInfo() {
+    const all = absentSet.size > 6, on = day !== "SAT";
+    const primary = on && (all || absentIn("primary") >= 2), middle = on && (all || absentIn("middle") >= 2);
+    const labelFor = i => {
+      if (!on || i.period !== SPORTS_P) return "";
+      if (all) return "Sports Period (All Teachers)";
+      const w = classWing(i.classDesc);
+      return w === "primary" && primary ? "Sports Period (All Primary Teachers)" : w === "middle" && middle ? "Sports Period (All Middle Teachers)" : "";
+    };
+    const notes = all ? ["7 period sports for all classes (Class 1 to 12)"]
+      : [primary && "7 period sports for all primary classes", middle && "7 period sports for all middle classes"].filter(Boolean);
+    return { labelFor, notes };
+  }
+
+  // Class 11 & 12 stream merge: only when 5+ teachers are absent and 3+ of them are Higher-wing teachers
+  const mergeActive = () => absentSet.size >= 5 && absentIn("higher") >= 3;
+  // Other teachers who teach the same class in the same period (the other streams)
+  const coTeachers = i => teachers.filter(t => t !== i.absentTeacher && tt(day, t, i.period).some(e => classNo(e) === classNo(i.classDesc)));
+
   // ---------- the arrangement: one slot per class period of an absent teacher ----------
+  // slot: { period, classDesc, absentTeacher, assignedTeacher, note, sports, group, manual }
   const slotKey = i => `${i.absentTeacher}|${i.period}|${i.classDesc}`;
 
-  // Rebuild the slots from the current absences, keeping substitutes already chosen. New slots are filled
-  // automatically when `fillNew` is set (the admin can change or remove any of them).
-  function syncPlan(fillNew = true) {
-    const old = new Map(plan.map(i => [slotKey(i), i.assignedTeacher]));
+  // Rebuild the slots from the current absences, keeping choices already made, then apply the rules.
+  // With `fill`, empty slots get the best free teacher automatically (the admin can change or remove any).
+  function syncPlan(fill = true) {
+    const old = new Map(plan.map(i => [slotKey(i), i]));
     const slots = [];
     [...absentSet].forEach(t => {
       const needed = absentPeriods[t] || new Set(ANY_PERIOD);
       periodsFor(day).forEach(p => { if (needed.has(p)) tt(day, t, p).forEach(cls => slots.push({ period: p, classDesc: cls, absentTeacher: t })); });
     });
     slots.sort((x, y) => x.period - y.period || x.absentTeacher.localeCompare(y.absentTeacher));
-    const fresh = [];
-    plan = slots.map((sl, i) => {
-      const k = slotKey(sl);
-      if (!old.has(k)) fresh.push(i);
-      const keep = old.get(k);
-      return { ...sl, assignedTeacher: keep && !absentSet.has(keep) ? keep : "" };
+    plan = slots.map(sl => {
+      const o = old.get(slotKey(sl)) || {};
+      const keep = o.assignedTeacher && !absentSet.has(o.assignedTeacher) ? o.assignedTeacher : "";
+      return { ...sl, assignedTeacher: keep, note: keep ? o.note || "" : "", manual: !!o.manual, sports: "", group: "" };
     });
-    if (fillNew && fresh.length) autoAssign(fresh);
+    applyRules();
+    if (fill) autoAssign(false);
   }
 
-  // Periods each teacher is busy with: own classes plus substitutions in the plan (optionally ignoring one slot)
+  function applyRules() {
+    const sp = sportsInfo(), merge = mergeActive();
+    plan.forEach(i => {
+      i.sports = sp.labelFor(i);
+      if (i.sports) { i.assignedTeacher = ""; i.note = ""; i.group = ""; return; }
+      i.group = "";
+      const senior = classNo(i.classDesc) >= 11;
+      if (merge && senior) {
+        const co = coTeachers(i), present = co.filter(t => !absentSet.has(t));
+        if (present.length) {          // a co-teacher of the same class & period is present: merge into their class
+          if (!i.manual) { i.assignedTeacher = present[0]; i.note = `Merged with ${subjectOf(tt(day, present[0], i.period).find(e => classNo(e) === classNo(i.classDesc)))} class`; }
+          return;
+        }
+        if (co.length) i.group = `${classNo(i.classDesc)}|${i.period}`; // every stream teacher absent: one substitute for all
+      }
+      if (!i.manual && i.note.startsWith("Merged") && !(merge && senior)) { i.assignedTeacher = ""; i.note = ""; }
+    });
+    // A combined group needs ONE substitute: if its slots were filled separately (before the rule applied), refill them together
+    [...new Set(plan.filter(i => i.group).map(i => i.group))].forEach(g => {
+      const slots = plan.filter(i => i.group === g);
+      if (slots.some(i => i.manual)) return;
+      if (new Set(slots.map(i => i.assignedTeacher)).size > 1 || slots.some(i => !i.assignedTeacher)) slots.forEach(i => { i.assignedTeacher = ""; i.note = ""; });
+    });
+  }
+  const groupNote = g => `Combined: ${plan.filter(i => i.group === g).map(i => subjectOf(i.classDesc)).join(" + ")}`;
+
+  // Periods each teacher is busy with: own classes plus substitutions in the plan
+  // (ignoring one slot — and the other slots of its combined group — when choosing for it)
   function busyMap(skip = -1) {
+    const g = skip >= 0 ? plan[skip].group : "";
     const busy = {};
     teachers.forEach(t => { busy[t] = new Set(scheduled(day, t)); });
-    plan.forEach((i, k) => { if (k !== skip && i.assignedTeacher && busy[i.assignedTeacher]) busy[i.assignedTeacher].add(i.period); });
+    plan.forEach((i, k) => { if (k === skip || (g && i.group === g)) return; if (i.assignedTeacher && busy[i.assignedTeacher]) busy[i.assignedTeacher].add(i.period); });
     return busy;
   }
 
-  // Free, present teachers for a slot, best first (same fairness rules as the original app):
-  // avoid a 4th period in a row, avoid whoever substituted on the previous working day, then fewer periods today, then fewer this month.
-  // A teacher's arrangement workload: periods in the arrangement history (since the last "New month" reset,
-  // leaving out this date's saved list) plus arrangements already given in today's draft (ignoring one slot)
-  function arrangementLoad(t, skip = -1) {
-    const savedToday = (data.savedDays[date] || {})[t] || [];
-    const draft = plan.filter((i, j) => j !== skip && i.assignedTeacher === t).length;
-    return Math.max(0, (data.history[t]?.count || 0) - savedToday.length) + draft;
+  // Substitution periods a teacher took earlier this week (Monday up to the day before)
+  function weeklySubs(t) {
+    const d0 = new Date(date + "T00:00:00"); d0.setDate(d0.getDate() - ((d0.getDay() + 6) % 7));
+    const from = isoDate(d0);
+    return Object.entries(data.savedDays).filter(([d]) => d >= from && d < date).reduce((n, [, v]) => n + ((v || {})[t]?.length || 0), 0);
   }
 
-  // Free, present teachers for a period, best first — balancing the workload:
-  // 1) no 4th period in a row, 2) fewest arrangement periods so far (history + today's draft),
-  // 3) not whoever substituted on the previous working day, 4) fewest periods today, then by name.
-  const candidatesFor = (k, busy = busyMap(k)) => candidatesAt(plan[k].period, busy, k);
-  function candidatesAt(p, busy = busyMap(), skip = -1) {
-    const prevDate = previousWorkingDate(date), prevPlan = data.savedDays[prevDate] || null;
-    const prevDayPeriods = t => {
-      if (prevPlan) return prevPlan[t]?.length ? prevPlan[t] : null;
-      const h = data.history[t];
-      return h && h.lastDate === prevDate && h.lastPeriods.length ? h.lastPeriods : null;
-    };
-    const load = Object.fromEntries(teachers.map(t => [t, arrangementLoad(t, skip)]));
-    return teachers.filter(t => !absentSet.has(t) && !busy[t].has(p)).sort((a, b) => {
-      const fourA = createsFourConsecutive(busy[a], p) ? 1 : 0, fourB = createsFourConsecutive(busy[b], p) ? 1 : 0;
-      if (fourA !== fourB) return fourA - fourB;
-      if (load[a] !== load[b]) return load[a] - load[b];
-      const prevA = prevDayPeriods(a), prevB = prevDayPeriods(b);
-      const repA = prevA ? (prevA.includes(p) ? 2 : 1) : 0, repB = prevB ? (prevB.includes(p) ? 2 : 1) : 0;
-      if (repA !== repB) return repA - repB;
-      if (busy[a].size !== busy[b].size) return busy[a].size - busy[b].size;
-      return a.localeCompare(b);
+  // Free, present teachers for a period, best first — the priority order:
+  // 1) strict least workload today (regular + substitution), so nobody goes past 5 while others have fewer;
+  // 2) wing / section matching (Multipurpose teachers match any wing); 3) avoid 4 consecutive periods;
+  // 4) rotation: not whoever substituted on the previous saved day (especially the same period), fewer this week.
+  const candidatesFor = (k, busy = busyMap(k)) => candidatesAt(plan[k].period, busy, plan[k].classDesc);
+  function candidatesAt(p, busy = busyMap(), cls = "") {
+    const prevDate = Object.keys(data.savedDays).filter(d => d < date).sort().at(-1);
+    const prev = prevDate ? data.savedDays[prevDate] || {} : {};
+    const rep = t => (prev[t]?.length ? (prev[t].includes(p) ? 2 : 1) : 0);
+    const w = classWing(cls);
+    const wingMiss = t => (!w || wingOf(t) === "multi" || wingOf(t) === w ? 0 : 1);
+    const week = Object.fromEntries(teachers.map(t => [t, weeklySubs(t)]));
+    return teachers.filter(t => !absentSet.has(t) && !busy[t].has(p) && !blockedPeriods[t]?.has(p)).sort((a, b) =>
+      busy[a].size - busy[b].size
+      || wingMiss(a) - wingMiss(b)
+      || (createsFourConsecutive(busy[a], p) ? 1 : 0) - (createsFourConsecutive(busy[b], p) ? 1 : 0)
+      || rep(a) - rep(b)
+      || week[a] - week[b]
+      || a.localeCompare(b));
+  }
+
+  // Give empty slots the best free teacher, in period order (a combined group gets one teacher for all of it).
+  // includeManual: also fill slots the admin emptied on purpose (the "Fill empty periods" button).
+  function autoAssign(includeManual = true) {
+    const idx = plan.map((_, k) => k).filter(k => !plan[k].sports && !plan[k].assignedTeacher && (includeManual || !plan[k].manual))
+      .sort((x, y) => plan[x].period - plan[y].period);
+    idx.forEach(k => {
+      const i = plan[k];
+      if (i.assignedTeacher) return; // filled with its group
+      const best = candidatesFor(k)[0] || "";
+      (i.group ? plan.filter(x => x.group === i.group && !x.assignedTeacher) : [i]).forEach(x => {
+        x.assignedTeacher = best; x.manual = false; x.note = best && i.group ? groupNote(i.group) : "";
+      });
     });
+    rebalance();
+    return plan.filter(i => !i.sports && !i.assignedTeacher).length;
   }
 
-  // Give each listed (or every empty) slot the best free teacher, in period order
-  function autoAssign(only = null) {
-    const idx = (only || plan.map((_, k) => k).filter(k => !plan[k].assignedTeacher)).sort((x, y) => plan[x].period - plan[y].period);
-    idx.forEach(k => { plan[k].assignedTeacher = candidatesFor(k)[0] || ""; });
-    return idx.filter(k => !plan[k].assignedTeacher).length;
+  // Filling in period order can leave an early pick with more periods than someone still free for that slot.
+  // Re-check every automatic choice and move it to a teacher with strictly fewer periods today until nothing improves.
+  function rebalance() {
+    for (let round = 0; round < 6; round++) {
+      let moved = false;
+      plan.forEach((i, k) => {
+        if (i.sports || i.manual || i.group || !i.assignedTeacher || i.note.startsWith("Merged")) return;
+        const busy = busyMap(k), best = candidatesAt(i.period, busy, i.classDesc)[0];
+        if (best && best !== i.assignedTeacher && busy[best].size < busy[i.assignedTeacher].size) { i.assignedTeacher = best; moved = true; }
+      });
+      if (!moved) break;
+    }
   }
 
-  // Note shown next to a slot
+  // Warning shown on a slot's card
   function slotStatus(k, busy = busyMap(k)) {
-    const t = plan[k].assignedTeacher;
+    const i = plan[k], t = i.assignedTeacher;
+    if (i.sports) return null;
     if (!t) return { text: "Not assigned — merge class", badge: "danger" };
-    if (createsFourConsecutive(busy[t] || new Set(), plan[k].period)) return { text: "4th period in a row", badge: "warn" };
-    return null; // fine — nothing to flag
+    if (!i.note.startsWith("Merged") && createsFourConsecutive(busy[t] || new Set(), i.period)) return { text: "4th period in a row", badge: "warn" };
+    return null;
+  }
+
+  // Slots that are a teacher's 6th (or later) period of the day → "(Sports/Outdoor Activities)"
+  function sixthPeriodSlots() {
+    const out = new Set();
+    teachers.forEach(t => {
+      const reg = scheduled(day, t); let n = reg.length; const seen = new Set();
+      plan.map((i, k) => [i, k]).filter(([i]) => i.assignedTeacher === t).sort((a, b) => a[0].period - b[0].period).forEach(([i, k]) => {
+        if (!reg.includes(i.period) && !seen.has(i.period)) { seen.add(i.period); n++; if (n >= 6) out.add(k); }
+      });
+    });
+    return out;
+  }
+  const ACTIVITY = "(Sports/Outdoor Activities)";
+
+  // Present teachers' workload today: regular periods, substitution periods (numbers) and the total
+  function workloadSummary() {
+    return sorted().filter(t => !absentSet.has(t)).map(t => {
+      const reg = scheduled(day, t);
+      const subs = [...new Set(plan.filter(i => i.assignedTeacher === t && !reg.includes(i.period)).map(i => i.period))].sort((a, b) => a - b);
+      return { teacher: t, regular: reg.length, subs, total: reg.length + subs.length };
+    });
   }
 
   // What the teachers' Daily Arrangement page shows for this date
   function publishedEntry() {
+    const six = sixthPeriodSlots();
     return {
       day,
       absent: [...absentSet].map(t => ({ teacher: t, periods: scheduled(day, t).filter(p => (absentPeriods[t] || new Set(ANY_PERIOD)).has(p)) })),
       present: teachers.filter(t => !absentSet.has(t)),
-      plan: plan.map(i => ({ period: i.period, time: ptime(i.period, day), classDesc: i.classDesc, absentTeacher: i.absentTeacher, assignedTeacher: i.assignedTeacher })),
+      plan: plan.map((i, k) => ({ period: i.period, time: ptime(i.period, day), classDesc: i.classDesc, absentTeacher: i.absentTeacher,
+        assignedTeacher: i.assignedTeacher, note: i.note || "", sports: i.sports || "", activity: six.has(k) })),
+      notes: sportsInfo().notes,
+      summary: workloadSummary(),
       publishedAt: new Date().toISOString(),
     };
   }
@@ -279,12 +385,16 @@ window.SubstitutionAdmin = (() => {
 
   async function saveAndPublish() {
     if (!plan.length) return;
-    const empty = plan.filter(i => !i.assignedTeacher).length;
+    const empty = plan.filter(i => !i.assignedTeacher && !i.sports).length;
     if (empty && !confirm(`${empty} period(s) have no substitute and will show as "merge class". Publish anyway?`)) return;
     const old = data.savedDays[date];
     if (old && !confirm(`An arrangement for ${date} is already published. Replace it with this one?`)) return;
     const perTeacher = {};
-    plan.forEach(i => { if (i.assignedTeacher) (perTeacher[i.assignedTeacher] = perTeacher[i.assignedTeacher] || []).push(i.period); });
+    plan.forEach(i => {
+      const t = i.assignedTeacher;
+      if (!t || i.sports || i.note.startsWith("Merged") || (perTeacher[t] || []).includes(i.period)) return;
+      (perTeacher[t] = perTeacher[t] || []).push(i.period);
+    });
     // Undo the counts of a previously saved list for this date, then add the new one
     if (old) Object.keys(old).forEach(t => { if (data.history[t]) data.history[t].count = Math.max(0, data.history[t].count - old[t].length); });
     data.savedDays[date] = perTeacher;
@@ -316,67 +426,169 @@ window.SubstitutionAdmin = (() => {
     if (await save("Removed.")) { if (d === date) resetDaily(); render(); }
   }
 
+  // What a slot shows in the "assigned teacher" column of every output (chart, print, Word, WhatsApp)
+  function assignedText(i, k, six = sixthPeriodSlots()) {
+    if (i.sports) return i.sports;
+    if (!i.assignedTeacher) return "No free teacher (merge class)";
+    return i.assignedTeacher + (six.has(k) ? ` ${ACTIVITY}` : "") + (i.note ? ` [${i.note}]` : "");
+  }
+
   function whatsappText() {
+    const six = sixthPeriodSlots();
     let text = `*SAGES SONHAT - ARRANGEMENT CLASS*\n📅 Date: ${date} (${day})\n----------------------\n`;
     const absentList = sorted().filter(t => absentSet.has(t));
     if (absentList.length) text += `*Absent Teachers*\n${absentList.map((t, k) => `${k + 1}. ${t}`).join("\n")}\n----------------------\n`;
-    plan.forEach(i => { text += `• *P-${i.period}* (${ptime(i.period, day)}) | ${i.classDesc}\n   Absent: ${i.absentTeacher} ➔ *${i.assignedTeacher || "No free teacher (merge class)"}*\n`; });
+    plan.forEach((i, k) => { text += `• *P-${i.period}* (${ptime(i.period, day)}) | ${i.classDesc}\n   Absent: ${i.absentTeacher} ➔ *${assignedText(i, k, six)}*\n`; });
+    const notes = sportsInfo().notes;
+    if (notes.length) text += `----------------------\n${notes.map(n => `🏃 ${n}`).join("\n")}\n`;
     return text + `----------------------\nFull list: ${location.origin}/pages/arrangement.html`;
+  }
+
+  // One combined message for a teacher with all their substitution periods today
+  function teacherMessage(t) {
+    const six = sixthPeriodSlots();
+    const mine = plan.map((i, k) => [i, k]).filter(([i]) => i.assignedTeacher === t && !i.sports);
+    return `*SAGES SONHAT - ARRANGEMENT CLASS*\n📅 Date: ${date} (${day})\n\nDear ${t}, your arrangement periods today:\n`
+      + mine.map(([i, k]) => `• *P-${i.period}* (${ptime(i.period, day)}) | ${i.classDesc} — for ${i.absentTeacher}${six.has(k) ? ` ${ACTIVITY}` : ""}${i.note ? ` [${i.note}]` : ""}`).join("\n")
+      + `\n\nFull list: ${location.origin}/pages/arrangement.html`;
+  }
+  const teacherWaLink = t => { const m = String(data.mobiles[t] || "").replace(/\D/g, "");
+    return (m.length === 10 ? `https://wa.me/91${m}` : "https://wa.me/") + "?text=" + encodeURIComponent(teacherMessage(t)); };
+
+  // Printable chart: absent teachers once at the top, a 4-column table, notes, then the workload summary
+  function chartParts() {
+    const six = sixthPeriodSlots();
+    return {
+      absent: sorted().filter(t => absentSet.has(t)),
+      rows: plan.map((i, k) => [`P-${i.period} (${ptime(i.period, day)})`, i.classDesc, i.absentTeacher, assignedText(i, k, six)]),
+      notes: sportsInfo().notes,
+      summary: workloadSummary(),
+    };
+  }
+
+  const loadScript = src => new Promise((ok, fail) => {
+    if (document.querySelector(`script[src="${src}"]`)) return ok();
+    const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = fail; document.head.appendChild(el);
+  });
+
+  // Editable Word (.docx) file of the day's chart and summary, built in the browser (JSZip from cdnjs)
+  async function downloadDocx() {
+    try { await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"); }
+    catch { return toast("Could not load the Word maker — check the internet connection.", true); }
+    const c = chartParts(), x = v => String(v ?? "").replace(/[<>&"]/g, ch => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[ch]));
+    const run = (t, o = {}) => `<w:r><w:rPr>${o.b ? "<w:b/>" : ""}${o.color ? `<w:color w:val="${o.color}"/>` : ""}<w:sz w:val="${o.size || 20}"/></w:rPr><w:t xml:space="preserve">${x(t)}</w:t></w:r>`;
+    const para = (t, o = {}) => `<w:p><w:pPr>${o.center ? '<w:jc w:val="center"/>' : ""}<w:spacing w:after="${o.after ?? 80}"/></w:pPr>${run(t, o)}</w:p>`;
+    const cell = (t, o = {}) => `<w:tc><w:tcPr>${o.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>` : ""}</w:tcPr>${para(t, { ...o, after: 0 })}</w:tc>`;
+    const table = (head, rows) => `<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>${["top", "left", "bottom", "right", "insideH", "insideV"].map(e => `<w:${e} w:val="single" w:sz="4" w:space="0" w:color="8A9BB8"/>`).join("")}</w:tblBorders>
+      <w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar></w:tblPr>
+      <w:tr>${head.map(h => cell(h, { b: true, color: "FFFFFF", fill: "0B3D91" })).join("")}</w:tr>${rows.map(r => `<w:tr>${r.map(v => cell(v)).join("")}</w:tr>`).join("")}</w:tbl>`;
+    const body = [
+      para("SWAMI ATMANAND GOVT. ENGLISH MEDIUM SCHOOL, SONHAT", { b: true, center: true, size: 28, color: "0B3D91" }),
+      para(`Arrangement Class — ${niceDate(date)}`, { b: true, center: true, size: 24 }),
+      para(`Absent Teachers: ${c.absent.join(", ") || "None"}`, { b: true, color: "B71C1C", after: 160 }),
+      table(["Period & Time", "Class & Subject", "Absent Teacher", "Assigned Teacher"], c.rows),
+      ...c.notes.map(n => para(n, { b: true, color: "8A5300" })),
+      para("Present Teachers Workload Summary", { b: true, size: 24, color: "0B3D91", after: 80 }),
+      table(["Teacher", "Regular", "Substitution", "Total"], c.summary.map(r => [r.teacher, r.regular, r.subs.length ? `${r.subs.length} (${r.subs.map(p => `P-${p}`).join(", ")})` : "—", r.total])),
+    ].join("");
+    const zip = new JSZip();
+    zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+    zip.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+    zip.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}
+      <w:p/><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+    const blob = await zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `Arrangement Class ${date} - SAGES Sonhat.docx`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast("Word file downloaded — open it to edit or print.");
   }
 
   // ---------- rendering ----------
   const chip = (cls, onclick, icon, label, disabled = false) =>
     `<button type="button" class="sub-chip ${cls}" ${disabled ? "disabled" : `data-sub="${onclick}"`}>${icon}<span>${esc(label)}</span></button>`;
 
+  let freeOpen = false; // "free periods of present teachers" panel open?
+
   function dailyHtml() {
     const absent = sorted().filter(t => absentSet.has(t));
-    // Under each absent teacher: one card per class period with a dropdown of present teachers free then
     const slotIndex = new Map(plan.map((i, k) => [slotKey(i), k]));
-    const assigned = plan.filter(i => i.assignedTeacher).length;
+    const six = sixthPeriodSlots();
+    const toCoverAll = plan.filter(i => !i.sports).length, assigned = plan.filter(i => !i.sports && i.assignedTeacher).length;
+    const wingTag = t => `<i class="sub-wing w-${wingOf(t)}">${{ primary: "Primary", middle: "Middle", higher: "Higher", multi: "Multi" }[wingOf(t)]}</i>`;
+
+    // Under each absent teacher: one card per class period with a dropdown of present teachers free then
     const absentBoxes = absent.map(t => {
       const needed = absentPeriods[t] || new Set(ANY_PERIOD);
       const cards = scheduled(day, t).flatMap(p => tt(day, t, p).map(cls => {
         const k = slotIndex.get(slotKey({ absentTeacher: t, period: p, classDesc: cls }));
-        const on = needed.has(p) && k !== undefined, sub = on ? plan[k].assignedTeacher : "";
+        const on = needed.has(p) && k !== undefined, i = on ? plan[k] : null, sub = on ? i.assignedTeacher : "";
+        const head = `<div class="sub-pcard-head"><b>P-${p}</b><small>${esc(ptime(p, day))}</small></div><div class="sub-pcard-cls">${esc(cls)}</div>`;
+        if (on && i.sports) return `<div class="sub-pcard is-sports">${head}<div class="sub-sports">🏃 ${esc(i.sports)}</div></div>`;
         const busy = on ? busyMap(k) : busyMap(), st = on ? slotStatus(k, busy) : null;
-        const opts = [...new Set([...(sub ? [sub] : []), ...candidatesAt(p, busy, on ? k : -1)])];
+        const co = on && classNo(cls) >= 11 ? coTeachers(i).filter(x => !absentSet.has(x)) : [];
+        const groupMates = on && i.group ? plan.filter(x => x.group === i.group && x.assignedTeacher).map(x => x.assignedTeacher) : [];
+        const opts = [...new Set([...(sub ? [sub] : []), ...groupMates, ...candidatesAt(p, busy, cls)])];
+        const label = x => co.includes(x) ? `${x} — merge into their class` : `${x} (${busy[x]?.size || 0} today · ${weeklySubs(x)} this wk)${wingOf(x) !== classWing(cls) && wingOf(x) !== "multi" ? " · other wing" : ""}`;
         const attrs = `data-subchange="assign" data-t="${jsArg(t)}" data-p="${p}" data-c="${esc(cls)}"`;
-        return `<div class="sub-pcard ${!on ? "is-covered" : sub ? "is-done" : "is-empty"}">
-          <div class="sub-pcard-head"><b>P-${p}</b><small>${esc(ptime(p, day))}</small></div>
-          <div class="sub-pcard-cls">${esc(cls)}</div>
+        return `<div class="sub-pcard ${!on ? "is-covered" : sub ? "is-done" : "is-empty"}">${head}
           <div class="sub-pcard-pick">
             <select ${attrs} aria-label="Substitute for ${esc(t)}, P-${p}">
               <option value=""${on && !sub ? " selected" : ""}>— Not assigned —</option>
-              ${opts.map(x => `<option value="${esc(x)}"${x === sub ? " selected" : ""}>${esc(x)} (${arrangementLoad(x, on ? k : -1)} arr · ${busy[x]?.size || 0} today)</option>`).join("")}
+              ${[...new Set([...opts, ...co])].map(x => `<option value="${esc(x)}"${x === sub ? " selected" : ""}>${esc(label(x))}</option>`).join("")}
               <option value="__covered"${!on ? " selected" : ""}>✓ Already covered</option>
             </select>
             ${sub ? `<button type="button" class="sub-time-del" data-sub="unassign" data-i="${k}" title="Remove ${esc(sub)}" aria-label="Remove substitute">✕</button>` : ""}
           </div>
+          ${on && i.note ? `<span class="sub-badge info">${esc(i.note)}</span>` : ""}
+          ${on && six.has(k) ? `<span class="sub-badge warn">6th period → ${ACTIVITY}</span>` : ""}
           ${st ? `<span class="sub-badge ${st.badge}">${esc(st.text)}</span>` : ""}
         </div>`;
       }));
-      const mine = plan.filter(i => i.absentTeacher === t), toCover = mine.length;
-      // Who covers each period, right in the header (updates as soon as a dropdown changes)
-      const who = mine.map(i => `<span class="${i.assignedTeacher ? "" : "none"}"><b>P-${i.period}</b> → ${i.assignedTeacher ? esc(i.assignedTeacher) : "not assigned"}</span>`).join("");
-      return `<div class="sub-group"><h4>${esc(t)} <small>absent · ${cards.length ? `${toCover} period${toCover === 1 ? "" : "s"} to cover` : "no class today"}</small>
+      const mine = plan.filter(i => i.absentTeacher === t), toCover = mine.filter(i => !i.sports).length;
+      const who = mine.map(i => `<span class="${i.sports ? "sports" : i.assignedTeacher ? "" : "none"}"><b>P-${i.period}</b> → ${i.sports ? "Sports" : i.assignedTeacher ? esc(i.assignedTeacher) : "not assigned"}</span>`).join("");
+      return `<div class="sub-group"><h4>${esc(t)} ${wingTag(t)} <small>absent · ${cards.length ? `${toCover} period${toCover === 1 ? "" : "s"} to cover` : "no class today"}</small>
+          <span class="sub-presets"><button type="button" class="btn-sm" data-sub="absAll" data-t="${jsArg(t)}">All</button><button type="button" class="btn-sm" data-sub="absAfter3" data-t="${jsArg(t)}">After 3rd (P4–7)</button></span>
           <button type="button" class="sub-x" data-sub="absent" data-t="${jsArg(t)}" title="Mark ${esc(t)} present again" aria-label="Mark present">✕</button></h4>
         ${who ? `<div class="sub-who">${who}</div>` : ""}
         ${cards.length ? `<div class="sub-pcards">${cards.join("")}</div>` : ""}</div>`;
     }).join("");
+
+    // Present teachers' free periods: untick one to keep that teacher out of it (office duty, personal break…)
+    const present = sorted().filter(t => !absentSet.has(t));
+    const blockedCount = present.reduce((n, t) => n + (blockedPeriods[t]?.size || 0), 0);
+    const freePanel = `<details class="sub-free"${freeOpen ? " open" : ""}><summary data-sub="freeToggle">🕘 Present teachers' free periods today${blockedCount ? ` · <b>${blockedCount} unticked</b>` : ""} <small>— untick a period for office duty or a personal break</small></summary>
+        <div class="sub-slots">${present.map(t => { const free = freePeriods(day, t);
+          return `<div class="sub-slot"><b>${esc(t)} ${wingTag(t)}</b><div class="sub-pills">${free.length ? free.map(p => { const bl = blockedPeriods[t]?.has(p);
+            return `<button type="button" class="sub-pill ${bl ? "blocked" : "free"}" data-sub="blockPeriod" data-t="${jsArg(t)}" data-p="${p}" title="${esc(ptime(p, day))}">${bl ? "✕" : "✓"} P-${p}</button>`; }).join("") : `<span class="sub-muted">No free period</span>`}</div></div>`; }).join("")}</div>
+      </details>`;
+
+    const notes = sportsInfo().notes, summary = workloadSummary(), merge = mergeActive();
+    const subsBy = {}; plan.forEach(i => { if (i.assignedTeacher && !i.sports) (subsBy[i.assignedTeacher] = subsBy[i.assignedTeacher] || []).push(i); });
     const result = !absent.length ? "" : `
       <div class="sub-card" id="sub-result">
         <div class="sub-card-head"><h3>2. Review &amp; publish — ${esc(niceDate(date))}</h3>${plan.length ? (data.published[date] ? `<span class="sub-tag">Published</span>` : `<span class="sub-tag draft">Not published yet</span>`) : ""}</div>
         ${!plan.length ? `<p class="hint">No periods need a substitute.</p>` : `
-          <div class="sub-arr-bar"><span><b>${plan.length}</b> periods to cover · <b class="ok">${assigned}</b> assigned${plan.length - assigned ? ` · <b class="bad">${plan.length - assigned}</b> not assigned` : ""}</span>
+          <div class="sub-arr-bar"><span><b>${toCoverAll}</b> periods to cover · <b class="ok">${assigned}</b> assigned${toCoverAll - assigned ? ` · <b class="bad">${toCoverAll - assigned}</b> not assigned` : ""}${plan.length - toCoverAll ? ` · ${plan.length - toCoverAll} sports` : ""}</span>
             <span><button type="button" class="btn-sm" data-sub="autoAssign">⚡ Fill empty periods</button> <button type="button" class="btn-sm" data-sub="clearAssign">Clear all</button></span></div>
+          ${merge ? `<p class="sub-note">🔀 Class 11 &amp; 12 stream merge is on today (${absentSet.size} absent, ${absentIn("higher")} from the Higher wing).</p>` : ""}
+          ${notes.length ? `<div class="sub-notes">${notes.map(n => `<p>🏃 ${esc(n)}</p>`).join("")}</div>` : ""}
           <div class="sub-actions">
             <button type="button" class="btn-sm btn-preview" data-sub="preview">👁 Preview</button>
             <button type="button" class="btn-sm primary" data-sub="publish">💾 Save &amp; Publish</button>
             <button type="button" class="btn-sm wa" data-sub="whatsapp">📲 WhatsApp</button>
             <button type="button" class="btn-sm" data-sub="copy">📋 Copy text</button>
             <button type="button" class="btn-sm" data-sub="print">🖨 Print</button>
+            <button type="button" class="btn-sm" data-sub="docx">📄 Word (.docx)</button>
           </div>
-          <p class="hint">Publishing saves each substitute's count for fairness and shows this list on the website's <a href="/pages/arrangement.html" target="_blank">Daily Arrangement</a> page.</p>`}
+          <p class="hint">Publishing saves each substitute's count for fairness and shows this list on the website's <a href="/pages/arrangement.html" target="_blank">Daily Arrangement</a> page.</p>
+          ${Object.keys(subsBy).length ? `<h4 class="sub-h4">📲 Send each teacher their periods</h4>
+          <div class="sub-send">${Object.keys(subsBy).sort().map(t => { const m = data.mobiles[t];
+            return `<div class="sub-send-row"><b>${esc(t)}</b><span>${subsBy[t].map(i => `P-${i.period}`).join(", ")}</span>
+              <a class="btn-sm wa" href="${esc(teacherWaLink(t))}" target="_blank" rel="noopener">${m ? `WhatsApp ${esc(m)}` : "WhatsApp (choose contact)"}</a></div>`; }).join("")}</div>
+          <p class="hint">Add teachers' 10-digit mobile numbers in the <b>Teachers</b> tab to open their chat directly.</p>` : ""}
+          <h4 class="sub-h4">👥 Present teachers' workload today</h4>
+          <div class="sub-table-wrap"><table class="sub-table sub-workload"><tr><th>Teacher</th><th>Regular</th><th>Substitution</th><th>Total</th></tr>
+            ${summary.map(r => `<tr${r.total >= 6 ? ' class="heavy"' : ""}><td><b>${esc(r.teacher)}</b></td><td>${r.regular}</td><td>${r.subs.length ? `${r.subs.length} (${r.subs.map(p => `P-${p}`).join(", ")})` : "—"}</td><td><b>${r.total}</b></td></tr>`).join("")}
+          </table></div>`}
       </div>`;
     return `
       <div class="sub-card">
@@ -390,9 +602,12 @@ window.SubstitutionAdmin = (() => {
       </div>
       <div class="sub-card">
         <div class="sub-card-head"><h3>1. Absent teachers</h3><button type="button" class="btn-sm" data-sub="clearAbsent">Clear</button></div>
-        <p class="hint">Tap the teachers who are absent. For each of their periods, choose a present teacher from the list — it shows only teachers who are free in that period, with <b>(arr · today)</b> = arrangement periods they have had so far this month and periods they teach today. The teacher with the fewest arrangements is suggested, so the load stays balanced.</p>
+        <p class="hint">Tap the teachers who are absent. For a half day use <b>After 3rd (P4–7)</b>. Each period gets the best free teacher automatically:
+          fewest periods today first, then the same wing as the class, then no 4 periods in a row, then whoever did not substitute yesterday and has fewer this week.
+          <b>(x today · y this wk)</b> = periods today and substitutions this week. Change any name from its list.</p>
         <div class="sub-chips">${sorted().map(t => chip(absentSet.has(t) ? "absent-on" : "", "absent", absentSet.has(t) ? "☑" : "☐", t).replace('data-sub="absent"', `data-sub="absent" data-t="${jsArg(t)}"`)).join("")}</div>
         ${absentBoxes}
+        ${absent.length ? freePanel : ""}
       </div>
       ${result}`;
   }
@@ -511,9 +726,13 @@ window.SubstitutionAdmin = (() => {
           ${sorted().map(t => { const n = periodsPerWeek(t);
             return `<div class="sub-trow"><b class="sub-tname">${esc(t)}</b>
               <span class="sub-tper">${n ? `${n} periods / week` : `<span class="sub-badge warn">No periods yet</span>`}</span>
-              <span class="sub-tact"><button type="button" class="btn-sm" data-sub="editTeacherTT" data-t="${jsArg(t)}">🗓 Timetable</button><button type="button" class="btn-sm danger" data-sub="removeTeacher" data-t="${jsArg(t)}">Remove</button></span></div>`; }).join("")}
+              <span class="sub-tact"><button type="button" class="btn-sm" data-sub="editTeacherTT" data-t="${jsArg(t)}">🗓 Timetable</button><button type="button" class="btn-sm danger" data-sub="removeTeacher" data-t="${jsArg(t)}">Remove</button></span>
+              <span class="sub-tinfo">
+                <label><span>Wing</span><select data-subchange="wing" data-t="${jsArg(t)}">${Object.entries(WINGS).map(([k, l]) => `<option value="${k}"${wingOf(t) === k ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+                <label><span>WhatsApp no.</span><input type="tel" inputmode="numeric" maxlength="14" placeholder="10-digit mobile" data-subchange="mobile" data-t="${jsArg(t)}" value="${esc(data.mobiles[t] || "")}"></label>
+              </span></div>`; }).join("")}
         </div>
-        <p class="hint">Removing a teacher takes them out of future arrangements. Their past history stays in the records.</p>
+        <p class="hint"><b>Wing</b> decides which classes a teacher is preferred for as a substitute (Multipurpose = any class). The <b>WhatsApp number</b> lets the Daily tab open each teacher's chat with their periods. Removing a teacher takes them out of future arrangements; their past history stays.</p>
       </div>`;
   }
 
@@ -542,12 +761,27 @@ window.SubstitutionAdmin = (() => {
     if (a === "unassign") {
       const i = plan[Number(b.dataset.i)];
       toast(`${i.assignedTeacher} removed from P-${i.period}, ${i.classDesc} for ${i.absentTeacher}.`);
-      i.assignedTeacher = "";
+      (i.group ? plan.filter(x => x.group === i.group) : [i]).forEach(x => { x.assignedTeacher = ""; x.note = ""; x.manual = true; });
     }
-    if (a === "autoAssign") { const left = autoAssign(); if (left) toast(`${left} period(s) have no free teacher — merge class.`, true); }
-    if (a === "clearAssign") plan.forEach(i => { i.assignedTeacher = ""; });
-    if (a === "avail") { availSet.has(t) ? availSet.delete(t) : availSet.add(t); plan = []; }
-    if (a === "blockPeriod") { const s = blockedPeriods[t] = blockedPeriods[t] || new Set(); s.has(p) ? s.delete(p) : s.add(p); plan = []; }
+    if (a === "autoAssign") { const left = autoAssign(true); if (left) toast(`${left} period(s) have no free teacher — merge class.`, true); }
+    if (a === "clearAssign") plan.forEach(i => { if (!i.sports) { i.assignedTeacher = ""; i.note = ""; i.manual = true; } });
+    // Half-day presets for an absent teacher
+    if (a === "absAll" || a === "absAfter3") {
+      absentPeriods[t] = a === "absAll" ? new Set(ANY_PERIOD) : new Set(ANY_PERIOD.filter(x => x >= 4));
+      syncPlan(); toast(a === "absAll" ? `${t}: all periods need a substitute.` : `${t}: half day — only P-4 onwards need a substitute.`);
+    }
+    if (a === "freeToggle") { freeOpen = !freeOpen; return; } // the <details> opens/closes by itself
+    // Untick a present teacher's free period (office duty…): they are taken out of any slot there and it is refilled
+    if (a === "blockPeriod") {
+      const set = blockedPeriods[t] = blockedPeriods[t] || new Set();
+      if (set.has(p)) set.delete(p);
+      else {
+        set.add(p);
+        plan.forEach(i => { if (i.period === p && i.assignedTeacher === t && !i.note.startsWith("Merged")) { i.assignedTeacher = ""; i.note = ""; i.manual = false; } });
+        autoAssign(false);
+      }
+    }
+    if (a === "docx") return downloadDocx();
     if (a === "clearAbsent") { resetDaily(); }
     if (a === "resetDay") {
       if (data.published[date]) {
@@ -591,6 +825,7 @@ window.SubstitutionAdmin = (() => {
       teachers.push(name);
       DAYS.forEach(dy => { data.timetable[dy][name] = data.timetable[dy][name] || Object.fromEntries(ALL_PERIODS.map(p => [p, []])); });
       data.history[name] = data.history[name] || { count: 0, lastDate: "", lastPeriods: [] };
+      data.wings[name] = data.wings[name] || "multi";
       availSet.add(name);
       if (await save(`${name} added. Now set their periods in the Timetable tab.`)) { ttTeacher = name; render(); }
       return;
@@ -681,6 +916,14 @@ window.SubstitutionAdmin = (() => {
     }
   }
 
+  async function saveTeacherInfo(k, t, v) {
+    if (k === "wing") { data.wings[t] = v; if (await save(`${t}: ${WINGS[v]}.`)) render(); return; }
+    const m = v.replace(/\D/g, "");
+    if (m && m.length !== 10) { toast("Enter a 10-digit mobile number (or leave it empty).", true); return render(); }
+    if (m) data.mobiles[t] = m; else delete data.mobiles[t];
+    if (await save(m ? `${t}'s WhatsApp number saved.` : `${t}'s number removed.`)) render();
+  }
+
   function onChange(e) {
     const k = e.target.dataset.subchange;
     if (!k || !root.contains(e.target)) return;
@@ -693,25 +936,40 @@ window.SubstitutionAdmin = (() => {
       else {
         if (!set.has(p)) { set.add(p); syncPlan(false); }
         const slot = plan.find(i => slotKey(i) === slotKey({ absentTeacher: t, period: p, classDesc: cls }));
-        if (slot) slot.assignedTeacher = v;
+        if (slot) {
+          const co = classNo(cls) >= 11 ? coTeachers(slot) : [];
+          (slot.group ? plan.filter(x => x.group === slot.group) : [slot]).forEach(x => {
+            x.assignedTeacher = v; x.manual = true;
+            x.note = !v ? "" : co.includes(v) && !absentSet.has(v) ? `Merged with ${subjectOf(tt(day, v, p).find(e => classNo(e) === classNo(cls)))} class` : slot.group ? groupNote(slot.group) : "";
+          });
+        }
         toast(v ? `${v} assigned to P-${p}, ${cls} for ${t}.` : `P-${p}, ${cls} for ${t} — not assigned.`);
       }
     }
     if (k === "ttDay") ttDay = e.target.value;
     if (k === "ttTeacher") ttTeacher = e.target.value;
     if (k === "pickStaff") { root.querySelector("#sub-new-teacher").value = e.target.value; return; }
+    if (k === "wing" || k === "mobile") return saveTeacherInfo(k, JSON.parse(e.target.dataset.t), e.target.value.trim());
     render();
   }
 
   function printPlan() {
-    const w = window.open("", "_blank");
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Arrangement Class ${esc(date)}</title>
-      <style>body{font-family:Arial,sans-serif;padding:20px}h1{font-size:18px;margin:0}h2{font-size:14px;color:#555;margin:4px 0 14px}
-      table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}th{background:#eee}</style></head><body>
-      <h1>Swami Atmanand Govt. English Medium School, Sonhat</h1><h2>Arrangement Class — ${esc(date)} (${DAY_NAMES[day]})</h2>
-      <table><tr><th>Period</th><th>Time</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Substitute</th></tr>
-      ${plan.map(i => `<tr><td>P-${i.period}</td><td>${ptime(i.period, day)}</td><td>${esc(i.classDesc)}</td><td>${esc(i.absentTeacher)}</td><td>${esc(i.assignedTeacher || "No free teacher (merge class)")}</td></tr>`).join("")}
-      </table><script>window.onload=()=>window.print()<\/script></body></html>`);
+    const c = chartParts(), w = window.open("", "_blank");
+    if (!w) return toast("Please allow pop-ups to print.", true);
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Arrangement Class ${esc(date)} - SAGES Sonhat</title>
+      <style>body{font-family:Arial,sans-serif;padding:18px;color:#111}h1{font-size:17px;margin:0;text-align:center;color:#0b3d91}h2{font-size:14px;margin:4px 0 10px;text-align:center}
+      .absent{border:1.5px solid #b71c1c;background:#fdecea;padding:7px 10px;margin-bottom:10px;font-size:13px}.absent b{color:#b71c1c}
+      table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:10px}th,td{border:1px solid #8a9bb8;padding:5px 7px;text-align:left;vertical-align:top}th{background:#0b3d91;color:#fff}
+      .note{font-weight:bold;color:#8a5300;margin:4px 0}h3{font-size:14px;margin:14px 0 6px;color:#0b3d91}@page{margin:10mm}</style></head><body>
+      <h1>Swami Atmanand Govt. English Medium School, Sonhat</h1><h2>Arrangement Class — ${esc(niceDate(date))}</h2>
+      <div class="absent"><b>Absent Teachers:</b> ${c.absent.map(esc).join(", ") || "None"}</div>
+      <table><tr><th>Period &amp; Time</th><th>Class &amp; Subject</th><th>Absent Teacher</th><th>Assigned Teacher</th></tr>
+      ${c.rows.map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</table>
+      ${c.notes.map(n => `<p class="note">🏃 ${esc(n)}</p>`).join("")}
+      <h3>Present Teachers Workload Summary</h3>
+      <table><tr><th>Teacher</th><th>Regular</th><th>Substitution</th><th>Total</th></tr>
+      ${c.summary.map(r => `<tr><td>${esc(r.teacher)}</td><td>${r.regular}</td><td>${r.subs.length ? `${r.subs.length} (${r.subs.map(p => `P-${p}`).join(", ")})` : "—"}</td><td><b>${r.total}</b></td></tr>`).join("")}</table>
+      <script>window.onload=()=>window.print()<\/script></body></html>`);
     w.document.close();
   }
 

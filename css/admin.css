@@ -398,3 +398,39 @@ button, input, select, textarea { font: inherit; }
 .sub-table tr.sub-click:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
 .sub-table td.sub-view { color: var(--primary); font-weight: 600; white-space: nowrap; text-align: right; }
 .sub-preview-bar.view { background: #eef3fc; color: var(--primary); border-bottom-color: #d5dbe8; }
+
+/* ===== Smart Substitution & Arrangement System additions ===== */
+.sub-wing { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 10px; font-style: normal; font-size: 11px; font-weight: 600; vertical-align: middle; }
+.sub-wing.w-primary { background: #e3f4f1; color: #0f6b5e; } .sub-wing.w-middle { background: #ede7fb; color: #5b3aa8; }
+.sub-wing.w-higher { background: #e8f0fe; color: #0b3d91; } .sub-wing.w-multi { background: #fff1d6; color: #8a5300; }
+.sub-presets { display: inline-flex; gap: 6px; margin-left: auto; }
+.sub-presets .btn-sm { padding: 4px 10px; font-size: 12.5px; background: #fff; }
+.sub-group h4 .sub-presets + .sub-x { margin-left: 6px; }
+.sub-pcard.is-sports { background: #e6f6ea; border-color: #9fd3ad; }
+.sub-sports { font-weight: 700; color: #1b5e20; }
+.sub-badge.info { background: #e8f0fe; color: #0b3d91; }
+.sub-who span.sports { border-color: #9fd3ad; color: #1b5e20; }
+.sub-free { margin-top: 16px; border: 1px solid var(--border); border-radius: 10px; background: #fafbfd; }
+.sub-free > summary { cursor: pointer; padding: 10px 12px; font-weight: 600; color: var(--primary); }
+.sub-free > summary small { font-weight: 400; color: #667; }
+.sub-free > .sub-slots { padding: 0 12px 12px; }
+.sub-notes { margin: 10px 0; padding: 8px 12px; border-radius: 8px; background: #e6f6ea; color: #1b5e20; font-weight: 600; }
+.sub-notes p { margin: 2px 0; }
+.sub-h4 { margin: 18px 0 8px; color: var(--primary); font-size: 15px; }
+.sub-send { display: grid; gap: 6px; }
+.sub-send-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(90px, 1.2fr) auto; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+.sub-send-row span { color: #3c4658; font-size: 13px; }
+.sub-send-row .btn-sm { text-decoration: none; white-space: nowrap; }
+.sub-workload tr.heavy td { background: #fff4e5; }
+.sub-tinfo { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; }
+.sub-tinfo label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #667; }
+.sub-tinfo select, .sub-tinfo input { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-size: 13px; background: #fff; }
+.sub-tinfo input { width: 140px; }
+@media (max-width: 600px) { .sub-send-row { grid-template-columns: 1fr auto; } .sub-send-row span { grid-column: 1; } .sub-presets { margin-left: 0; } }
+/* Review & publish buttons: Preview | Publish, then WhatsApp | Copy | Print | Word */
+#sub-result .sub-actions { grid-template-columns: repeat(12, 1fr); }
+#sub-result .sub-actions .btn-sm { grid-column: span 3; }
+#sub-result .sub-actions [data-sub="preview"], #sub-result .sub-actions [data-sub="publish"] { grid-column: span 6; }
+#sub-result .sub-actions [data-sub="docx"] { background: #e9eff9; border-color: #b9c9e6; color: #2b579a; font-weight: 600; }
+#sub-result .sub-actions [data-sub="docx"]:hover { background: #dbe5f5; border-color: #2b579a; }
+@media (max-width: 600px) { #sub-result .sub-actions .btn-sm { grid-column: span 6; } }

@@ -65,6 +65,19 @@ const SATURDAY_TIMETABLE = (() => {
     return list;
 })();
 
+// Teacher wings (Smart Substitution & Arrangement System, session 2026-27). Substitutes are matched to the
+// class's wing; Multipurpose teachers adjust in any wing. Editable per teacher in the admin Teachers tab.
+const WINGS = { primary: "Primary (Classes 1–5)", middle: "Middle (Classes 6–8)", higher: "Higher (Classes 9–12)", multi: "Multipurpose (any class)" };
+const TEACHER_WINGS = {
+    "Naveen Kumar Bharti": "primary", "Sangeeta Bhagat": "primary", "Pankaj Lakra": "primary", "Reenu Jaiswal": "primary",
+    "Ashish Kumar Pandey": "primary", "MD Asfaque": "primary",
+    "Keshav Kumar": "middle", "Kajal Parveen Iraque": "middle", "Utkarsh Singh": "middle", "Shalu Tripathi": "middle",
+    "Khushboo Maharaj": "higher", "Nikita Dubey": "higher", "Kalpana Shukla": "higher", "Suman Pandey": "higher",
+    "Divya Gupta": "higher", "Chetna Raj": "higher", "Alpna Lakra": "higher", "Shivam Kumar": "higher",
+    "Pravina Sahu": "higher", "Chandradeep Panda": "higher",
+    "Shubhjeet Chandra": "multi", "Lobhesh Kumar Pradhan": "multi", "Vibha Rani Thakur": "multi",
+};
+
 const TEACHERS = [
     "Naveen Kumar Bharti",
     "Pankaj Lakra",

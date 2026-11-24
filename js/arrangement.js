@@ -21,6 +21,11 @@
   // Arrangements still current: upcoming days, and today's until 5 PM
   const current = () => { const now = schoolNow(); today = now.date; return dates.filter(d => d > now.date || (d === now.date && now.minutes < RESET_HOUR * 60)); };
 
+  // "Arrangement by" cell: a sports period, or the teacher (+ 6th-period activity label and merge/combine note)
+  const assignedCell = i => i.sports ? `<span class="arr-sports">🏃 ${esc(i.sports)}</span>`
+    : !i.assignedTeacher ? "No free teacher (merge class)"
+    : `${esc(i.assignedTeacher)}${i.activity ? `<small class="arr-act">(Sports/Outdoor Activities)</small>` : ""}${i.note ? `<small class="arr-mnote">${esc(i.note)}</small>` : ""}`;
+
   // Long names wrap onto a second line inside their box (see .arr-name in style.css).
   const nameTag = t => `<span class="arr-name">${esc(t)}</span>`;
 
@@ -81,9 +86,18 @@
           <tr><th>Period</th><th>Class &amp; subject</th><th>Absent teacher</th><th>Arrangement by</th></tr>
           ${rows.map(i => `<tr class="${mine && i.assignedTeacher === mine ? "me" : ""}">
             <td data-label="Period"><b>P-${i.period}</b><small>${esc(i.time || "")}</small></td><td data-label="Class">${esc(i.classDesc)}</td>
-            <td class="arr-abs" data-label="Absent">${esc(i.absentTeacher)}</td><td class="arr-sub" data-label="Arrangement by">${i.assignedTeacher ? esc(i.assignedTeacher) : "No free teacher (merge class)"}</td></tr>`).join("")}
+            <td class="arr-abs" data-label="Absent">${esc(i.absentTeacher)}</td><td class="arr-sub" data-label="Arrangement by">${assignedCell(i)}</td></tr>`).join("")}
         </table></div>` : `<p class="empty">${mine ? `${esc(mine)} has no arrangement periods on this day.` : "No arrangement periods on this day."}</p>`}
-      </div>`;
+        ${(x.notes || []).map(n => `<p class="arr-note-sports">🏃 ${esc(n)}</p>`).join("")}
+      </div>
+      ${x.summary?.length ? `<div class="arr-card">
+        <h3>👥 Present teachers' workload</h3>
+        <div class="table-wrap"><table class="arr-summary-t">
+          <tr><th>Teacher</th><th>Regular</th><th>Substitution</th><th>Total</th></tr>
+          ${x.summary.filter(r => !mine || r.teacher === mine).map(r => `<tr class="${r.teacher === mine ? "me" : ""}"><td data-label="Teacher"><b>${esc(r.teacher)}</b></td><td data-label="Regular">${r.regular}</td>
+            <td data-label="Substitution">${r.subs.length ? `${r.subs.length} (${r.subs.map(p => `P-${p}`).join(", ")})` : "—"}</td><td data-label="Total"><b>${r.total}</b></td></tr>`).join("")}
+        </table></div>
+      </div>` : ""}`;
   }
 
   root.addEventListener("click", e => {
